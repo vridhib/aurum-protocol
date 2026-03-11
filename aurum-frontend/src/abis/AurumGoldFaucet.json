@@ -1,0 +1,597 @@
+{
+    "abi": [
+        {
+            "type": "constructor",
+            "inputs": [
+                {
+                    "name": "_token",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "claim",
+            "inputs": [],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "claimAmount",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "cooldown",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "fund",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "lastClaimTime",
+            "inputs": [
+                {
+                    "name": "",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "owner",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "renounceOwnership",
+            "inputs": [],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "setClaimAmount",
+            "inputs": [
+                {
+                    "name": "_claimAmount",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "setCooldown",
+            "inputs": [
+                {
+                    "name": "_cooldown",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "token",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address",
+                    "internalType": "contract IERC20"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "transferOwnership",
+            "inputs": [
+                {
+                    "name": "newOwner",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "withdraw",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "event",
+            "name": "Claimed",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "indexed": false,
+                    "internalType": "uint256"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "event",
+            "name": "OwnershipTransferred",
+            "inputs": [
+                {
+                    "name": "previousOwner",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "newOwner",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "error",
+            "name": "AurumGoldFaucet__CooldownPeriodHasNotPassed",
+            "inputs": []
+        },
+        {
+            "type": "error",
+            "name": "AurumGoldFaucet__NeedsMoreThanZero",
+            "inputs": []
+        },
+        {
+            "type": "error",
+            "name": "OwnableInvalidOwner",
+            "inputs": [
+                {
+                    "name": "owner",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ]
+        },
+        {
+            "type": "error",
+            "name": "OwnableUnauthorizedAccount",
+            "inputs": [
+                {
+                    "name": "account",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ]
+        }
+    ],
+    "bytecode": {
+        "object": "0x6080604052678ac7230489e8000060025562015180600355348015610022575f5ffd5b50604051610e48380380610e488339818101604052810190610044919061022a565b335f73ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff16036100b5575f6040517f1e4fbdf70000000000000000000000000000000000000000000000000000000081526004016100ac9190610264565b60405180910390fd5b6100c48161010b60201b60201c565b508060015f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505061027d565b5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050815f5f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508173ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a35050565b5f5ffd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6101f9826101d0565b9050919050565b610209816101ef565b8114610213575f5ffd5b50565b5f8151905061022481610200565b92915050565b5f6020828403121561023f5761023e6101cc565b5b5f61024c84828501610216565b91505092915050565b61025e816101ef565b82525050565b5f6020820190506102775f830184610255565b92915050565b610bbe8061028a5f395ff3fe608060405234801561000f575f5ffd5b50600436106100b2575f3560e01c80638da5cb5b1161006f5780638da5cb5b1461013e578063b1c7ef0c1461015c578063b77cf9c614610178578063ca1d209d146101a8578063f2fde38b146101c4578063fc0c546a146101e0576100b2565b80632e1a7d4d146100b65780634e71d92d146100d25780634fc3f41a146100dc578063715018a6146100f8578063787a08a614610102578063830953ab14610120575b5f5ffd5b6100d060048036038101906100cb91906108f8565b6101fe565b005b6100da6102e8565b005b6100f660048036038101906100f191906108f8565b6104e8565b005b610100610535565b005b61010a610548565b6040516101179190610932565b60405180910390f35b61012861054e565b6040516101359190610932565b60405180910390f35b610146610554565b604051610153919061098a565b60405180910390f35b610176600480360381019061017191906108f8565b61057b565b005b610192600480360381019061018d91906109cd565b6105c8565b60405161019f9190610932565b60405180910390f35b6101c260048036038101906101bd91906108f8565b6105dd565b005b6101de60048036038101906101d991906109cd565b6106c9565b005b6101e861074d565b6040516101f59190610a53565b60405180910390f35b610206610772565b805f8103610240576040517f67a7c1f500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663a9059cbb610285610554565b846040518363ffffffff1660e01b81526004016102a3929190610a6c565b6020604051808303815f875af11580156102bf573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906102e39190610ac8565b505050565b5f60045f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f20541415801561037e575060035460045f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205461037b9190610b20565b42105b156103b5576040517fe985e83500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b4260045f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f208190555060015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663a9059cbb336002546040518363ffffffff1660e01b8152600401610455929190610a6c565b6020604051808303815f875af1158015610471573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906104959190610ac8565b503373ffffffffffffffffffffffffffffffffffffffff167fd8138f8a3f377c5259ca548e70e4c2de94f129f5a11036a15b69513cba2b426a6002546040516104de9190610932565b60405180910390a2565b6104f0610772565b805f810361052a576040517f67a7c1f500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b816003819055505050565b61053d610772565b6105465f6107f9565b565b60035481565b60025481565b5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b610583610772565b805f81036105bd576040517f67a7c1f500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b816002819055505050565b6004602052805f5260405f205f915090505481565b6105e5610772565b805f810361061f576040517f67a7c1f500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166323b872dd610664610554565b30856040518463ffffffff1660e01b815260040161068493929190610b53565b6020604051808303815f875af11580156106a0573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906106c49190610ac8565b505050565b6106d1610772565b5f73ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff1603610741575f6040517f1e4fbdf7000000000000000000000000000000000000000000000000000000008152600401610738919061098a565b60405180910390fd5b61074a816107f9565b50565b60015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b61077a6108ba565b73ffffffffffffffffffffffffffffffffffffffff16610798610554565b73ffffffffffffffffffffffffffffffffffffffff16146107f7576107bb6108ba565b6040517f118cdaa70000000000000000000000000000000000000000000000000000000081526004016107ee919061098a565b60405180910390fd5b565b5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050815f5f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508173ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a35050565b5f33905090565b5f5ffd5b5f819050919050565b6108d7816108c5565b81146108e1575f5ffd5b50565b5f813590506108f2816108ce565b92915050565b5f6020828403121561090d5761090c6108c1565b5b5f61091a848285016108e4565b91505092915050565b61092c816108c5565b82525050565b5f6020820190506109455f830184610923565b92915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6109748261094b565b9050919050565b6109848161096a565b82525050565b5f60208201905061099d5f83018461097b565b92915050565b6109ac8161096a565b81146109b6575f5ffd5b50565b5f813590506109c7816109a3565b92915050565b5f602082840312156109e2576109e16108c1565b5b5f6109ef848285016109b9565b91505092915050565b5f819050919050565b5f610a1b610a16610a118461094b565b6109f8565b61094b565b9050919050565b5f610a2c82610a01565b9050919050565b5f610a3d82610a22565b9050919050565b610a4d81610a33565b82525050565b5f602082019050610a665f830184610a44565b92915050565b5f604082019050610a7f5f83018561097b565b610a8c6020830184610923565b9392505050565b5f8115159050919050565b610aa781610a93565b8114610ab1575f5ffd5b50565b5f81519050610ac281610a9e565b92915050565b5f60208284031215610add57610adc6108c1565b5b5f610aea84828501610ab4565b91505092915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f610b2a826108c5565b9150610b35836108c5565b9250828201905080821115610b4d57610b4c610af3565b5b92915050565b5f606082019050610b665f83018661097b565b610b73602083018561097b565b610b806040830184610923565b94935050505056fea2646970667358221220628ba510893c80975a5570e91a1774e466c2c9e9fe04e508d7e774acf22168f864736f6c63430008210033",
+        "sourceMap": "654:2145:37:-:0;;;856:8;827:37;;929:6;903:32;;1295:87;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;1331:10;1297:1:21;1273:26;;:12;:26;;;1269:95;;1350:1;1322:31;;;;;;;;;;;:::i;:::-;;;;;;;;1269:95;1373:32;1392:12;1373:18;;;:32;;:::i;:::-;1225:187;1368:6:37::1;1353:5;;:22;;;;;;;;;;;;;;;;;;1295:87:::0;654:2145;;2912:187:21;2985:16;3004:6;;;;;;;;;;;2985:25;;3029:8;3020:6;;:17;;;;;;;;;;;;;;;;;;3083:8;3052:40;;3073:8;3052:40;;;;;;;;;;;;2975:124;2912:187;:::o;88:117:48:-;197:1;194;187:12;334:126;371:7;411:42;404:5;400:54;389:65;;334:126;;;:::o;466:96::-;503:7;532:24;550:5;532:24;:::i;:::-;521:35;;466:96;;;:::o;568:122::-;641:24;659:5;641:24;:::i;:::-;634:5;631:35;621:63;;680:1;677;670:12;621:63;568:122;:::o;696:143::-;753:5;784:6;778:13;769:22;;800:33;827:5;800:33;:::i;:::-;696:143;;;;:::o;845:351::-;915:6;964:2;952:9;943:7;939:23;935:32;932:119;;;970:79;;:::i;:::-;932:119;1090:1;1115:64;1171:7;1162:6;1151:9;1147:22;1115:64;:::i;:::-;1105:74;;1061:128;845:351;;;;:::o;1202:118::-;1289:24;1307:5;1289:24;:::i;:::-;1284:3;1277:37;1202:118;;:::o;1326:222::-;1419:4;1457:2;1446:9;1442:18;1434:26;;1470:71;1538:1;1527:9;1523:17;1514:6;1470:71;:::i;:::-;1326:222;;;;:::o;654:2145:37:-;;;;;;;",
+        "linkReferences": {}
+    },
+    "deployedBytecode": {
+        "object": "0x608060405234801561000f575f5ffd5b50600436106100b2575f3560e01c80638da5cb5b1161006f5780638da5cb5b1461013e578063b1c7ef0c1461015c578063b77cf9c614610178578063ca1d209d146101a8578063f2fde38b146101c4578063fc0c546a146101e0576100b2565b80632e1a7d4d146100b65780634e71d92d146100d25780634fc3f41a146100dc578063715018a6146100f8578063787a08a614610102578063830953ab14610120575b5f5ffd5b6100d060048036038101906100cb91906108f8565b6101fe565b005b6100da6102e8565b005b6100f660048036038101906100f191906108f8565b6104e8565b005b610100610535565b005b61010a610548565b6040516101179190610932565b60405180910390f35b61012861054e565b6040516101359190610932565b60405180910390f35b610146610554565b604051610153919061098a565b60405180910390f35b610176600480360381019061017191906108f8565b61057b565b005b610192600480360381019061018d91906109cd565b6105c8565b60405161019f9190610932565b60405180910390f35b6101c260048036038101906101bd91906108f8565b6105dd565b005b6101de60048036038101906101d991906109cd565b6106c9565b005b6101e861074d565b6040516101f59190610a53565b60405180910390f35b610206610772565b805f8103610240576040517f67a7c1f500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663a9059cbb610285610554565b846040518363ffffffff1660e01b81526004016102a3929190610a6c565b6020604051808303815f875af11580156102bf573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906102e39190610ac8565b505050565b5f60045f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f20541415801561037e575060035460045f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205461037b9190610b20565b42105b156103b5576040517fe985e83500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b4260045f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f208190555060015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663a9059cbb336002546040518363ffffffff1660e01b8152600401610455929190610a6c565b6020604051808303815f875af1158015610471573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906104959190610ac8565b503373ffffffffffffffffffffffffffffffffffffffff167fd8138f8a3f377c5259ca548e70e4c2de94f129f5a11036a15b69513cba2b426a6002546040516104de9190610932565b60405180910390a2565b6104f0610772565b805f810361052a576040517f67a7c1f500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b816003819055505050565b61053d610772565b6105465f6107f9565b565b60035481565b60025481565b5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b610583610772565b805f81036105bd576040517f67a7c1f500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b816002819055505050565b6004602052805f5260405f205f915090505481565b6105e5610772565b805f810361061f576040517f67a7c1f500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166323b872dd610664610554565b30856040518463ffffffff1660e01b815260040161068493929190610b53565b6020604051808303815f875af11580156106a0573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906106c49190610ac8565b505050565b6106d1610772565b5f73ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff1603610741575f6040517f1e4fbdf7000000000000000000000000000000000000000000000000000000008152600401610738919061098a565b60405180910390fd5b61074a816107f9565b50565b60015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b61077a6108ba565b73ffffffffffffffffffffffffffffffffffffffff16610798610554565b73ffffffffffffffffffffffffffffffffffffffff16146107f7576107bb6108ba565b6040517f118cdaa70000000000000000000000000000000000000000000000000000000081526004016107ee919061098a565b60405180910390fd5b565b5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050815f5f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508173ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a35050565b5f33905090565b5f5ffd5b5f819050919050565b6108d7816108c5565b81146108e1575f5ffd5b50565b5f813590506108f2816108ce565b92915050565b5f6020828403121561090d5761090c6108c1565b5b5f61091a848285016108e4565b91505092915050565b61092c816108c5565b82525050565b5f6020820190506109455f830184610923565b92915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6109748261094b565b9050919050565b6109848161096a565b82525050565b5f60208201905061099d5f83018461097b565b92915050565b6109ac8161096a565b81146109b6575f5ffd5b50565b5f813590506109c7816109a3565b92915050565b5f602082840312156109e2576109e16108c1565b5b5f6109ef848285016109b9565b91505092915050565b5f819050919050565b5f610a1b610a16610a118461094b565b6109f8565b61094b565b9050919050565b5f610a2c82610a01565b9050919050565b5f610a3d82610a22565b9050919050565b610a4d81610a33565b82525050565b5f602082019050610a665f830184610a44565b92915050565b5f604082019050610a7f5f83018561097b565b610a8c6020830184610923565b9392505050565b5f8115159050919050565b610aa781610a93565b8114610ab1575f5ffd5b50565b5f81519050610ac281610a9e565b92915050565b5f60208284031215610add57610adc6108c1565b5b5f610aea84828501610ab4565b91505092915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f610b2a826108c5565b9150610b35836108c5565b9250828201905080821115610b4d57610b4c610af3565b5b92915050565b5f606082019050610b665f83018661097b565b610b73602083018561097b565b610b806040830184610923565b94935050505056fea2646970667358221220628ba510893c80975a5570e91a1774e466c2c9e9fe04e508d7e774acf22168f864736f6c63430008210033",
+        "sourceMap": "654:2145:37:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2411:122;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;1558:367;;;:::i;:::-;;2210:119;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;2293:101:21;;;:::i;:::-;;903:32:37;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;827:37;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;1638:85:21;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;1996:135:37;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;988:48;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;2660:137;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;2543:215:21;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;802:19:37;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;2411:122;1531:13:21;:11;:13::i;:::-;2477:6:37::1;1164:1;1154:6;:11:::0;1150:60:::1;;1174:36;;;;;;;;;;;;;;1150:60;2495:5:::2;;;;;;;;;;;:14;;;2510:7;:5;:7::i;:::-;2519:6;2495:31;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;1554:1:21::1;2411:122:37::0;:::o;1558:367::-;1628:1;1599:13;:25;1613:10;1599:25;;;;;;;;;;;;;;;;:30;;1598:92;;;;;1681:8;;1653:13;:25;1667:10;1653:25;;;;;;;;;;;;;;;;:36;;;;:::i;:::-;1635:15;:54;1598:92;1594:175;;;1713:45;;;;;;;;;;;;;;1594:175;1807:15;1779:13;:25;1793:10;1779:25;;;;;;;;;;;;;;;:43;;;;1832:5;;;;;;;;;;;:14;;;1847:10;1859:11;;1832:39;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;1894:10;1886:32;;;1906:11;;1886:32;;;;;;:::i;:::-;;;;;;;;1558:367::o;2210:119::-;1531:13:21;:11;:13::i;:::-;2282:9:37::1;1164:1;1154:6;:11:::0;1150:60:::1;;1174:36;;;;;;;;;;;;;;1150:60;2313:9:::2;2302:8;:20;;;;1554:1:21::1;2210:119:37::0;:::o;2293:101:21:-;1531:13;:11;:13::i;:::-;2357:30:::1;2384:1;2357:18;:30::i;:::-;2293:101::o:0;903:32:37:-;;;;:::o;827:37::-;;;;:::o;1638:85:21:-;1684:7;1710:6;;;;;;;;;;;1703:13;;1638:85;:::o;1996:135:37:-;1531:13:21;:11;:13::i;:::-;2074:12:37::1;1164:1;1154:6;:11:::0;1150:60:::1;;1174:36;;;;;;;;;;;;;;1150:60;2112:12:::2;2098:11;:26;;;;1554:1:21::1;1996:135:37::0;:::o;988:48::-;;;;;;;;;;;;;;;;;:::o;2660:137::-;1531:13:21;:11;:13::i;:::-;2722:6:37::1;1164:1;1154:6;:11:::0;1150:60:::1;;1174:36;;;;;;;;;;;;;;1150:60;2740:5:::2;;;;;;;;;;;:18;;;2759:7;:5;:7::i;:::-;2776:4;2783:6;2740:50;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;1554:1:21::1;2660:137:37::0;:::o;2543:215:21:-;1531:13;:11;:13::i;:::-;2647:1:::1;2627:22;;:8;:22;;::::0;2623:91:::1;;2700:1;2672:31;;;;;;;;;;;:::i;:::-;;;;;;;;2623:91;2723:28;2742:8;2723:18;:28::i;:::-;2543:215:::0;:::o;802:19:37:-;;;;;;;;;;;;;:::o;1796:162:21:-;1866:12;:10;:12::i;:::-;1855:23;;:7;:5;:7::i;:::-;:23;;;1851:101;;1928:12;:10;:12::i;:::-;1901:40;;;;;;;;;;;:::i;:::-;;;;;;;;1851:101;1796:162::o;2912:187::-;2985:16;3004:6;;;;;;;;;;;2985:25;;3029:8;3020:6;;:17;;;;;;;;;;;;;;;;;;3083:8;3052:40;;3073:8;3052:40;;;;;;;;;;;;2975:124;2912:187;:::o;656:96:28:-;709:7;735:10;728:17;;656:96;:::o;88:117:48:-;197:1;194;187:12;334:77;371:7;400:5;389:16;;334:77;;;:::o;417:122::-;490:24;508:5;490:24;:::i;:::-;483:5;480:35;470:63;;529:1;526;519:12;470:63;417:122;:::o;545:139::-;591:5;629:6;616:20;607:29;;645:33;672:5;645:33;:::i;:::-;545:139;;;;:::o;690:329::-;749:6;798:2;786:9;777:7;773:23;769:32;766:119;;;804:79;;:::i;:::-;766:119;924:1;949:53;994:7;985:6;974:9;970:22;949:53;:::i;:::-;939:63;;895:117;690:329;;;;:::o;1025:118::-;1112:24;1130:5;1112:24;:::i;:::-;1107:3;1100:37;1025:118;;:::o;1149:222::-;1242:4;1280:2;1269:9;1265:18;1257:26;;1293:71;1361:1;1350:9;1346:17;1337:6;1293:71;:::i;:::-;1149:222;;;;:::o;1377:126::-;1414:7;1454:42;1447:5;1443:54;1432:65;;1377:126;;;:::o;1509:96::-;1546:7;1575:24;1593:5;1575:24;:::i;:::-;1564:35;;1509:96;;;:::o;1611:118::-;1698:24;1716:5;1698:24;:::i;:::-;1693:3;1686:37;1611:118;;:::o;1735:222::-;1828:4;1866:2;1855:9;1851:18;1843:26;;1879:71;1947:1;1936:9;1932:17;1923:6;1879:71;:::i;:::-;1735:222;;;;:::o;1963:122::-;2036:24;2054:5;2036:24;:::i;:::-;2029:5;2026:35;2016:63;;2075:1;2072;2065:12;2016:63;1963:122;:::o;2091:139::-;2137:5;2175:6;2162:20;2153:29;;2191:33;2218:5;2191:33;:::i;:::-;2091:139;;;;:::o;2236:329::-;2295:6;2344:2;2332:9;2323:7;2319:23;2315:32;2312:119;;;2350:79;;:::i;:::-;2312:119;2470:1;2495:53;2540:7;2531:6;2520:9;2516:22;2495:53;:::i;:::-;2485:63;;2441:117;2236:329;;;;:::o;2571:60::-;2599:3;2620:5;2613:12;;2571:60;;;:::o;2637:142::-;2687:9;2720:53;2738:34;2747:24;2765:5;2747:24;:::i;:::-;2738:34;:::i;:::-;2720:53;:::i;:::-;2707:66;;2637:142;;;:::o;2785:126::-;2835:9;2868:37;2899:5;2868:37;:::i;:::-;2855:50;;2785:126;;;:::o;2917:142::-;2983:9;3016:37;3047:5;3016:37;:::i;:::-;3003:50;;2917:142;;;:::o;3065:163::-;3168:53;3215:5;3168:53;:::i;:::-;3163:3;3156:66;3065:163;;:::o;3234:254::-;3343:4;3381:2;3370:9;3366:18;3358:26;;3394:87;3478:1;3467:9;3463:17;3454:6;3394:87;:::i;:::-;3234:254;;;;:::o;3494:332::-;3615:4;3653:2;3642:9;3638:18;3630:26;;3666:71;3734:1;3723:9;3719:17;3710:6;3666:71;:::i;:::-;3747:72;3815:2;3804:9;3800:18;3791:6;3747:72;:::i;:::-;3494:332;;;;;:::o;3832:90::-;3866:7;3909:5;3902:13;3895:21;3884:32;;3832:90;;;:::o;3928:116::-;3998:21;4013:5;3998:21;:::i;:::-;3991:5;3988:32;3978:60;;4034:1;4031;4024:12;3978:60;3928:116;:::o;4050:137::-;4104:5;4135:6;4129:13;4120:22;;4151:30;4175:5;4151:30;:::i;:::-;4050:137;;;;:::o;4193:345::-;4260:6;4309:2;4297:9;4288:7;4284:23;4280:32;4277:119;;;4315:79;;:::i;:::-;4277:119;4435:1;4460:61;4513:7;4504:6;4493:9;4489:22;4460:61;:::i;:::-;4450:71;;4406:125;4193:345;;;;:::o;4544:180::-;4592:77;4589:1;4582:88;4689:4;4686:1;4679:15;4713:4;4710:1;4703:15;4730:191;4770:3;4789:20;4807:1;4789:20;:::i;:::-;4784:25;;4823:20;4841:1;4823:20;:::i;:::-;4818:25;;4866:1;4863;4859:9;4852:16;;4887:3;4884:1;4881:10;4878:36;;;4894:18;;:::i;:::-;4878:36;4730:191;;;;:::o;4927:442::-;5076:4;5114:2;5103:9;5099:18;5091:26;;5127:71;5195:1;5184:9;5180:17;5171:6;5127:71;:::i;:::-;5208:72;5276:2;5265:9;5261:18;5252:6;5208:72;:::i;:::-;5290;5358:2;5347:9;5343:18;5334:6;5290:72;:::i;:::-;4927:442;;;;;;:::o",
+        "linkReferences": {}
+    },
+    "methodIdentifiers": {
+        "claim()": "4e71d92d",
+        "claimAmount()": "830953ab",
+        "cooldown()": "787a08a6",
+        "fund(uint256)": "ca1d209d",
+        "lastClaimTime(address)": "b77cf9c6",
+        "owner()": "8da5cb5b",
+        "renounceOwnership()": "715018a6",
+        "setClaimAmount(uint256)": "b1c7ef0c",
+        "setCooldown(uint256)": "4fc3f41a",
+        "token()": "fc0c546a",
+        "transferOwnership(address)": "f2fde38b",
+        "withdraw(uint256)": "2e1a7d4d"
+    },
+    "rawMetadata": "{\"compiler\":{\"version\":\"0.8.33+commit.64118f21\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AurumGoldFaucet__CooldownPeriodHasNotPassed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AurumGoldFaucet__NeedsMoreThanZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Claimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"claim\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cooldown\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"fund\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"lastClaimTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_claimAmount\",\"type\":\"uint256\"}],\"name\":\"setClaimAmount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_cooldown\",\"type\":\"uint256\"}],\"name\":\"setCooldown\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"token\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Vridhi Brahmbhatt\",\"details\":\"Users can call `claim()` to receive `claimAmount` AUR tokens, subject to a cooldown period.      The contract owner can adjust the claim amount and cooldown, and can fund the faucet with AUR tokens.      This faucet is intended for Ethereum Sepolia testnet use only.\",\"errors\":{\"OwnableInvalidOwner(address)\":[{\"details\":\"The owner is not a valid owner account. (eg. `address(0)`)\"}],\"OwnableUnauthorizedAccount(address)\":[{\"details\":\"The caller account is not authorized to perform an operation.\"}]},\"kind\":\"dev\",\"methods\":{\"claim()\":{\"details\":\"Reverts if the user has already claimed within the cooldown period\"},\"constructor\":{\"params\":{\"_token\":\"The address of the AUR token contract\"}},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"title\":\"AurumGoldFaucet\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"claim()\":{\"notice\":\"Allows a user to claim AUR tokens once per cooldown period\"},\"fund(uint256)\":{\"notice\":\"The owner funds the faucet with AUR tokens. The owner must first approve this contract to spend tokens.\"},\"setClaimAmount(uint256)\":{\"notice\":\"The owner can adjust the claim amount if needed\"},\"setCooldown(uint256)\":{\"notice\":\"The owner can adjust the cooldown period between claims\"},\"withdraw(uint256)\":{\"notice\":\"If needed, the owner can withdraw any remaining AUR tokens\"}},\"notice\":\"This provides a testnet faucet for AUR tokens, allowing users to claim a fixed amount once per day.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/AurumGoldFaucet.sol\":\"AurumGoldFaucet\"},\"evmVersion\":\"prague\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[\":@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/\",\":@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/\",\":chainlink-brownie-contracts/=lib/chainlink-brownie-contracts/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\"]},\"sources\":{\"lib/openzeppelin-contracts/contracts/access/Ownable.sol\":{\"keccak256\":\"0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6\",\"dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a\"]},\"lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5282825a626cfe924e504274b864a652b0023591fa66f06a067b25b51ba9b303\",\"dweb:/ipfs/QmeCfPykghhMc81VJTrHTC7sF6CRvaA1FXVq2pJhwYp1dV\"]},\"lib/openzeppelin-contracts/contracts/utils/Context.sol\":{\"keccak256\":\"0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12\",\"dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF\"]},\"src/AurumGoldFaucet.sol\":{\"keccak256\":\"0x58554de832a69fd76cf885e26b734bc6388d4c05109f967499cc46983f8e3a04\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://41e960c146dcbffcc60baa23c62c9ed62f90a105a84794a8a4c01c0ca92c938a\",\"dweb:/ipfs/QmPCu5APj2nyvrtiEqGwS6WQRshtw68br8DTcKBEqhgtGu\"]}},\"version\":1}",
+    "metadata": {
+        "compiler": {
+            "version": "0.8.33+commit.64118f21"
+        },
+        "language": "Solidity",
+        "output": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "_token",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "AurumGoldFaucet__CooldownPeriodHasNotPassed"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "AurumGoldFaucet__NeedsMoreThanZero"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "owner",
+                            "type": "address"
+                        }
+                    ],
+                    "type": "error",
+                    "name": "OwnableInvalidOwner"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "account",
+                            "type": "address"
+                        }
+                    ],
+                    "type": "error",
+                    "name": "OwnableUnauthorizedAccount"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256",
+                            "indexed": false
+                        }
+                    ],
+                    "type": "event",
+                    "name": "Claimed",
+                    "anonymous": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "previousOwner",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "newOwner",
+                            "type": "address",
+                            "indexed": true
+                        }
+                    ],
+                    "type": "event",
+                    "name": "OwnershipTransferred",
+                    "anonymous": false
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "claim"
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "claimAmount",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "cooldown",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "fund"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "lastClaimTime",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "owner",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "renounceOwnership"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "_claimAmount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "setClaimAmount"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "_cooldown",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "setCooldown"
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "token",
+                    "outputs": [
+                        {
+                            "internalType": "contract IERC20",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "newOwner",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "transferOwnership"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "withdraw"
+                }
+            ],
+            "devdoc": {
+                "kind": "dev",
+                "methods": {
+                    "claim()": {
+                        "details": "Reverts if the user has already claimed within the cooldown period"
+                    },
+                    "constructor": {
+                        "params": {
+                            "_token": "The address of the AUR token contract"
+                        }
+                    },
+                    "owner()": {
+                        "details": "Returns the address of the current owner."
+                    },
+                    "renounceOwnership()": {
+                        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+                    },
+                    "transferOwnership(address)": {
+                        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+                    }
+                },
+                "version": 1
+            },
+            "userdoc": {
+                "kind": "user",
+                "methods": {
+                    "claim()": {
+                        "notice": "Allows a user to claim AUR tokens once per cooldown period"
+                    },
+                    "fund(uint256)": {
+                        "notice": "The owner funds the faucet with AUR tokens. The owner must first approve this contract to spend tokens."
+                    },
+                    "setClaimAmount(uint256)": {
+                        "notice": "The owner can adjust the claim amount if needed"
+                    },
+                    "setCooldown(uint256)": {
+                        "notice": "The owner can adjust the cooldown period between claims"
+                    },
+                    "withdraw(uint256)": {
+                        "notice": "If needed, the owner can withdraw any remaining AUR tokens"
+                    }
+                },
+                "version": 1
+            }
+        },
+        "settings": {
+            "remappings": [
+                "@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/",
+                "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+                "chainlink-brownie-contracts/=lib/chainlink-brownie-contracts/",
+                "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+                "forge-std/=lib/forge-std/src/",
+                "halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/",
+                "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+            ],
+            "optimizer": {
+                "enabled": false,
+                "runs": 200
+            },
+            "metadata": {
+                "bytecodeHash": "ipfs"
+            },
+            "compilationTarget": {
+                "src/AurumGoldFaucet.sol": "AurumGoldFaucet"
+            },
+            "evmVersion": "prague",
+            "libraries": {}
+        },
+        "sources": {
+            "lib/openzeppelin-contracts/contracts/access/Ownable.sol": {
+                "keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+                "urls": [
+                    "bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+                    "dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": {
+                "keccak256": "0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2",
+                "urls": [
+                    "bzz-raw://5282825a626cfe924e504274b864a652b0023591fa66f06a067b25b51ba9b303",
+                    "dweb:/ipfs/QmeCfPykghhMc81VJTrHTC7sF6CRvaA1FXVq2pJhwYp1dV"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/utils/Context.sol": {
+                "keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+                "urls": [
+                    "bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+                    "dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+                ],
+                "license": "MIT"
+            },
+            "src/AurumGoldFaucet.sol": {
+                "keccak256": "0x58554de832a69fd76cf885e26b734bc6388d4c05109f967499cc46983f8e3a04",
+                "urls": [
+                    "bzz-raw://41e960c146dcbffcc60baa23c62c9ed62f90a105a84794a8a4c01c0ca92c938a",
+                    "dweb:/ipfs/QmPCu5APj2nyvrtiEqGwS6WQRshtw68br8DTcKBEqhgtGu"
+                ],
+                "license": "MIT"
+            }
+        },
+        "version": 1
+    },
+    "id": 37
+}
