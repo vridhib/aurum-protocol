@@ -3,9 +3,6 @@ cache/
 out/
 dist/
 
-# Node modules
-node_modules/
-
 # Ignores development broadcast logs
 broadcast/
 !/broadcast
