@@ -3,10 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther, formatEther, getAddress, decodeErrorResult } from "viem";
-import aurumEngineJson from "../abis/AurumEngine.json";
-import aurumGoldJson from "../abis/AurumGold.json";
-import aurumAUSDJson from "../abis/AurumUSD.json"; 
-import aurumGoldFaucetJson from "../abis/AurumGoldFaucet.json";
+import aurumEngineJson from "@/abis/AurumEngine.json";
+import aurumGoldJson from "@/abis/AurumGold.json";
+import aurumAUSDJson from "@/abis/AurumUSD.json"; 
+import aurumGoldFaucetJson from "@/abis/AurumGoldFaucet.json";
 
 
 // Constants
