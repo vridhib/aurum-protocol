@@ -11,9 +11,9 @@ import {HelperConfig} from "./HelperConfig.s.sol";
 contract DeployAUSD is Script {
     function run() external returns(AurumUSD, AurumEngine, HelperConfig) {
         HelperConfig config = new HelperConfig();
-        (address goldUsdPriceFeed, address goldToken, uint256 deployerKey) = config.activeNetworkConfig();
+        (address goldUsdPriceFeed, address goldToken, address deployerAccount) = config.activeNetworkConfig();
 
-        vm.startBroadcast(deployerKey);
+        vm.startBroadcast(deployerAccount);
         AurumUSD ausd = new AurumUSD();
         AurumEngine engine = new AurumEngine(goldToken, goldUsdPriceFeed, address(ausd));
 

@@ -10,12 +10,12 @@ contract HelperConfig is Script {
     struct NetworkConfig {
         address goldUsdPriceFeed;
         address aurumGold;
-        uint256 deployerKey;
+        address deployerAccount;
     }
 
     uint8 public constant DECIMALS = 8;
     int256 public constant GOLD_USD_PRICE = 5000e8;
-    uint256 public constant DEFAULT_ANVIL_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+    address constant ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     NetworkConfig public activeNetworkConfig;
 
@@ -23,18 +23,19 @@ contract HelperConfig is Script {
     constructor() {
         if (block.chainid == 11155111) {
             activeNetworkConfig = getSepoliaEthConfig();
-        }
-        else {
+        } else {
             activeNetworkConfig = getOrCreateAnvilEthConfig();
         }
     }
 
 
     function getSepoliaEthConfig() public view returns (NetworkConfig memory) {
+        address sepoliaDeployerAccount = vm.envAddress("SEPOLIA_DEPLOYER_ACCOUNT");
+
         return NetworkConfig({
-            goldUsdPriceFeed: 0xC5981F461d74c46eB4b0CF3f4Ec79f025573B0Ea,       //Chainlink XAU/USD price feed
+            goldUsdPriceFeed: 0xC5981F461d74c46eB4b0CF3f4Ec79f025573B0Ea,       // Chainlink XAU/USD price feed
             aurumGold: 0x7769F56edC2a1882a51cec1d3c96F31482b5A241,              // Simple deployed gold token address
-            deployerKey: vm.envUint("PRIVATE_KEY")                      
+            deployerAccount: sepoliaDeployerAccount                            // Deploying account address                
         });
     }
 
@@ -44,6 +45,7 @@ contract HelperConfig is Script {
             return activeNetworkConfig;
         }
 
+        // Deploy mocks 
         vm.startBroadcast();
         MockV3Aggregator goldUsdPriceFeed = new MockV3Aggregator(DECIMALS, GOLD_USD_PRICE);
         ERC20Mock aurumGoldMock = new ERC20Mock();
@@ -52,7 +54,7 @@ contract HelperConfig is Script {
         return NetworkConfig({
             goldUsdPriceFeed: address(goldUsdPriceFeed),
             aurumGold: address(aurumGoldMock),
-            deployerKey: DEFAULT_ANVIL_KEY
+            deployerAccount: ANVIL_DEFAULT_ACCOUNT
         });
     }
 }
