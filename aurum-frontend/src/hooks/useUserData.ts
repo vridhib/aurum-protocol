@@ -15,6 +15,7 @@ export function useUserData(): {
     lastClaimTime: bigint | undefined
     canClaim: boolean
     aurAllowance: bigint | undefined
+    aurBalance: bigint | undefined
     ausdAllowance: bigint | undefined
 } {
     const { address } = useAccount();
@@ -85,6 +86,19 @@ export function useUserData(): {
         refetch: () => void 
     };
 
+    // Read: AUR balance of the user
+    const { data: aurBalance, isLoading: isAurBalanceLoading, refetch: refetchAurBalance } = useReadContract({
+        address: AUR_GOLD_ADDRESS,
+        abi: aurumGoldJson.abi,
+        functionName: "balanceOf",
+        args: [address],
+        query: { enabled: !!address }
+    }) as {
+        data: bigint | undefined;
+        isLoading: boolean;
+        refetch: () => void
+    };
+
     // Read: AUSD allowance for the Engine
     const { data: ausdAllowance, isLoading: isAusdAllowanceLoading, refetch: refetchAUSDAllowance } = useReadContract({
         address: AURUM_AUSD_ADDRESS,
@@ -99,7 +113,7 @@ export function useUserData(): {
     };
 
     // Combined loading state that is true if any of the 6 reads are still fetching
-    const isLoading = isCollateralLoading || isDebtLoading || isHealthFactorLoading || isLastClaimTimeLoading || isAurAllowanceLoading || isAusdAllowanceLoading;
+    const isLoading = isCollateralLoading || isDebtLoading || isHealthFactorLoading || isLastClaimTimeLoading || isAurAllowanceLoading || isAurBalanceLoading || isAusdAllowanceLoading;
 
     // Combined refetch that refreshes all 6 contract calls
     const refetch = useCallback(() => {
@@ -108,8 +122,9 @@ export function useUserData(): {
         refetchHealthFactor();
         refetchLastClaimTime();
         refetchAURAllowance();
+        refetchAurBalance();
         refetchAUSDAllowance();
-    }, [refetchCollateral, refetchMinted, refetchHealthFactor, refetchLastClaimTime, refetchAURAllowance, refetchAUSDAllowance]);
+    }, [refetchCollateral, refetchMinted, refetchHealthFactor, refetchLastClaimTime, refetchAURAllowance, refetchAurBalance, refetchAUSDAllowance]);
 
 
     // Return everything, including loading flag and possibly undefined data
@@ -122,6 +137,7 @@ export function useUserData(): {
         lastClaimTime,
         canClaim: lastClaimTime ? Date.now() / 1000 > Number(lastClaimTime) + 86400 : true,
         aurAllowance,
+        aurBalance,
         ausdAllowance
     };
 }

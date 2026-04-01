@@ -5,7 +5,8 @@ export function DepositCard({
     isPending,
     error,
     isDisabled,
-    isValid
+    isValid,
+    exceeds
 }: {
     depositAmount: string;
     setDepositAmount: (v: string) => void;
@@ -14,6 +15,7 @@ export function DepositCard({
     error: string | null;
     isDisabled: boolean;
     isValid: boolean | "";
+    exceeds: boolean
 }) {
     return (
         <form onSubmit={onDeposit} className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm space-y-4">
@@ -34,6 +36,7 @@ export function DepositCard({
                 {isPending ? "Processing..." : "Deposit"}
             </button>
             {!!depositAmount && !isValid && (<p className="text-red-500 text-sm">Please enter a valid amount greater than 0.</p>)}
+            {isValid && exceeds && (<p className="text-red-500 text-sm">Insufficient AUR balance.</p>)}
             {error && <p className="text-red-500 text-sm">{error}</p>}
         </form>
     )

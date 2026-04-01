@@ -35,7 +35,7 @@ export default function Dashboard() {
 
 
   // ---------- Reads ----------
-  const {amountCollateral, mintedAmount, healthFactor, aurAllowance, ausdAllowance, canClaim, refetch: refetchUserData, isLoading: isUserDataLoading} = useUserData();
+  const {amountCollateral, mintedAmount, healthFactor, aurAllowance, aurBalance, ausdAllowance, canClaim, refetch: refetchUserData, isLoading: isUserDataLoading} = useUserData();
   const { pricePerAur } = useProtocolData();
   const { isConnected } = useAccount();
 
@@ -116,7 +116,7 @@ export default function Dashboard() {
 
 
   // ---------- Input Validation Hooks ----------
-  const { isValid: isDepositAmountValid } = useAmountValidation(depositAmount);
+  const { isValid: isDepositAmountValid, exceeds: doesDepositExceedBalance } = useAmountValidation(depositAmount, aurBalance);
   const { isValid: isRedeemAmountValid, exceeds: doesRedeemExceedCollateral } = useAmountValidation(redeemAmount, amountCollateral);
   const { isValid: isMintAmountValid } = useAmountValidation(mintAmount);
   const { isValid: isBurnAmountValid, exceeds: doesBurnExceedMinted } = useAmountValidation(burnAmount, mintedAmount);
@@ -196,7 +196,7 @@ export default function Dashboard() {
   // Deposit handler
   const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isDepositAmountValid) return;
+    if (!isDepositAmountValid || doesDepositExceedBalance) return;
     const amountWei = parseEther(depositAmount);
     startDeposit(amountWei);
   };
@@ -248,7 +248,7 @@ export default function Dashboard() {
   // ---------- Button Disabled States ----------
   // Determine deposit button state
   const isDepositButtonDisabled = 
-    !isDepositAmountValid || !!depositError || isDepositPendingHook;
+    !isDepositAmountValid || doesDepositExceedBalance || !!depositError || isDepositPendingHook;
 
   // Determine redeem button state
   const isRedeemButtonDisabled =
@@ -310,6 +310,7 @@ export default function Dashboard() {
           error={depositError}
           isDisabled={isDepositButtonDisabled}
           isValid={isDepositAmountValid}
+          exceeds={doesDepositExceedBalance}
         />
 
         {/* Redeem Card */}
