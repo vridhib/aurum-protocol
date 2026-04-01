@@ -25,15 +25,15 @@ export function useApproveAndExecute({
     const [amount, setAmount] = useState<bigint | null>(null);
     const [error, setError] = useState<Error | null>(null);
 
-    const { data: approveHash, isPending: isApproving, writeContract: approve } = useWriteContract();
-    const { isLoading: isApprovingConfirmed, isSuccess: isApproved } = useWaitForTransactionReceipt({ hash: approveHash });
+    const { data: approveHash, isPending: isApproving, writeContract: approve, error: approveWriteError } = useWriteContract();
+    const { isLoading: isApproveConfirmed, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash });
 
-    const { data: executeHash, isPending: isExecuting, writeContract: execute } = useWriteContract();
-    const { isLoading: isExecutingConfirmed, isSuccess: isExecuted } = useWaitForTransactionReceipt({ hash: executeHash });
+    const { data: executeHash, isPending: isExecuting, writeContract: execute, error: executeWriteError } = useWriteContract();
+    const { isLoading: isExecuteConfirmed, isSuccess: isExecuteSuccess } = useWaitForTransactionReceipt({ hash: executeHash });
 
     // When the approval succeeds, execute the target function
     useEffect(() => {
-        if (step === "approving" && isApproved && amount !== null) {
+        if (step === "approving" && isApproveSuccess && amount !== null) {
             setStep("executing");
             execute({
                 address: targetContract,
@@ -42,16 +42,16 @@ export function useApproveAndExecute({
                 args: [amount]
             });
         }
-    }, [step, isApproved, execute, targetContract, targetAbi, targetFunction, amount]);
+    }, [step, isApproveSuccess, execute, targetContract, targetAbi, targetFunction, amount]);
 
     // When the execution succeeds, reset and call onSuccess
     useEffect(() => {
-        if (step === "executing" && isExecuted) {
+        if (step === "executing" && isExecuteSuccess) {
             setStep("idle");
             setAmount(null);
             onSuccess?.();
         }
-    }, [step, isExecuted, onSuccess]);
+    }, [step, isExecuteSuccess, onSuccess]);
 
     const start = (newAmount: bigint) => {
         setAmount(newAmount);
@@ -75,8 +75,8 @@ export function useApproveAndExecute({
         }
     };
 
-    const isPending = isApproving || isApprovingConfirmed || isExecuting || isExecutingConfirmed;
+    const isPending = isApproving || isApproveConfirmed || isExecuting || isExecuteConfirmed;
     const currentAction = step;
 
-    return { start, isPending, currentAction, error };
+    return { start, isPending, currentAction, error, approveWriteError, executeWriteError };
 }

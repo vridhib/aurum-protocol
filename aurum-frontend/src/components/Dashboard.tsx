@@ -57,7 +57,7 @@ export default function Dashboard() {
 
 
   // ---------- Custom Hooks For Deposit and Burn (Approval & Execution) ----------
-  const { start: startDeposit, isPending: isDepositPendingHook, currentAction: depositAction } = useApproveAndExecute({
+  const { start: startDeposit, isPending: isDepositPendingHook, currentAction: depositAction, approveWriteError: approveDepositWriteError, executeWriteError: executeDepositWriteError } = useApproveAndExecute({
     approveContract: AUR_GOLD_ADDRESS,
     approveAbi: aurumGoldJson.abi as Abi,
     approveFunction: "approve",
@@ -73,7 +73,7 @@ export default function Dashboard() {
     }
   });
 
-  const { start: startBurn, isPending: isBurnPendingHook, currentAction: burnAction } = useApproveAndExecute({
+  const { start: startBurn, isPending: isBurnPendingHook, currentAction: burnAction, approveWriteError: approveBurnWriteError, executeWriteError: executeBurnWriteError } = useApproveAndExecute({
     approveContract: AURUM_AUSD_ADDRESS,
     approveAbi: aurumAUSDJson.abi as Abi,
     approveFunction: "approve",
@@ -130,8 +130,12 @@ export default function Dashboard() {
   useClearErrorOnInputChange(setBurnError, burnAmount);
 
   // Handle post transaction write errors
+  useWriteErrorHandler(approveDepositWriteError, setDepositError);
+  useWriteErrorHandler(executeDepositWriteError, setDepositError);
   useWriteErrorHandler(redeemWriteError, setRedeemError);
   useWriteErrorHandler(mintWriteError, setMintError);
+  useWriteErrorHandler(approveBurnWriteError, setBurnError);
+  useWriteErrorHandler(executeBurnWriteError, setBurnError);
 
 
   // ---------- Effects ----------
