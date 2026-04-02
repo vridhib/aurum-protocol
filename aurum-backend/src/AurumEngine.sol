@@ -98,7 +98,8 @@ contract AurumEngine is ReentrancyGuard {
     event CollateralDeposited(address indexed user, uint256 indexed amount);
     event CollateralRedeemed(address indexed redeemedFrom, address indexed redeemedTo, uint256 amount);
     event Liquidated(address indexed user, address indexed liquidator, uint256 debtToCover, uint256 totalCollateralToRedeem, uint256 protocolShare);
-
+    event MintAUSD(address indexed user, uint256 amount);
+    event BurnAUSD(address indexed user, uint256 amount);
 
     /*----------Modifiers----------*/
     modifier moreThanZero(uint256 amount) {
@@ -168,6 +169,7 @@ contract AurumEngine is ReentrancyGuard {
         
         s_AUSDMinted[msg.sender] += amountAUSDToMint;
         _revertIfHealthFactorIsBroken(msg.sender);
+        emit MintAUSD(msg.sender, amountAUSDToMint);
 
         bool minted = i_ausd.mint(msg.sender, amountAUSDToMint);
         if(!minted) revert AurumEngine__MintFailed();
@@ -235,6 +237,8 @@ contract AurumEngine is ReentrancyGuard {
     // Burns AUSD
     function _burnAUSD(uint256 amountAUSDToBurn, address onBehalfOf, address auFrom) private {
         s_AUSDMinted[onBehalfOf] -= amountAUSDToBurn;
+        emit BurnAUSD(onBehalfOf, amountAUSDToBurn);
+        
         bool success = i_ausd.transferFrom(auFrom, address(this), amountAUSDToBurn);
         if (!success) revert AurumEngine__TransferFailed();
         i_ausd.burn(amountAUSDToBurn);
