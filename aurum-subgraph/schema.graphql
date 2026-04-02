@@ -1,0 +1,25 @@
+type User @entity(immutable: false) {
+  id: ID!                   # user address
+  collateral: BigInt!       # total AUR deposited (wei)
+  debt: BigInt!             # total AUSD minted (wei)
+  lastUpdated: BigInt!      # block timestamp
+  liquidationEvents: [Liquidation!] @derivedFrom(field: "user")
+}
+
+type Protocol @entity(immutable: false) {
+  id: ID!                  
+  totalCollateral: BigInt!
+  totalDebt: BigInt!
+  totalUsers: Int!
+}
+
+type Liquidation @entity(immutable: true) {
+  id: ID!                   # transaction hash + log index
+  user: User!
+  liquidator: Bytes!
+  debtCovered: BigInt!
+  collateralSeized: BigInt!
+  fee: BigInt!
+  block: BigInt!
+  timestamp: BigInt!
+}

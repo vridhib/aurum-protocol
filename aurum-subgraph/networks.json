@@ -1,0 +1,8 @@
+{
+  "sepolia": {
+    "AurumEngine": {
+      "address": "0x57dd5e001cD51689cDA9F38Ca49D841923cD5012",
+      "startBlock": 10423533
+    }
+  }
+}

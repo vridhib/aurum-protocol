@@ -1,0 +1,1610 @@
+{
+    "abi": [
+        {
+            "type": "constructor",
+            "inputs": [
+                {
+                    "name": "tokenAddress",
+                    "type": "address",
+                    "internalType": "address"
+                },
+                {
+                    "name": "priceFeedAddress",
+                    "type": "address",
+                    "internalType": "address"
+                },
+                {
+                    "name": "auAddress",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "burnAUSD",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "depositCollateral",
+            "inputs": [
+                {
+                    "name": "amountCollateral",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "depositCollateralAndMintAUSD",
+            "inputs": [
+                {
+                    "name": "amountCollateral",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                },
+                {
+                    "name": "amountAUSDToMint",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "getAUSD",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "getAUSDMinted",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "getAccountCollateralValueInUsd",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "getAccountInformation",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "tuple",
+                    "internalType": "struct AurumEngine.AccountInfo",
+                    "components": [
+                        {
+                            "name": "healthFactor",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "totalAUSDMinted",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        },
+                        {
+                            "name": "collateralValueInUsd",
+                            "type": "uint256",
+                            "internalType": "uint256"
+                        }
+                    ]
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "getAdditionalFeedPrecision",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getAmountCollateral",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "getCollateralTokenPriceFeed",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "getHealthFactor",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "getLiquidationBonus",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getLiquidationCloseFactor",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getLiquidationPrecision",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getLiquidationThreshold",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getMaxAUSDSupply",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getMinDustThreshold",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getMinHealthFactor",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getPrecision",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getProtocolFee",
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "pure"
+        },
+        {
+            "type": "function",
+            "name": "getTokenAmountFromUsd",
+            "inputs": [
+                {
+                    "name": "usdAmountInWei",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "getUsdValue",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "type": "function",
+            "name": "liquidate",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "internalType": "address"
+                },
+                {
+                    "name": "debtToCover",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "mintAUSD",
+            "inputs": [
+                {
+                    "name": "amountAUSDToMint",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "redeemCollateral",
+            "inputs": [
+                {
+                    "name": "amountCollateral",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "function",
+            "name": "redeemCollateralAndBurnAUSD",
+            "inputs": [
+                {
+                    "name": "amountCollateral",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                },
+                {
+                    "name": "amountAUSDToBurn",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        },
+        {
+            "type": "event",
+            "name": "BurnAUSD",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "indexed": false,
+                    "internalType": "uint256"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "event",
+            "name": "CollateralDeposited",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "indexed": true,
+                    "internalType": "uint256"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "event",
+            "name": "CollateralRedeemed",
+            "inputs": [
+                {
+                    "name": "redeemedFrom",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "redeemedTo",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "indexed": false,
+                    "internalType": "uint256"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "event",
+            "name": "Liquidated",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "liquidator",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "debtToCover",
+                    "type": "uint256",
+                    "indexed": false,
+                    "internalType": "uint256"
+                },
+                {
+                    "name": "totalCollateralToRedeem",
+                    "type": "uint256",
+                    "indexed": false,
+                    "internalType": "uint256"
+                },
+                {
+                    "name": "protocolShare",
+                    "type": "uint256",
+                    "indexed": false,
+                    "internalType": "uint256"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "event",
+            "name": "MintAUSD",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "indexed": false,
+                    "internalType": "uint256"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "error",
+            "name": "AurumEngine__BreaksHealthFactor",
+            "inputs": [
+                {
+                    "name": "healthFactor",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                }
+            ]
+        },
+        {
+            "type": "error",
+            "name": "AurumEngine__ExceedsMaxSupply",
+            "inputs": []
+        },
+        {
+            "type": "error",
+            "name": "AurumEngine__HealthFactorNotImproved",
+            "inputs": []
+        },
+        {
+            "type": "error",
+            "name": "AurumEngine__HealthFactorOkay",
+            "inputs": []
+        },
+        {
+            "type": "error",
+            "name": "AurumEngine__MintFailed",
+            "inputs": []
+        },
+        {
+            "type": "error",
+            "name": "AurumEngine__NeedsMoreThanZero",
+            "inputs": []
+        },
+        {
+            "type": "error",
+            "name": "AurumEngine__TransferFailed",
+            "inputs": []
+        },
+        {
+            "type": "error",
+            "name": "ReentrancyGuardReentrantCall",
+            "inputs": []
+        }
+    ],
+    "bytecode": {
+        "object": "0x60a060405234801561000f575f5ffd5b50604051611e30380380611e30833981810160405281019061003191906101a0565b600161004f61004461011060201b60201c565b61013960201b60201c565b5f0181905550815f5f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508260035f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508073ffffffffffffffffffffffffffffffffffffffff1660808173ffffffffffffffffffffffffffffffffffffffff16815250505050506101f0565b5f7f9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f005f1b905090565b5f819050919050565b5f5ffd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f61016f82610146565b9050919050565b61017f81610165565b8114610189575f5ffd5b50565b5f8151905061019a81610176565b92915050565b5f5f5f606084860312156101b7576101b6610142565b5b5f6101c48682870161018c565b93505060206101d58682870161018c565b92505060406101e68682870161018c565b9150509250925092565b608051611c0c6102245f395f81816107b401528181610c9b01528181610e15015281816110ac01526111820152611c0c5ff3fe608060405234801561000f575f5ffd5b506004361061018c575f3560e01c80638f63d667116100dc578063bad4a01f11610095578063c2efe6ab1161006f578063c2efe6ab14610472578063cf80023e146104a2578063f8a601ac146104be578063fe6bcd7c146104dc5761018c565b8063bad4a01f1461041e578063bcbaf4871461043a578063bd37b775146104565761018c565b80638f63d6671461036c57806393c5103a1461038a5780639670c0bc146103a8578063a5a41031146103c6578063a901e9eb146103e4578063b38f8982146104005761018c565b806359aa9e72116101495780637a87fc12116101235780637a87fc12146102e45780637be564fc146103005780638c1ae6c8146103305780638e3957211461034e5761018c565b806359aa9e72146102785780636c8102c0146102965780637549447e146102b45761018c565b80630510435814610190578063073789e2146101c05780631ab72907146101f0578063241df7c31461020e5780634ae9b8bc1461022a578063545af4fe14610248575b5f5ffd5b6101aa60048036038101906101a59190611634565b61050c565b6040516101b7919061166e565b60405180910390f35b6101da60048036038101906101d59190611634565b6105fe565b6040516101e7919061166e565b60405180910390f35b6101f861060f565b604051610205919061166e565b60405180910390f35b61022860048036038101906102239190611634565b61061e565b005b610232610667565b60405161023f919061166e565b60405180910390f35b610262600480360381019061025d91906116e1565b61066f565b60405161026f919061166e565b60405180910390f35b610280610686565b60405161028d919061166e565b60405180910390f35b61029e61068e565b6040516102ab919061166e565b60405180910390f35b6102ce60048036038101906102c991906116e1565b610696565b6040516102db919061166e565b60405180910390f35b6102fe60048036038101906102f9919061170c565b6106dc565b005b61031a600480360381019061031591906116e1565b6106f2565b6040516103279190611799565b60405180910390f35b61033861073a565b604051610345919061166e565b60405180910390f35b610356610749565b604051610363919061166e565b60405180910390f35b610374610751565b604051610381919061166e565b60405180910390f35b61039261075d565b60405161039f91906117c1565b60405180910390f35b6103b0610784565b6040516103bd919061166e565b60405180910390f35b6103ce610793565b6040516103db919061166e565b60405180910390f35b6103fe60048036038101906103f9919061170c565b61079b565b005b6104086107b1565b60405161041591906117c1565b60405180910390f35b61043860048036038101906104339190611634565b6107d8565b005b610454600480360381019061044f91906117da565b610996565b005b610470600480360381019061046b9190611634565b610ba3565b005b61048c600480360381019061048791906116e1565b610c05565b604051610499919061166e565b60405180910390f35b6104bc60048036038101906104b79190611634565b610c4b565b005b6104c6610ef4565b6040516104d3919061166e565b60405180910390f35b6104f660048036038101906104f191906116e1565b610f05565b604051610503919061166e565b60405180910390f35b5f5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1690505f8173ffffffffffffffffffffffffffffffffffffffff1673__$1f06ac8d622ce42796cee98ba1044ce165$__632ba1c96a90916040518263ffffffff1660e01b81526004016105819190611873565b60a060405180830381865af415801561059c573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906105c09190611912565b5050509150506402540be400816105d791906119b6565b670de0b6b3a7640000856105eb91906119b6565b6105f59190611a24565b92505050919050565b5f61060882610f16565b9050919050565b5f670de0b6b3a7640000905090565b805f8103610658576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b610663823333611008565b5050565b5f6050905090565b5f5f61067a8361120c565b91505080915050919050565b5f6005905090565b5f6064905090565b5f60025f8373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f20549050919050565b6106e5826107d8565b6106ee81610c4b565b5050565b6106fa6115df565b5f6107048361129b565b90505f5f6107118561120c565b915091506040518060600160405280848152602001838152602001828152509350505050919050565b5f670de0b6b3a7640000905090565b5f6032905090565b5f6402540be400905090565b5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b5f670de0b6b3a7640000905090565b5f6005905090565b6107a48161061e565b6107ad82610ba3565b5050565b5f7f0000000000000000000000000000000000000000000000000000000000000000905090565b805f8103610812576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61081a611323565b5f60035f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166323b872dd3330866040518463ffffffff1660e01b815260040161087993929190611a54565b6020604051808303815f875af1158015610895573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906108b99190611abe565b9050806108f2576040517ff4643eea00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8260015f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205f82825461093e9190611ae9565b92505081905550823373ffffffffffffffffffffffffffffffffffffffff167fd7243f6f8212d5188fd054141cf6ea89cfc0d91facb8c3afe2f88a135848014260405160405180910390a350610992611345565b5050565b805f81036109d0576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6109d8611323565b5f6109e28461129b565b9050670de0b6b3a76400008110610a25576040517fe33e814c00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5f60025f8673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205490505f6064603283610a7691906119b6565b610a809190611a24565b905080851115610a8e578094505b670de0b6b3a7640000811015610aa2578194505b5f610aac8661050c565b90505f6064600583610abe91906119b6565b610ac89190611a24565b90505f6064600584610ada91906119b6565b610ae49190611a24565b90505f8184610af39190611ae9565b90505f8382610b029190611ae9565b9050610b0f8b338461135f565b610b1a8b308661135f565b610b258a8c33611008565b3373ffffffffffffffffffffffffffffffffffffffff168b73ffffffffffffffffffffffffffffffffffffffff167ffcbc974bf3a532baf2bb229db3c37fd58299b62d2d1db6a855dac5b693bb6ff38c8488604051610b8693929190611b1c565b60405180910390a35050505050505050610b9e611345565b505050565b805f8103610bdd576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b610be5611323565b610bf033338461135f565b610bf9336114f3565b610c01611345565b5050565b5f60015f8373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f20549050919050565b805f8103610c85576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b610c8d611323565b69d3c21bcecceda1000000827f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166318160ddd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610d02573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610d269190611b51565b610d309190611ae9565b1115610d68576040517fea5b569700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8160025f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205f828254610db49190611ae9565b92505081905550610dc4336114f3565b3373ffffffffffffffffffffffffffffffffffffffff167ffc782676bdec655891c2d4c362a405ba908bf6dfde5586faaf2da6284c4f1b1983604051610e0a919061166e565b60405180910390a25f7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166340c10f1933856040518363ffffffff1660e01b8152600401610e6e929190611b7c565b6020604051808303815f875af1158015610e8a573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610eae9190611abe565b905080610ee7576040517fc071c41700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b50610ef0611345565b5050565b5f69d3c21bcecceda1000000905090565b5f610f0f8261129b565b9050919050565b5f5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1690505f8173ffffffffffffffffffffffffffffffffffffffff1673__$1f06ac8d622ce42796cee98ba1044ce165$__632ba1c96a90916040518263ffffffff1660e01b8152600401610f8b9190611873565b60a060405180830381865af4158015610fa6573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610fca9190611912565b505050915050670de0b6b3a7640000846402540be40083610feb91906119b6565b610ff591906119b6565b610fff9190611a24565b92505050919050565b8260025f8473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205f8282546110549190611ba3565b925050819055508173ffffffffffffffffffffffffffffffffffffffff167fa520bf83305c37bbf66c79d7104880f7b44bd3acc8d7c13e19587787acc8ed60846040516110a1919061166e565b60405180910390a25f7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166323b872dd8330876040518463ffffffff1660e01b815260040161110793929190611a54565b6020604051808303815f875af1158015611123573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906111479190611abe565b905080611180576040517ff4643eea00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166342966c68856040518263ffffffff1660e01b81526004016111d9919061166e565b5f604051808303815f87803b1580156111f0575f5ffd5b505af1158015611202573d5f5f3e3d5ffd5b5050505050505050565b5f5f60025f8473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f2054915061129460015f8573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f2054610f16565b9050915091565b5f5f5f6112a78461120c565b915091505f60646050836112bb91906119b6565b6112c59190611a24565b90505f83036112f9577fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff935050505061131e565b82670de0b6b3a76400008261130e91906119b6565b6113189190611a24565b93505050505b919050565b61132b611550565b600261133d611338611591565b6115ba565b5f0181905550565b6001611357611352611591565b6115ba565b5f0181905550565b8060015f8573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205f8282546113ab9190611ba3565b925050819055508173ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff167fa5f9505801b85736b93411e5083d5a6003f3add45d82754efd49b4cca6b8e0078360405161140f919061166e565b60405180910390a35f60035f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663a9059cbb84846040518363ffffffff1660e01b8152600401611474929190611b7c565b6020604051808303815f875af1158015611490573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906114b49190611abe565b9050806114ed576040517ff4643eea00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b50505050565b5f6114fd8261129b565b9050670de0b6b3a764000081101561154c57806040517f1bfc073a000000000000000000000000000000000000000000000000000000008152600401611543919061166e565b60405180910390fd5b5050565b6115586115c3565b1561158f576040517f3ee5aeb500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b565b5f7f9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f005f1b905090565b5f819050919050565b5f60026115d66115d1611591565b6115ba565b5f015414905090565b60405180606001604052805f81526020015f81526020015f81525090565b5f5ffd5b5f819050919050565b61161381611601565b811461161d575f5ffd5b50565b5f8135905061162e8161160a565b92915050565b5f60208284031215611649576116486115fd565b5b5f61165684828501611620565b91505092915050565b61166881611601565b82525050565b5f6020820190506116815f83018461165f565b92915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6116b082611687565b9050919050565b6116c0816116a6565b81146116ca575f5ffd5b50565b5f813590506116db816116b7565b92915050565b5f602082840312156116f6576116f56115fd565b5b5f611703848285016116cd565b91505092915050565b5f5f60408385031215611722576117216115fd565b5b5f61172f85828601611620565b925050602061174085828601611620565b9150509250929050565b61175381611601565b82525050565b606082015f82015161176d5f85018261174a565b506020820151611780602085018261174a565b506040820151611793604085018261174a565b50505050565b5f6060820190506117ac5f830184611759565b92915050565b6117bb816116a6565b82525050565b5f6020820190506117d45f8301846117b2565b92915050565b5f5f604083850312156117f0576117ef6115fd565b5b5f6117fd858286016116cd565b925050602061180e85828601611620565b9150509250929050565b5f819050919050565b5f61183b61183661183184611687565b611818565b611687565b9050919050565b5f61184c82611821565b9050919050565b5f61185d82611842565b9050919050565b61186d81611853565b82525050565b5f6020820190506118865f830184611864565b92915050565b5f69ffffffffffffffffffff82169050919050565b6118aa8161188c565b81146118b4575f5ffd5b50565b5f815190506118c5816118a1565b92915050565b5f819050919050565b6118dd816118cb565b81146118e7575f5ffd5b50565b5f815190506118f8816118d4565b92915050565b5f8151905061190c8161160a565b92915050565b5f5f5f5f5f60a0868803121561192b5761192a6115fd565b5b5f611938888289016118b7565b9550506020611949888289016118ea565b945050604061195a888289016118fe565b935050606061196b888289016118fe565b925050608061197c888289016118b7565b9150509295509295909350565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f6119c082611601565b91506119cb83611601565b92508282026119d981611601565b915082820484148315176119f0576119ef611989565b5b5092915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601260045260245ffd5b5f611a2e82611601565b9150611a3983611601565b925082611a4957611a486119f7565b5b828204905092915050565b5f606082019050611a675f8301866117b2565b611a7460208301856117b2565b611a81604083018461165f565b949350505050565b5f8115159050919050565b611a9d81611a89565b8114611aa7575f5ffd5b50565b5f81519050611ab881611a94565b92915050565b5f60208284031215611ad357611ad26115fd565b5b5f611ae084828501611aaa565b91505092915050565b5f611af382611601565b9150611afe83611601565b9250828201905080821115611b1657611b15611989565b5b92915050565b5f606082019050611b2f5f83018661165f565b611b3c602083018561165f565b611b49604083018461165f565b949350505050565b5f60208284031215611b6657611b656115fd565b5b5f611b73848285016118fe565b91505092915050565b5f604082019050611b8f5f8301856117b2565b611b9c602083018461165f565b9392505050565b5f611bad82611601565b9150611bb883611601565b9250828203905081811115611bd057611bcf611989565b5b9291505056fea26469706673582212209d502e9f93e750121f08ba1efaf7d7463bc75a75f020009237e6066638632ed664736f6c63430008210033",
+        "sourceMap": "1046:17261:35:-:0;;;5082:206;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;2365:1:29;2539:46;:29;:27;;;:29;;:::i;:::-;:44;;;:46;;:::i;:::-;:52;;:66;;;;5185:16:35;5171:11;;:30;;;;;;;;;;;;;;;;;;5231:12;5211:17;;:32;;;;;;;;;;;;;;;;;;5271:9;5253:28;;;;;;;;;;5082:206;;;1046:17261;;4636:127:29;4706:7;1505:66;4732:24;;4725:31;;4636:127;:::o;2679:163:30:-;2740:21;2822:4;2812:14;;2679:163;;;:::o;88:117:48:-;197:1;194;187:12;334:126;371:7;411:42;404:5;400:54;389:65;;334:126;;;:::o;466:96::-;503:7;532:24;550:5;532:24;:::i;:::-;521:35;;466:96;;;:::o;568:122::-;641:24;659:5;641:24;:::i;:::-;634:5;631:35;621:63;;680:1;677;670:12;621:63;568:122;:::o;696:143::-;753:5;784:6;778:13;769:22;;800:33;827:5;800:33;:::i;:::-;696:143;;;;:::o;845:663::-;933:6;941;949;998:2;986:9;977:7;973:23;969:32;966:119;;;1004:79;;:::i;:::-;966:119;1124:1;1149:64;1205:7;1196:6;1185:9;1181:22;1149:64;:::i;:::-;1139:74;;1095:128;1262:2;1288:64;1344:7;1335:6;1324:9;1320:22;1288:64;:::i;:::-;1278:74;;1233:129;1401:2;1427:64;1483:7;1474:6;1463:9;1459:22;1427:64;:::i;:::-;1417:74;;1372:129;845:663;;;;;:::o;1046:17261:35:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",
+        "linkReferences": {
+            "src/libraries/OracleLib.sol": {
+                "OracleLib": [
+                    {
+                        "start": 1903,
+                        "length": 20
+                    },
+                    {
+                        "start": 4473,
+                        "length": 20
+                    }
+                ]
+            }
+        }
+    },
+    "deployedBytecode": {
+        "object": "0x608060405234801561000f575f5ffd5b506004361061018c575f3560e01c80638f63d667116100dc578063bad4a01f11610095578063c2efe6ab1161006f578063c2efe6ab14610472578063cf80023e146104a2578063f8a601ac146104be578063fe6bcd7c146104dc5761018c565b8063bad4a01f1461041e578063bcbaf4871461043a578063bd37b775146104565761018c565b80638f63d6671461036c57806393c5103a1461038a5780639670c0bc146103a8578063a5a41031146103c6578063a901e9eb146103e4578063b38f8982146104005761018c565b806359aa9e72116101495780637a87fc12116101235780637a87fc12146102e45780637be564fc146103005780638c1ae6c8146103305780638e3957211461034e5761018c565b806359aa9e72146102785780636c8102c0146102965780637549447e146102b45761018c565b80630510435814610190578063073789e2146101c05780631ab72907146101f0578063241df7c31461020e5780634ae9b8bc1461022a578063545af4fe14610248575b5f5ffd5b6101aa60048036038101906101a59190611634565b61050c565b6040516101b7919061166e565b60405180910390f35b6101da60048036038101906101d59190611634565b6105fe565b6040516101e7919061166e565b60405180910390f35b6101f861060f565b604051610205919061166e565b60405180910390f35b61022860048036038101906102239190611634565b61061e565b005b610232610667565b60405161023f919061166e565b60405180910390f35b610262600480360381019061025d91906116e1565b61066f565b60405161026f919061166e565b60405180910390f35b610280610686565b60405161028d919061166e565b60405180910390f35b61029e61068e565b6040516102ab919061166e565b60405180910390f35b6102ce60048036038101906102c991906116e1565b610696565b6040516102db919061166e565b60405180910390f35b6102fe60048036038101906102f9919061170c565b6106dc565b005b61031a600480360381019061031591906116e1565b6106f2565b6040516103279190611799565b60405180910390f35b61033861073a565b604051610345919061166e565b60405180910390f35b610356610749565b604051610363919061166e565b60405180910390f35b610374610751565b604051610381919061166e565b60405180910390f35b61039261075d565b60405161039f91906117c1565b60405180910390f35b6103b0610784565b6040516103bd919061166e565b60405180910390f35b6103ce610793565b6040516103db919061166e565b60405180910390f35b6103fe60048036038101906103f9919061170c565b61079b565b005b6104086107b1565b60405161041591906117c1565b60405180910390f35b61043860048036038101906104339190611634565b6107d8565b005b610454600480360381019061044f91906117da565b610996565b005b610470600480360381019061046b9190611634565b610ba3565b005b61048c600480360381019061048791906116e1565b610c05565b604051610499919061166e565b60405180910390f35b6104bc60048036038101906104b79190611634565b610c4b565b005b6104c6610ef4565b6040516104d3919061166e565b60405180910390f35b6104f660048036038101906104f191906116e1565b610f05565b604051610503919061166e565b60405180910390f35b5f5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1690505f8173ffffffffffffffffffffffffffffffffffffffff1673__$1f06ac8d622ce42796cee98ba1044ce165$__632ba1c96a90916040518263ffffffff1660e01b81526004016105819190611873565b60a060405180830381865af415801561059c573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906105c09190611912565b5050509150506402540be400816105d791906119b6565b670de0b6b3a7640000856105eb91906119b6565b6105f59190611a24565b92505050919050565b5f61060882610f16565b9050919050565b5f670de0b6b3a7640000905090565b805f8103610658576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b610663823333611008565b5050565b5f6050905090565b5f5f61067a8361120c565b91505080915050919050565b5f6005905090565b5f6064905090565b5f60025f8373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f20549050919050565b6106e5826107d8565b6106ee81610c4b565b5050565b6106fa6115df565b5f6107048361129b565b90505f5f6107118561120c565b915091506040518060600160405280848152602001838152602001828152509350505050919050565b5f670de0b6b3a7640000905090565b5f6032905090565b5f6402540be400905090565b5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b5f670de0b6b3a7640000905090565b5f6005905090565b6107a48161061e565b6107ad82610ba3565b5050565b5f7f0000000000000000000000000000000000000000000000000000000000000000905090565b805f8103610812576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61081a611323565b5f60035f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166323b872dd3330866040518463ffffffff1660e01b815260040161087993929190611a54565b6020604051808303815f875af1158015610895573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906108b99190611abe565b9050806108f2576040517ff4643eea00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8260015f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205f82825461093e9190611ae9565b92505081905550823373ffffffffffffffffffffffffffffffffffffffff167fd7243f6f8212d5188fd054141cf6ea89cfc0d91facb8c3afe2f88a135848014260405160405180910390a350610992611345565b5050565b805f81036109d0576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6109d8611323565b5f6109e28461129b565b9050670de0b6b3a76400008110610a25576040517fe33e814c00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5f60025f8673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205490505f6064603283610a7691906119b6565b610a809190611a24565b905080851115610a8e578094505b670de0b6b3a7640000811015610aa2578194505b5f610aac8661050c565b90505f6064600583610abe91906119b6565b610ac89190611a24565b90505f6064600584610ada91906119b6565b610ae49190611a24565b90505f8184610af39190611ae9565b90505f8382610b029190611ae9565b9050610b0f8b338461135f565b610b1a8b308661135f565b610b258a8c33611008565b3373ffffffffffffffffffffffffffffffffffffffff168b73ffffffffffffffffffffffffffffffffffffffff167ffcbc974bf3a532baf2bb229db3c37fd58299b62d2d1db6a855dac5b693bb6ff38c8488604051610b8693929190611b1c565b60405180910390a35050505050505050610b9e611345565b505050565b805f8103610bdd576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b610be5611323565b610bf033338461135f565b610bf9336114f3565b610c01611345565b5050565b5f60015f8373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f20549050919050565b805f8103610c85576040517f1afe6f9b00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b610c8d611323565b69d3c21bcecceda1000000827f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166318160ddd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610d02573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610d269190611b51565b610d309190611ae9565b1115610d68576040517fea5b569700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8160025f3373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205f828254610db49190611ae9565b92505081905550610dc4336114f3565b3373ffffffffffffffffffffffffffffffffffffffff167ffc782676bdec655891c2d4c362a405ba908bf6dfde5586faaf2da6284c4f1b1983604051610e0a919061166e565b60405180910390a25f7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166340c10f1933856040518363ffffffff1660e01b8152600401610e6e929190611b7c565b6020604051808303815f875af1158015610e8a573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610eae9190611abe565b905080610ee7576040517fc071c41700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b50610ef0611345565b5050565b5f69d3c21bcecceda1000000905090565b5f610f0f8261129b565b9050919050565b5f5f5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1690505f8173ffffffffffffffffffffffffffffffffffffffff1673__$1f06ac8d622ce42796cee98ba1044ce165$__632ba1c96a90916040518263ffffffff1660e01b8152600401610f8b9190611873565b60a060405180830381865af4158015610fa6573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610fca9190611912565b505050915050670de0b6b3a7640000846402540be40083610feb91906119b6565b610ff591906119b6565b610fff9190611a24565b92505050919050565b8260025f8473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205f8282546110549190611ba3565b925050819055508173ffffffffffffffffffffffffffffffffffffffff167fa520bf83305c37bbf66c79d7104880f7b44bd3acc8d7c13e19587787acc8ed60846040516110a1919061166e565b60405180910390a25f7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166323b872dd8330876040518463ffffffff1660e01b815260040161110793929190611a54565b6020604051808303815f875af1158015611123573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906111479190611abe565b905080611180576040517ff4643eea00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166342966c68856040518263ffffffff1660e01b81526004016111d9919061166e565b5f604051808303815f87803b1580156111f0575f5ffd5b505af1158015611202573d5f5f3e3d5ffd5b5050505050505050565b5f5f60025f8473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f2054915061129460015f8573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f2054610f16565b9050915091565b5f5f5f6112a78461120c565b915091505f60646050836112bb91906119b6565b6112c59190611a24565b90505f83036112f9577fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff935050505061131e565b82670de0b6b3a76400008261130e91906119b6565b6113189190611a24565b93505050505b919050565b61132b611550565b600261133d611338611591565b6115ba565b5f0181905550565b6001611357611352611591565b6115ba565b5f0181905550565b8060015f8573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020015f205f8282546113ab9190611ba3565b925050819055508173ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff167fa5f9505801b85736b93411e5083d5a6003f3add45d82754efd49b4cca6b8e0078360405161140f919061166e565b60405180910390a35f60035f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663a9059cbb84846040518363ffffffff1660e01b8152600401611474929190611b7c565b6020604051808303815f875af1158015611490573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906114b49190611abe565b9050806114ed576040517ff4643eea00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b50505050565b5f6114fd8261129b565b9050670de0b6b3a764000081101561154c57806040517f1bfc073a000000000000000000000000000000000000000000000000000000008152600401611543919061166e565b60405180910390fd5b5050565b6115586115c3565b1561158f576040517f3ee5aeb500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b565b5f7f9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f005f1b905090565b5f819050919050565b5f60026115d66115d1611591565b6115ba565b5f015414905090565b60405180606001604052805f81526020015f81526020015f81525090565b5f5ffd5b5f819050919050565b61161381611601565b811461161d575f5ffd5b50565b5f8135905061162e8161160a565b92915050565b5f60208284031215611649576116486115fd565b5b5f61165684828501611620565b91505092915050565b61166881611601565b82525050565b5f6020820190506116815f83018461165f565b92915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6116b082611687565b9050919050565b6116c0816116a6565b81146116ca575f5ffd5b50565b5f813590506116db816116b7565b92915050565b5f602082840312156116f6576116f56115fd565b5b5f611703848285016116cd565b91505092915050565b5f5f60408385031215611722576117216115fd565b5b5f61172f85828601611620565b925050602061174085828601611620565b9150509250929050565b61175381611601565b82525050565b606082015f82015161176d5f85018261174a565b506020820151611780602085018261174a565b506040820151611793604085018261174a565b50505050565b5f6060820190506117ac5f830184611759565b92915050565b6117bb816116a6565b82525050565b5f6020820190506117d45f8301846117b2565b92915050565b5f5f604083850312156117f0576117ef6115fd565b5b5f6117fd858286016116cd565b925050602061180e85828601611620565b9150509250929050565b5f819050919050565b5f61183b61183661183184611687565b611818565b611687565b9050919050565b5f61184c82611821565b9050919050565b5f61185d82611842565b9050919050565b61186d81611853565b82525050565b5f6020820190506118865f830184611864565b92915050565b5f69ffffffffffffffffffff82169050919050565b6118aa8161188c565b81146118b4575f5ffd5b50565b5f815190506118c5816118a1565b92915050565b5f819050919050565b6118dd816118cb565b81146118e7575f5ffd5b50565b5f815190506118f8816118d4565b92915050565b5f8151905061190c8161160a565b92915050565b5f5f5f5f5f60a0868803121561192b5761192a6115fd565b5b5f611938888289016118b7565b9550506020611949888289016118ea565b945050604061195a888289016118fe565b935050606061196b888289016118fe565b925050608061197c888289016118b7565b9150509295509295909350565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f6119c082611601565b91506119cb83611601565b92508282026119d981611601565b915082820484148315176119f0576119ef611989565b5b5092915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601260045260245ffd5b5f611a2e82611601565b9150611a3983611601565b925082611a4957611a486119f7565b5b828204905092915050565b5f606082019050611a675f8301866117b2565b611a7460208301856117b2565b611a81604083018461165f565b949350505050565b5f8115159050919050565b611a9d81611a89565b8114611aa7575f5ffd5b50565b5f81519050611ab881611a94565b92915050565b5f60208284031215611ad357611ad26115fd565b5b5f611ae084828501611aaa565b91505092915050565b5f611af382611601565b9150611afe83611601565b9250828201905080821115611b1657611b15611989565b5b92915050565b5f606082019050611b2f5f83018661165f565b611b3c602083018561165f565b611b49604083018461165f565b949350505050565b5f60208284031215611b6657611b656115fd565b5b5f611b73848285016118fe565b91505092915050565b5f604082019050611b8f5f8301856117b2565b611b9c602083018461165f565b9392505050565b5f611bad82611601565b9150611bb883611601565b9250828203905081811115611bd057611bcf611989565b5b9291505056fea26469706673582212209d502e9f93e750121f08ba1efaf7d7463bc75a75f020009237e6066638632ed664736f6c63430008210033",
+        "sourceMap": "1046:17261:35:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;13677:330;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;14678:110;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;17819:105;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;7973:120;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;16834:112;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;14937:203;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;17041:104;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;17229:112;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;15288:111;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;5538:187;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;15587:426;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;17409:103;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;18011:117;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;16623:119;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;16075:106;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;16402:89;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;17607:94;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;5965:185;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;16240:90;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;6320:406;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;8853:1666;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;6916:230;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;14162:126;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;7353:500;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;18206:99;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;14421:114;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;13677:330;13752:7;13771:31;13827:11;;;;;;;;;;;13771:68;;13852:12;13871:9;:35;;;;;;:37;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;13849:59;;;;;;1968:4;13965:5;13957:42;;;;:::i;:::-;2085:4;13926:14;:26;;;;:::i;:::-;13925:75;;;;:::i;:::-;13918:82;;;;13677:330;;;:::o;14678:110::-;14738:7;14764:17;14774:6;14764:9;:17::i;:::-;14757:24;;14678:110;;;:::o;17819:105::-;17873:7;2823:4;17892:25;;17819:105;:::o;7973:120::-;8027:6;4977:1;4967:6;:11;4963:56;;4987:32;;;;;;;;;;;;;;4963:56;8045:41:::1;8055:6;8063:10;8075;8045:9;:41::i;:::-;7973:120:::0;;:::o;16834:112::-;16892:7;2347:2;16911:28;;16834:112;:::o;14937:203::-;15014:7;15036:28;15068;15091:4;15068:22;:28::i;:::-;15033:63;;;15113:20;15106:27;;;14937:203;;;:::o;17041:104::-;17095:7;3058:1;17114:24;;17041:104;:::o;17229:112::-;17287:7;2481:3;17306:28;;17229:112;:::o;15288:111::-;15348:7;15374:12;:18;15387:4;15374:18;;;;;;;;;;;;;;;;15367:25;;15288:111;;;:::o;5538:187::-;5647:35;5665:16;5647:17;:35::i;:::-;5692:26;5701:16;5692:8;:26::i;:::-;5538:187;;:::o;15587:426::-;15655:18;;:::i;:::-;15685:20;15708:19;15722:4;15708:13;:19::i;:::-;15685:42;;15738:23;15763:28;15795;15818:4;15795:22;:28::i;:::-;15737:86;;;;15841:165;;;;;;;;15881:12;15841:165;;;;15924:15;15841:165;;;;15975:20;15841:165;;;15834:172;;;;;15587:426;;;:::o;17409:103::-;17462:7;2645:4;17481:24;;17409:103;:::o;18011:117::-;18071:7;3592:2;18090:31;;18011:117;:::o;16623:119::-;16684:7;1968:4;16703:32;;16623:119;:::o;16075:106::-;16137:7;16163:11;;;;;;;;;;;16156:18;;16075:106;:::o;16402:89::-;16449:7;2085:4;16468:16;;16402:89;:::o;17607:94::-;17656:7;3225:1;17675:19;;17607:94;:::o;5965:185::-;6073:26;6082:16;6073:8;:26::i;:::-;6109:34;6126:16;6109;:34::i;:::-;5965:185;;:::o;16240:90::-;16282:7;16316:6;16301:22;;16240:90;:::o;6320:406::-;6393:16;4977:1;4967:6;:11;4963:56;;4987:32;;;;;;;;;;;;;;4963:56;3023:21:29::1;:19;:21::i;:::-;6434:12:35::2;6456:17;;;;;;;;;;;6449:38;;;6488:10;6508:4;6515:16;6449:83;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;6434:98;;6547:7;6542:50;;6563:29;;;;;;;;;;;;;;6542:50;6639:16;6602:21;:33;6624:10;6602:33;;;;;;;;;;;;;;;;:53;;;;;;;:::i;:::-;;;;;;;;6702:16;6690:10;6670:49;;;;;;;;;;;;6424:302;3065:20:29::1;:18;:20::i;:::-;6320:406:35::0;;:::o;8853:1666::-;8929:11;4977:1;4967:6;:11;4963:56;;4987:32;;;;;;;;;;;;;;4963:56;3023:21:29::1;:19;:21::i;:::-;9004:32:35::2;9039:19;9053:4;9039:13;:19::i;:::-;9004:54;;2645:4;9072:24;:45;9068:89;;9126:31;;;;;;;;;;;;;;9068:89;9235:19;9257:12;:18;9270:4;9257:18;;;;;;;;;;;;;;;;9235:40;;9285:22;9353:3;3592:2;9311:11;:38;;;;:::i;:::-;9310:46;;;;:::i;:::-;9285:71;;9384:14;9370:11;:28;9366:87;;;9428:14;9414:28;;9366:87;2823:4;9555:14;:35;9551:103;;;9620:11;9606:25;;9551:103;9664:34;9701;9723:11;9701:21;:34::i;:::-;9664:71;;9805:21;2481:3;3225:1;9830:26;:41;;;;:::i;:::-;9829:67;;;;:::i;:::-;9805:91;;9906:23;2481:3;3058:1;9933:26;:46;;;;:::i;:::-;9932:72;;;;:::i;:::-;9906:98;;10014:23;10069:15;10040:26;:44;;;;:::i;:::-;10014:70;;10095:31;10147:13;10129:15;:31;;;;:::i;:::-;10095:65;;10228:52;10246:4;10252:10;10264:15;10228:17;:52::i;:::-;10290:53;10308:4;10322;10329:13;10290:17;:53::i;:::-;10375:40;10385:11;10398:4;10404:10;10375:9;:40::i;:::-;10448:10;10431:81;;10442:4;10431:81;;;10460:11;10473:23;10498:13;10431:81;;;;;;;;:::i;:::-;;;;;;;;8955:1564;;;;;;;;3065:20:29::1;:18;:20::i;:::-;8853:1666:35::0;;;:::o;6916:230::-;6988:16;4977:1;4967:6;:11;4963:56;;4987:32;;;;;;;;;;;;;;4963:56;3023:21:29::1;:19;:21::i;:::-;7029:59:35::2;7047:10;7059;7071:16;7029:17;:59::i;:::-;7098:41;7128:10;7098:29;:41::i;:::-;3065:20:29::1;:18;:20::i;:::-;6916:230:35::0;;:::o;14162:126::-;14228:7;14254:21;:27;14276:4;14254:27;;;;;;;;;;;;;;;;14247:34;;14162:126;;;:::o;7353:500::-;7417:16;4977:1;4967:6;:11;4963:56;;4987:32;;;;;;;;;;;;;;4963:56;3023:21:29::1;:19;:21::i;:::-;3413:14:35::2;7485:16;7462:6;:18;;;:20;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;:39;;;;:::i;:::-;:57;7458:101;;;7528:31;;;;;;;;;;;;;;7458:101;7606:16;7578:12;:24;7591:10;7578:24;;;;;;;;;;;;;;;;:44;;;;;;;:::i;:::-;;;;;;;;7632:41;7662:10;7632:29;:41::i;:::-;7697:10;7688:38;;;7709:16;7688:38;;;;;;:::i;:::-;;;;;;;;7737:11;7751:6;:11;;;7763:10;7775:16;7751:41;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;7737:55;;7806:6;7802:44;;7821:25;;;;;;;;;;;;;;7802:44;7448:405;3065:20:29::1;:18;:20::i;:::-;7353:500:35::0;;:::o;18206:99::-;18257:7;3413:14;18276:22;;18206:99;:::o;14421:114::-;14483:7;14509:19;14523:4;14509:13;:19::i;:::-;14502:26;;14421:114;;;:::o;12032:306::-;12090:7;12109:31;12165:11;;;;;;;;;;;12109:68;;12190:12;12209:9;:35;;;;;;:37;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;12187:59;;;;;;2085:4;12311:6;1968:4;12273:5;12265:42;;;;:::i;:::-;12264:53;;;;:::i;:::-;12263:67;;;;:::i;:::-;12256:74;;;;12032:306;;;:::o;10853:396::-;10980:16;10952:12;:24;10965:10;10952:24;;;;;;;;;;;;;;;;:44;;;;;;;:::i;:::-;;;;;;;;11020:10;11011:38;;;11032:16;11011:38;;;;;;:::i;:::-;;;;;;;;11068:12;11083:6;:19;;;11103:6;11119:4;11126:16;11083:60;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;11068:75;;11158:7;11153:50;;11174:29;;;;;;;;;;;;;;11153:50;11213:6;:11;;;11225:16;11213:29;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;10942:307;10853:396;;;:::o;11717:246::-;11784:23;11809:28;11867:12;:18;11880:4;11867:18;;;;;;;;;;;;;;;;11849:36;;11918:38;11928:21;:27;11950:4;11928:27;;;;;;;;;;;;;;;;11918:9;:38::i;:::-;11895:61;;11717:246;;;:::o;12477:432::-;12535:7;12555:23;12580:28;12612;12635:4;12612:22;:28::i;:::-;12554:86;;;;12650:38;2481:3;2347:2;12692:20;:44;;;;:::i;:::-;12691:70;;;;:::i;:::-;12650:111;;12795:1;12776:15;:20;12772:50;;12805:17;12798:24;;;;;;;12772:50;12887:15;2085:4;12841:30;:42;;;;:::i;:::-;12840:62;;;;:::i;:::-;12833:69;;;;;12477:432;;;;:::o;3749:292:29:-;3872:25;:23;:25::i;:::-;2407:1;3972:46;:29;:27;:29::i;:::-;:44;:46::i;:::-;:52;;:62;;;;3749:292::o;4047:253::-;2365:1;4227:46;:29;:27;:29::i;:::-;:44;:46::i;:::-;:52;;:66;;;;4047:253::o;11282:353:35:-;11410:16;11379:21;:27;11401:4;11379:27;;;;;;;;;;;;;;;;:47;;;;;;;:::i;:::-;;;;;;;;11466:2;11441:46;;11460:4;11441:46;;;11470:16;11441:46;;;;;;:::i;:::-;;;;;;;;11497:12;11519:17;;;;;;;;;;;11512:34;;;11547:2;11551:16;11512:56;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;11497:71;;11583:7;11578:50;;11599:29;;;;;;;;;;;;;;11578:50;11369:266;11282:353;;;:::o;12991:238::-;13068:24;13095:19;13109:4;13095:13;:19::i;:::-;13068:46;;2645:4;13128:16;:36;13124:98;;;13205:16;13173:49;;;;;;;;;;;:::i;:::-;;;;;;;;13124:98;13058:171;12991:238;:::o;3586:157:29:-;3648:25;:23;:25::i;:::-;3644:93;;;3696:30;;;;;;;;;;;;;;3644:93;3586:157::o;4636:127::-;4706:7;1505:66;4732:24;;4725:31;;4636:127;:::o;2679:163:30:-;2740:21;2822:4;2812:14;;2679:163;;;:::o;4479:151:29:-;4537:4;2407:1;4560:46;:29;:27;:29::i;:::-;:44;:46::i;:::-;:52;;;:63;4553:70;;4479:151;:::o;-1:-1:-1:-;;;;;;;;;;;;;;;;;;;;;;;;:::o;88:117:48:-;197:1;194;187:12;334:77;371:7;400:5;389:16;;334:77;;;:::o;417:122::-;490:24;508:5;490:24;:::i;:::-;483:5;480:35;470:63;;529:1;526;519:12;470:63;417:122;:::o;545:139::-;591:5;629:6;616:20;607:29;;645:33;672:5;645:33;:::i;:::-;545:139;;;;:::o;690:329::-;749:6;798:2;786:9;777:7;773:23;769:32;766:119;;;804:79;;:::i;:::-;766:119;924:1;949:53;994:7;985:6;974:9;970:22;949:53;:::i;:::-;939:63;;895:117;690:329;;;;:::o;1025:118::-;1112:24;1130:5;1112:24;:::i;:::-;1107:3;1100:37;1025:118;;:::o;1149:222::-;1242:4;1280:2;1269:9;1265:18;1257:26;;1293:71;1361:1;1350:9;1346:17;1337:6;1293:71;:::i;:::-;1149:222;;;;:::o;1377:126::-;1414:7;1454:42;1447:5;1443:54;1432:65;;1377:126;;;:::o;1509:96::-;1546:7;1575:24;1593:5;1575:24;:::i;:::-;1564:35;;1509:96;;;:::o;1611:122::-;1684:24;1702:5;1684:24;:::i;:::-;1677:5;1674:35;1664:63;;1723:1;1720;1713:12;1664:63;1611:122;:::o;1739:139::-;1785:5;1823:6;1810:20;1801:29;;1839:33;1866:5;1839:33;:::i;:::-;1739:139;;;;:::o;1884:329::-;1943:6;1992:2;1980:9;1971:7;1967:23;1963:32;1960:119;;;1998:79;;:::i;:::-;1960:119;2118:1;2143:53;2188:7;2179:6;2168:9;2164:22;2143:53;:::i;:::-;2133:63;;2089:117;1884:329;;;;:::o;2219:474::-;2287:6;2295;2344:2;2332:9;2323:7;2319:23;2315:32;2312:119;;;2350:79;;:::i;:::-;2312:119;2470:1;2495:53;2540:7;2531:6;2520:9;2516:22;2495:53;:::i;:::-;2485:63;;2441:117;2597:2;2623:53;2668:7;2659:6;2648:9;2644:22;2623:53;:::i;:::-;2613:63;;2568:118;2219:474;;;;;:::o;2699:108::-;2776:24;2794:5;2776:24;:::i;:::-;2771:3;2764:37;2699:108;;:::o;2885:726::-;3042:4;3037:3;3033:14;3137:4;3130:5;3126:16;3120:23;3156:63;3213:4;3208:3;3204:14;3190:12;3156:63;:::i;:::-;3057:172;3322:4;3315:5;3311:16;3305:23;3341:63;3398:4;3393:3;3389:14;3375:12;3341:63;:::i;:::-;3239:175;3512:4;3505:5;3501:16;3495:23;3531:63;3588:4;3583:3;3579:14;3565:12;3531:63;:::i;:::-;3424:180;3011:600;2885:726;;:::o;3617:342::-;3770:4;3808:2;3797:9;3793:18;3785:26;;3821:131;3949:1;3938:9;3934:17;3925:6;3821:131;:::i;:::-;3617:342;;;;:::o;3965:118::-;4052:24;4070:5;4052:24;:::i;:::-;4047:3;4040:37;3965:118;;:::o;4089:222::-;4182:4;4220:2;4209:9;4205:18;4197:26;;4233:71;4301:1;4290:9;4286:17;4277:6;4233:71;:::i;:::-;4089:222;;;;:::o;4317:474::-;4385:6;4393;4442:2;4430:9;4421:7;4417:23;4413:32;4410:119;;;4448:79;;:::i;:::-;4410:119;4568:1;4593:53;4638:7;4629:6;4618:9;4614:22;4593:53;:::i;:::-;4583:63;;4539:117;4695:2;4721:53;4766:7;4757:6;4746:9;4742:22;4721:53;:::i;:::-;4711:63;;4666:118;4317:474;;;;;:::o;4797:60::-;4825:3;4846:5;4839:12;;4797:60;;;:::o;4863:142::-;4913:9;4946:53;4964:34;4973:24;4991:5;4973:24;:::i;:::-;4964:34;:::i;:::-;4946:53;:::i;:::-;4933:66;;4863:142;;;:::o;5011:126::-;5061:9;5094:37;5125:5;5094:37;:::i;:::-;5081:50;;5011:126;;;:::o;5143:154::-;5221:9;5254:37;5285:5;5254:37;:::i;:::-;5241:50;;5143:154;;;:::o;5303:195::-;5426:65;5485:5;5426:65;:::i;:::-;5421:3;5414:78;5303:195;;:::o;5504:294::-;5633:4;5671:2;5660:9;5656:18;5648:26;;5684:107;5788:1;5777:9;5773:17;5764:6;5684:107;:::i;:::-;5504:294;;;;:::o;5804:105::-;5840:7;5880:22;5873:5;5869:34;5858:45;;5804:105;;;:::o;5915:120::-;5987:23;6004:5;5987:23;:::i;:::-;5980:5;5977:34;5967:62;;6025:1;6022;6015:12;5967:62;5915:120;:::o;6041:141::-;6097:5;6128:6;6122:13;6113:22;;6144:32;6170:5;6144:32;:::i;:::-;6041:141;;;;:::o;6188:76::-;6224:7;6253:5;6242:16;;6188:76;;;:::o;6270:120::-;6342:23;6359:5;6342:23;:::i;:::-;6335:5;6332:34;6322:62;;6380:1;6377;6370:12;6322:62;6270:120;:::o;6396:141::-;6452:5;6483:6;6477:13;6468:22;;6499:32;6525:5;6499:32;:::i;:::-;6396:141;;;;:::o;6543:143::-;6600:5;6631:6;6625:13;6616:22;;6647:33;6674:5;6647:33;:::i;:::-;6543:143;;;;:::o;6692:971::-;6795:6;6803;6811;6819;6827;6876:3;6864:9;6855:7;6851:23;6847:33;6844:120;;;6883:79;;:::i;:::-;6844:120;7003:1;7028:63;7083:7;7074:6;7063:9;7059:22;7028:63;:::i;:::-;7018:73;;6974:127;7140:2;7166:63;7221:7;7212:6;7201:9;7197:22;7166:63;:::i;:::-;7156:73;;7111:128;7278:2;7304:64;7360:7;7351:6;7340:9;7336:22;7304:64;:::i;:::-;7294:74;;7249:129;7417:2;7443:64;7499:7;7490:6;7479:9;7475:22;7443:64;:::i;:::-;7433:74;;7388:129;7556:3;7583:63;7638:7;7629:6;7618:9;7614:22;7583:63;:::i;:::-;7573:73;;7527:129;6692:971;;;;;;;;:::o;7669:180::-;7717:77;7714:1;7707:88;7814:4;7811:1;7804:15;7838:4;7835:1;7828:15;7855:410;7895:7;7918:20;7936:1;7918:20;:::i;:::-;7913:25;;7952:20;7970:1;7952:20;:::i;:::-;7947:25;;8007:1;8004;8000:9;8029:30;8047:11;8029:30;:::i;:::-;8018:41;;8208:1;8199:7;8195:15;8192:1;8189:22;8169:1;8162:9;8142:83;8119:139;;8238:18;;:::i;:::-;8119:139;7903:362;7855:410;;;;:::o;8271:180::-;8319:77;8316:1;8309:88;8416:4;8413:1;8406:15;8440:4;8437:1;8430:15;8457:185;8497:1;8514:20;8532:1;8514:20;:::i;:::-;8509:25;;8548:20;8566:1;8548:20;:::i;:::-;8543:25;;8587:1;8577:35;;8592:18;;:::i;:::-;8577:35;8634:1;8631;8627:9;8622:14;;8457:185;;;;:::o;8648:442::-;8797:4;8835:2;8824:9;8820:18;8812:26;;8848:71;8916:1;8905:9;8901:17;8892:6;8848:71;:::i;:::-;8929:72;8997:2;8986:9;8982:18;8973:6;8929:72;:::i;:::-;9011;9079:2;9068:9;9064:18;9055:6;9011:72;:::i;:::-;8648:442;;;;;;:::o;9096:90::-;9130:7;9173:5;9166:13;9159:21;9148:32;;9096:90;;;:::o;9192:116::-;9262:21;9277:5;9262:21;:::i;:::-;9255:5;9252:32;9242:60;;9298:1;9295;9288:12;9242:60;9192:116;:::o;9314:137::-;9368:5;9399:6;9393:13;9384:22;;9415:30;9439:5;9415:30;:::i;:::-;9314:137;;;;:::o;9457:345::-;9524:6;9573:2;9561:9;9552:7;9548:23;9544:32;9541:119;;;9579:79;;:::i;:::-;9541:119;9699:1;9724:61;9777:7;9768:6;9757:9;9753:22;9724:61;:::i;:::-;9714:71;;9670:125;9457:345;;;;:::o;9808:191::-;9848:3;9867:20;9885:1;9867:20;:::i;:::-;9862:25;;9901:20;9919:1;9901:20;:::i;:::-;9896:25;;9944:1;9941;9937:9;9930:16;;9965:3;9962:1;9959:10;9956:36;;;9972:18;;:::i;:::-;9956:36;9808:191;;;;:::o;10005:442::-;10154:4;10192:2;10181:9;10177:18;10169:26;;10205:71;10273:1;10262:9;10258:17;10249:6;10205:71;:::i;:::-;10286:72;10354:2;10343:9;10339:18;10330:6;10286:72;:::i;:::-;10368;10436:2;10425:9;10421:18;10412:6;10368:72;:::i;:::-;10005:442;;;;;;:::o;10453:351::-;10523:6;10572:2;10560:9;10551:7;10547:23;10543:32;10540:119;;;10578:79;;:::i;:::-;10540:119;10698:1;10723:64;10779:7;10770:6;10759:9;10755:22;10723:64;:::i;:::-;10713:74;;10669:128;10453:351;;;;:::o;10810:332::-;10931:4;10969:2;10958:9;10954:18;10946:26;;10982:71;11050:1;11039:9;11035:17;11026:6;10982:71;:::i;:::-;11063:72;11131:2;11120:9;11116:18;11107:6;11063:72;:::i;:::-;10810:332;;;;;:::o;11148:194::-;11188:4;11208:20;11226:1;11208:20;:::i;:::-;11203:25;;11242:20;11260:1;11242:20;:::i;:::-;11237:25;;11286:1;11283;11279:9;11271:17;;11310:1;11304:4;11301:11;11298:37;;;11315:18;;:::i;:::-;11298:37;11148:194;;;;:::o",
+        "linkReferences": {
+            "src/libraries/OracleLib.sol": {
+                "OracleLib": [
+                    {
+                        "start": 1355,
+                        "length": 20
+                    },
+                    {
+                        "start": 3925,
+                        "length": 20
+                    }
+                ]
+            }
+        },
+        "immutableReferences": {
+            "41657": [
+                {
+                    "start": 1972,
+                    "length": 32
+                },
+                {
+                    "start": 3227,
+                    "length": 32
+                },
+                {
+                    "start": 3605,
+                    "length": 32
+                },
+                {
+                    "start": 4268,
+                    "length": 32
+                },
+                {
+                    "start": 4482,
+                    "length": 32
+                }
+            ]
+        }
+    },
+    "methodIdentifiers": {
+        "burnAUSD(uint256)": "241df7c3",
+        "depositCollateral(uint256)": "bad4a01f",
+        "depositCollateralAndMintAUSD(uint256,uint256)": "7a87fc12",
+        "getAUSD()": "b38f8982",
+        "getAUSDMinted(address)": "7549447e",
+        "getAccountCollateralValueInUsd(address)": "545af4fe",
+        "getAccountInformation(address)": "7be564fc",
+        "getAdditionalFeedPrecision()": "8f63d667",
+        "getAmountCollateral(address)": "c2efe6ab",
+        "getCollateralTokenPriceFeed()": "93c5103a",
+        "getHealthFactor(address)": "fe6bcd7c",
+        "getLiquidationBonus()": "59aa9e72",
+        "getLiquidationCloseFactor()": "8e395721",
+        "getLiquidationPrecision()": "6c8102c0",
+        "getLiquidationThreshold()": "4ae9b8bc",
+        "getMaxAUSDSupply()": "f8a601ac",
+        "getMinDustThreshold()": "1ab72907",
+        "getMinHealthFactor()": "8c1ae6c8",
+        "getPrecision()": "9670c0bc",
+        "getProtocolFee()": "a5a41031",
+        "getTokenAmountFromUsd(uint256)": "05104358",
+        "getUsdValue(uint256)": "073789e2",
+        "liquidate(address,uint256)": "bcbaf487",
+        "mintAUSD(uint256)": "cf80023e",
+        "redeemCollateral(uint256)": "bd37b775",
+        "redeemCollateralAndBurnAUSD(uint256,uint256)": "a901e9eb"
+    },
+    "rawMetadata": "{\"compiler\":{\"version\":\"0.8.33+commit.64118f21\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"priceFeedAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"auAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"healthFactor\",\"type\":\"uint256\"}],\"name\":\"AurumEngine__BreaksHealthFactor\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AurumEngine__ExceedsMaxSupply\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AurumEngine__HealthFactorNotImproved\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AurumEngine__HealthFactorOkay\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AurumEngine__MintFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AurumEngine__NeedsMoreThanZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AurumEngine__TransferFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"BurnAUSD\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CollateralDeposited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"redeemedFrom\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"redeemedTo\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CollateralRedeemed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"liquidator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"debtToCover\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalCollateralToRedeem\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"protocolShare\",\"type\":\"uint256\"}],\"name\":\"Liquidated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"MintAUSD\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burnAUSD\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amountCollateral\",\"type\":\"uint256\"}],\"name\":\"depositCollateral\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amountCollateral\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amountAUSDToMint\",\"type\":\"uint256\"}],\"name\":\"depositCollateralAndMintAUSD\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAUSD\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getAUSDMinted\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getAccountCollateralValueInUsd\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getAccountInformation\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"healthFactor\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalAUSDMinted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"collateralValueInUsd\",\"type\":\"uint256\"}],\"internalType\":\"struct AurumEngine.AccountInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAdditionalFeedPrecision\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getAmountCollateral\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCollateralTokenPriceFeed\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getHealthFactor\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLiquidationBonus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLiquidationCloseFactor\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLiquidationPrecision\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLiquidationThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getMaxAUSDSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getMinDustThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getMinHealthFactor\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getPrecision\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getProtocolFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"usdAmountInWei\",\"type\":\"uint256\"}],\"name\":\"getTokenAmountFromUsd\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"getUsdValue\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"debtToCover\",\"type\":\"uint256\"}],\"name\":\"liquidate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amountAUSDToMint\",\"type\":\"uint256\"}],\"name\":\"mintAUSD\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amountCollateral\",\"type\":\"uint256\"}],\"name\":\"redeemCollateral\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amountCollateral\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amountAUSDToBurn\",\"type\":\"uint256\"}],\"name\":\"redeemCollateralAndBurnAUSD\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Vridhi Brahmbhatt  The system is designed to be as minimal as possible, and have the tokens maintain a 1 token == $1 peg. This stablecoin has the following properties:  - Exogenous Collateral  - Dollar Pegged  - Algorithmically Stable  The Aurum Protocol should always be \\\"overcollateralized\\\". At no point, should the value of all the collateral (AUR) <= the dollar backed value of all the AUSD. \",\"errors\":{\"ReentrancyGuardReentrantCall()\":[{\"details\":\"Unauthorized reentrant call.\"}]},\"kind\":\"dev\",\"methods\":{\"burnAUSD(uint256)\":{\"params\":{\"amount\":\"The amount of AUSD to burn\"}},\"depositCollateral(uint256)\":{\"params\":{\"amountCollateral\":\"The amount of collateral to deposit\"}},\"depositCollateralAndMintAUSD(uint256,uint256)\":{\"params\":{\"amountAUSDToMint\":\"The amount of AUSD to mint\",\"amountCollateral\":\"The amount of collateral to deposit\"}},\"getAUSD()\":{\"returns\":{\"_0\":\"The address of the AurumUSD contract\"}},\"getAUSDMinted(address)\":{\"params\":{\"user\":\"The user to query for account information\"},\"returns\":{\"_0\":\"The amount of AUSD tokens a given user has minted\"}},\"getAccountCollateralValueInUsd(address)\":{\"params\":{\"user\":\"The user to query for account information\"},\"returns\":{\"_0\":\"The total collateral value in USD for a given user\"}},\"getAccountInformation(address)\":{\"params\":{\"user\":\"The user to query for aggregated account information\"},\"returns\":{\"_0\":\"All account info (health factor, minted AUSD, and collateral value) for a user\"}},\"getAdditionalFeedPrecision()\":{\"returns\":{\"_0\":\"The additional feed precision used to adjust the precision of Chainlink prices from 8 decimals to 18 decimals\"}},\"getAmountCollateral(address)\":{\"params\":{\"user\":\"The user to query for account information\"},\"returns\":{\"_0\":\"The total quantity of collateral tokens for a given user\"}},\"getCollateralTokenPriceFeed()\":{\"returns\":{\"_0\":\"The price feed address for the protocol\"}},\"getHealthFactor(address)\":{\"params\":{\"user\":\"The user to query for account information\"},\"returns\":{\"_0\":\"The health factor value for a user\"}},\"getLiquidationBonus()\":{\"returns\":{\"_0\":\"The percentage given to liquidators to incentivize clearing bad debt\"}},\"getLiquidationCloseFactor()\":{\"returns\":{\"_0\":\"A liquidation limit to prevent total user wipeouts on small dips\"}},\"getLiquidationPrecision()\":{\"returns\":{\"_0\":\"The precision divisor for liquidation percentage calculations\"}},\"getLiquidationThreshold()\":{\"returns\":{\"_0\":\"The percentage of collateral value counted as \\\"safe\\\" for backing debt\"}},\"getMaxAUSDSupply()\":{\"returns\":{\"_0\":\"The maximum supply of AUSD allowed to be in circulation\"}},\"getMinDustThreshold()\":{\"returns\":{\"_0\":\"A given debt amount where the close factor is ignored to allow full liquidation (cleaning dust)\"}},\"getMinHealthFactor()\":{\"returns\":{\"_0\":\"The protocol's minimum required health factor\"}},\"getPrecision()\":{\"returns\":{\"_0\":\"The standard precision used for AUSD calculations\"}},\"getProtocolFee()\":{\"returns\":{\"_0\":\"The percentage of the liquidation bonus taken by the protocol as revenue\"}},\"getTokenAmountFromUsd(uint256)\":{\"params\":{\"usdAmountInWei\":\"The USD amount in wei\"},\"returns\":{\"_0\":\"The amount of collateral tokens given a USD value\"}},\"getUsdValue(uint256)\":{\"params\":{\"amount\":\"The amount of collateral tokens\"},\"returns\":{\"_0\":\"The USD value of a given amount of collateral tokens\"}},\"liquidate(address,uint256)\":{\"params\":{\"debtToCover\":\"The amount of AUSD to burn to improve the user's health factor\",\"user\":\"The user who has broken the health factor. Their health factor should be below MIN_HEALTH_FACTOR\"}},\"mintAUSD(uint256)\":{\"params\":{\"amountAUSDToMint\":\"The number of AUSD tokens to mint\"}},\"redeemCollateral(uint256)\":{\"params\":{\"amountCollateral\":\"The amount of collateral to redeem\"}},\"redeemCollateralAndBurnAUSD(uint256,uint256)\":{\"params\":{\"amountAUSDToBurn\":\"The amount of AUSD to burn\",\"amountCollateral\":\"The amount of collateral to redeem\"}}},\"stateVariables\":{\"LIQUIDATION_BONUS\":{\"details\":\"Set to 5% (lower than standard 10%) because gold is less volatile\"},\"LIQUIDATION_THRESHOLD\":{\"details\":\"80% implies users must be 125% collateralized (100 / 80 = 1.25)\"}},\"title\":\"AurumEngine\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"burnAUSD(uint256)\":{\"notice\":\"This burns a given amount of AUSD\"},\"depositCollateral(uint256)\":{\"notice\":\"This function will deposit a user's collateral into the protocol\"},\"depositCollateralAndMintAUSD(uint256,uint256)\":{\"notice\":\"This function will deposit your collateral and mint the AUSD tokens in one transaction\"},\"liquidate(address,uint256)\":{\"notice\":\"You can partially liquidate another userYou will get a liquidation bonus for taking the user's fundsThis function assumes the protocol will be roughly 125% overcollateralized in order for this to work.A known bug would be if the protocol were 100% or less collateralized, then we wouldn't be able to incentivize the liquidators.         For example, if there was a \\\"black swan\\\" event causing a sharp drop in the price of gold, before anyone could be liquidated.\"},\"mintAUSD(uint256)\":{\"notice\":\"To mint AUSD, the user must have enough collateral to cover the minimum collateralization ratio of 125%\"},\"redeemCollateral(uint256)\":{\"notice\":\"To redeem collateral, the health factor must be at least 1 AFTER collateral is pulled\"},\"redeemCollateralAndBurnAUSD(uint256,uint256)\":{\"notice\":\"This function burns AUSD and redeems underlying collateral in one transaction\"}},\"notice\":\"This contract is the core of the Aurum Protocol. It handles all the logic for minting and redeeming AUSD, as well as depositing and withdrawing collateral.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/AurumEngine.sol\":\"AurumEngine\"},\"evmVersion\":\"prague\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[\":@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/\",\":@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/\",\":chainlink-brownie-contracts/=lib/chainlink-brownie-contracts/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\"]},\"sources\":{\"lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\":{\"keccak256\":\"0x6e6e4b0835904509406b070ee173b5bc8f677c19421b76be38aea3b1b3d30846\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b3beaa37ee61e4ab615e250fbf01601ae481de843fd0ef55e6b44fd9d5fff8a7\",\"dweb:/ipfs/QmeZUVwd26LzK4Mfp8Zba5JbQNkZFfTzFu1A6FVMMZDg9c\"]},\"lib/openzeppelin-contracts/contracts/access/Ownable.sol\":{\"keccak256\":\"0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6\",\"dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a\"]},\"lib/openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol\":{\"keccak256\":\"0x1b88b3fb3d85ba5496d7d5f396f83ee1fddcdd6762059ff65992655b67920998\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://89393bb3212da1c0889601b9706a07b39419ddc4d2faab9eaf6e7f9152cf6a1c\",\"dweb:/ipfs/QmcCfzzxv1Bkdz1c1yF4gQCeYb6Us5BJANnzTFqawfd1HL\"]},\"lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol\":{\"keccak256\":\"0x669464167428061ee0f8618b73b3ee90aff8405683e7ddde8cd77dadaa1afe29\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://0dda78587a7358b4fdf6b9fca0fde5a5e34930f36d5268a16028627fc0170195\",\"dweb:/ipfs/QmQ1b6cCceDRWNxti9HifsTCzmVP25Haxs1bWugm52vTqH\"]},\"lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5282825a626cfe924e504274b864a652b0023591fa66f06a067b25b51ba9b303\",\"dweb:/ipfs/QmeCfPykghhMc81VJTrHTC7sF6CRvaA1FXVq2pJhwYp1dV\"]},\"lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol\":{\"keccak256\":\"0x2659248df25e34000ed214b3dc8da2160bc39874c992b477d9e2b1b3283dc073\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://c345af1b0e7ea28d1216d6a04ab28f5534a5229b9edf9ca3cd0e84950ae58d26\",\"dweb:/ipfs/QmY63jtSrYpLRe8Gj1ep2vMDCKxGNNG3hnNVKBVnrs2nmA\"]},\"lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol\":{\"keccak256\":\"0xd6fa4088198f04eef10c5bce8a2f4d60554b7ec4b987f684393c01bf79b94d9f\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f95ee0bbd4dd3ac730d066ba3e785ded4565e890dbec2fa7d3b9fe3bad9d0d6e\",\"dweb:/ipfs/QmSLr6bHkPFWT7ntj34jmwfyskpwo97T9jZUrk5sz3sdtR\"]},\"lib/openzeppelin-contracts/contracts/utils/Context.sol\":{\"keccak256\":\"0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12\",\"dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF\"]},\"lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol\":{\"keccak256\":\"0xa516cbf1c7d15d3517c2d668601ce016c54395bf5171918a14e2686977465f53\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://1e1d079e8edfb58efd23a311e315a4807b01b5d1cf153f8fa2d0608b9dec3e99\",\"dweb:/ipfs/QmTBExeX2SDTkn5xbk5ssbYSx7VqRp9H4Ux1CY4uQM4b9N\"]},\"lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol\":{\"keccak256\":\"0xcf74f855663ce2ae00ed8352666b7935f6cddea2932fdf2c3ecd30a9b1cd0e97\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9f660b1f351b757dfe01438e59888f31f33ded3afcf5cb5b0d9bf9aa6f320a8b\",\"dweb:/ipfs/QmarDJ5hZEgBtCmmrVzEZWjub9769eD686jmzb2XpSU1cM\"]},\"src/AurumEngine.sol\":{\"keccak256\":\"0x1412acb21c16ad3c87ce46e5558570081f4dbc5f01d46751909666cd75c760bd\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e28860f78623e9c3f61f2b870b634c15b57f68e76e9de4ea3cb218bbecf8c85d\",\"dweb:/ipfs/QmVB5UXmpaw1Vh8ShZvXaz1UcyriViF1fVJoUFHMHHD6v9\"]},\"src/AurumUSD.sol\":{\"keccak256\":\"0x3a554da5935dffd244c16d58303960fff1935a7729f4bcd24b47ad219ae322c8\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://634c932b331d80c916b2b145e1244c14155778c2bc93bf742a76f98cca711dcf\",\"dweb:/ipfs/QmSft9FtSvzeQhJz7PEyucffMz6VBAjeUiNx1Qhtsp5dm1\"]},\"src/libraries/OracleLib.sol\":{\"keccak256\":\"0x18efbfe45caece07248a169e51669d66d7c07a0dfc619a9c80fd19b54ec1b752\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9ae1b926e683d456d25daa8365281b2f6569ad904736d50418d02b340ecf9357\",\"dweb:/ipfs/QmQukGKXHYstNfiW5tQCWyfqYmR5f8TnYRdHnCV52UpRd3\"]}},\"version\":1}",
+    "metadata": {
+        "compiler": {
+            "version": "0.8.33+commit.64118f21"
+        },
+        "language": "Solidity",
+        "output": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "tokenAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "priceFeedAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "auAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "healthFactor",
+                            "type": "uint256"
+                        }
+                    ],
+                    "type": "error",
+                    "name": "AurumEngine__BreaksHealthFactor"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "AurumEngine__ExceedsMaxSupply"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "AurumEngine__HealthFactorNotImproved"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "AurumEngine__HealthFactorOkay"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "AurumEngine__MintFailed"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "AurumEngine__NeedsMoreThanZero"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "AurumEngine__TransferFailed"
+                },
+                {
+                    "inputs": [],
+                    "type": "error",
+                    "name": "ReentrancyGuardReentrantCall"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256",
+                            "indexed": false
+                        }
+                    ],
+                    "type": "event",
+                    "name": "BurnAUSD",
+                    "anonymous": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256",
+                            "indexed": true
+                        }
+                    ],
+                    "type": "event",
+                    "name": "CollateralDeposited",
+                    "anonymous": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "redeemedFrom",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "redeemedTo",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256",
+                            "indexed": false
+                        }
+                    ],
+                    "type": "event",
+                    "name": "CollateralRedeemed",
+                    "anonymous": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "liquidator",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "debtToCover",
+                            "type": "uint256",
+                            "indexed": false
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "totalCollateralToRedeem",
+                            "type": "uint256",
+                            "indexed": false
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "protocolShare",
+                            "type": "uint256",
+                            "indexed": false
+                        }
+                    ],
+                    "type": "event",
+                    "name": "Liquidated",
+                    "anonymous": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address",
+                            "indexed": true
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256",
+                            "indexed": false
+                        }
+                    ],
+                    "type": "event",
+                    "name": "MintAUSD",
+                    "anonymous": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "burnAUSD"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amountCollateral",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "depositCollateral"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amountCollateral",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amountAUSDToMint",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "depositCollateralAndMintAUSD"
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getAUSD",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getAUSDMinted",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getAccountCollateralValueInUsd",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getAccountInformation",
+                    "outputs": [
+                        {
+                            "internalType": "struct AurumEngine.AccountInfo",
+                            "name": "",
+                            "type": "tuple",
+                            "components": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "healthFactor",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "uint256",
+                                    "name": "totalAUSDMinted",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "uint256",
+                                    "name": "collateralValueInUsd",
+                                    "type": "uint256"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getAdditionalFeedPrecision",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getAmountCollateral",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getCollateralTokenPriceFeed",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getHealthFactor",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getLiquidationBonus",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getLiquidationCloseFactor",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getLiquidationPrecision",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getLiquidationThreshold",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getMaxAUSDSupply",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getMinDustThreshold",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getMinHealthFactor",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getPrecision",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [],
+                    "stateMutability": "pure",
+                    "type": "function",
+                    "name": "getProtocolFee",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "usdAmountInWei",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getTokenAmountFromUsd",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function",
+                    "name": "getUsdValue",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ]
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "debtToCover",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "liquidate"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amountAUSDToMint",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "mintAUSD"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amountCollateral",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "redeemCollateral"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amountCollateral",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amountAUSDToBurn",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                    "name": "redeemCollateralAndBurnAUSD"
+                }
+            ],
+            "devdoc": {
+                "kind": "dev",
+                "methods": {
+                    "burnAUSD(uint256)": {
+                        "params": {
+                            "amount": "The amount of AUSD to burn"
+                        }
+                    },
+                    "depositCollateral(uint256)": {
+                        "params": {
+                            "amountCollateral": "The amount of collateral to deposit"
+                        }
+                    },
+                    "depositCollateralAndMintAUSD(uint256,uint256)": {
+                        "params": {
+                            "amountAUSDToMint": "The amount of AUSD to mint",
+                            "amountCollateral": "The amount of collateral to deposit"
+                        }
+                    },
+                    "getAUSD()": {
+                        "returns": {
+                            "_0": "The address of the AurumUSD contract"
+                        }
+                    },
+                    "getAUSDMinted(address)": {
+                        "params": {
+                            "user": "The user to query for account information"
+                        },
+                        "returns": {
+                            "_0": "The amount of AUSD tokens a given user has minted"
+                        }
+                    },
+                    "getAccountCollateralValueInUsd(address)": {
+                        "params": {
+                            "user": "The user to query for account information"
+                        },
+                        "returns": {
+                            "_0": "The total collateral value in USD for a given user"
+                        }
+                    },
+                    "getAccountInformation(address)": {
+                        "params": {
+                            "user": "The user to query for aggregated account information"
+                        },
+                        "returns": {
+                            "_0": "All account info (health factor, minted AUSD, and collateral value) for a user"
+                        }
+                    },
+                    "getAdditionalFeedPrecision()": {
+                        "returns": {
+                            "_0": "The additional feed precision used to adjust the precision of Chainlink prices from 8 decimals to 18 decimals"
+                        }
+                    },
+                    "getAmountCollateral(address)": {
+                        "params": {
+                            "user": "The user to query for account information"
+                        },
+                        "returns": {
+                            "_0": "The total quantity of collateral tokens for a given user"
+                        }
+                    },
+                    "getCollateralTokenPriceFeed()": {
+                        "returns": {
+                            "_0": "The price feed address for the protocol"
+                        }
+                    },
+                    "getHealthFactor(address)": {
+                        "params": {
+                            "user": "The user to query for account information"
+                        },
+                        "returns": {
+                            "_0": "The health factor value for a user"
+                        }
+                    },
+                    "getLiquidationBonus()": {
+                        "returns": {
+                            "_0": "The percentage given to liquidators to incentivize clearing bad debt"
+                        }
+                    },
+                    "getLiquidationCloseFactor()": {
+                        "returns": {
+                            "_0": "A liquidation limit to prevent total user wipeouts on small dips"
+                        }
+                    },
+                    "getLiquidationPrecision()": {
+                        "returns": {
+                            "_0": "The precision divisor for liquidation percentage calculations"
+                        }
+                    },
+                    "getLiquidationThreshold()": {
+                        "returns": {
+                            "_0": "The percentage of collateral value counted as \"safe\" for backing debt"
+                        }
+                    },
+                    "getMaxAUSDSupply()": {
+                        "returns": {
+                            "_0": "The maximum supply of AUSD allowed to be in circulation"
+                        }
+                    },
+                    "getMinDustThreshold()": {
+                        "returns": {
+                            "_0": "A given debt amount where the close factor is ignored to allow full liquidation (cleaning dust)"
+                        }
+                    },
+                    "getMinHealthFactor()": {
+                        "returns": {
+                            "_0": "The protocol's minimum required health factor"
+                        }
+                    },
+                    "getPrecision()": {
+                        "returns": {
+                            "_0": "The standard precision used for AUSD calculations"
+                        }
+                    },
+                    "getProtocolFee()": {
+                        "returns": {
+                            "_0": "The percentage of the liquidation bonus taken by the protocol as revenue"
+                        }
+                    },
+                    "getTokenAmountFromUsd(uint256)": {
+                        "params": {
+                            "usdAmountInWei": "The USD amount in wei"
+                        },
+                        "returns": {
+                            "_0": "The amount of collateral tokens given a USD value"
+                        }
+                    },
+                    "getUsdValue(uint256)": {
+                        "params": {
+                            "amount": "The amount of collateral tokens"
+                        },
+                        "returns": {
+                            "_0": "The USD value of a given amount of collateral tokens"
+                        }
+                    },
+                    "liquidate(address,uint256)": {
+                        "params": {
+                            "debtToCover": "The amount of AUSD to burn to improve the user's health factor",
+                            "user": "The user who has broken the health factor. Their health factor should be below MIN_HEALTH_FACTOR"
+                        }
+                    },
+                    "mintAUSD(uint256)": {
+                        "params": {
+                            "amountAUSDToMint": "The number of AUSD tokens to mint"
+                        }
+                    },
+                    "redeemCollateral(uint256)": {
+                        "params": {
+                            "amountCollateral": "The amount of collateral to redeem"
+                        }
+                    },
+                    "redeemCollateralAndBurnAUSD(uint256,uint256)": {
+                        "params": {
+                            "amountAUSDToBurn": "The amount of AUSD to burn",
+                            "amountCollateral": "The amount of collateral to redeem"
+                        }
+                    }
+                },
+                "version": 1
+            },
+            "userdoc": {
+                "kind": "user",
+                "methods": {
+                    "burnAUSD(uint256)": {
+                        "notice": "This burns a given amount of AUSD"
+                    },
+                    "depositCollateral(uint256)": {
+                        "notice": "This function will deposit a user's collateral into the protocol"
+                    },
+                    "depositCollateralAndMintAUSD(uint256,uint256)": {
+                        "notice": "This function will deposit your collateral and mint the AUSD tokens in one transaction"
+                    },
+                    "liquidate(address,uint256)": {
+                        "notice": "You can partially liquidate another userYou will get a liquidation bonus for taking the user's fundsThis function assumes the protocol will be roughly 125% overcollateralized in order for this to work.A known bug would be if the protocol were 100% or less collateralized, then we wouldn't be able to incentivize the liquidators.         For example, if there was a \"black swan\" event causing a sharp drop in the price of gold, before anyone could be liquidated."
+                    },
+                    "mintAUSD(uint256)": {
+                        "notice": "To mint AUSD, the user must have enough collateral to cover the minimum collateralization ratio of 125%"
+                    },
+                    "redeemCollateral(uint256)": {
+                        "notice": "To redeem collateral, the health factor must be at least 1 AFTER collateral is pulled"
+                    },
+                    "redeemCollateralAndBurnAUSD(uint256,uint256)": {
+                        "notice": "This function burns AUSD and redeems underlying collateral in one transaction"
+                    }
+                },
+                "version": 1
+            }
+        },
+        "settings": {
+            "remappings": [
+                "@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/",
+                "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+                "chainlink-brownie-contracts/=lib/chainlink-brownie-contracts/",
+                "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+                "forge-std/=lib/forge-std/src/",
+                "halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/",
+                "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+            ],
+            "optimizer": {
+                "enabled": false,
+                "runs": 200
+            },
+            "metadata": {
+                "bytecodeHash": "ipfs"
+            },
+            "compilationTarget": {
+                "src/AurumEngine.sol": "AurumEngine"
+            },
+            "evmVersion": "prague",
+            "libraries": {}
+        },
+        "sources": {
+            "lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol": {
+                "keccak256": "0x6e6e4b0835904509406b070ee173b5bc8f677c19421b76be38aea3b1b3d30846",
+                "urls": [
+                    "bzz-raw://b3beaa37ee61e4ab615e250fbf01601ae481de843fd0ef55e6b44fd9d5fff8a7",
+                    "dweb:/ipfs/QmeZUVwd26LzK4Mfp8Zba5JbQNkZFfTzFu1A6FVMMZDg9c"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/access/Ownable.sol": {
+                "keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+                "urls": [
+                    "bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+                    "dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol": {
+                "keccak256": "0x1b88b3fb3d85ba5496d7d5f396f83ee1fddcdd6762059ff65992655b67920998",
+                "urls": [
+                    "bzz-raw://89393bb3212da1c0889601b9706a07b39419ddc4d2faab9eaf6e7f9152cf6a1c",
+                    "dweb:/ipfs/QmcCfzzxv1Bkdz1c1yF4gQCeYb6Us5BJANnzTFqawfd1HL"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol": {
+                "keccak256": "0x669464167428061ee0f8618b73b3ee90aff8405683e7ddde8cd77dadaa1afe29",
+                "urls": [
+                    "bzz-raw://0dda78587a7358b4fdf6b9fca0fde5a5e34930f36d5268a16028627fc0170195",
+                    "dweb:/ipfs/QmQ1b6cCceDRWNxti9HifsTCzmVP25Haxs1bWugm52vTqH"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": {
+                "keccak256": "0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2",
+                "urls": [
+                    "bzz-raw://5282825a626cfe924e504274b864a652b0023591fa66f06a067b25b51ba9b303",
+                    "dweb:/ipfs/QmeCfPykghhMc81VJTrHTC7sF6CRvaA1FXVq2pJhwYp1dV"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol": {
+                "keccak256": "0x2659248df25e34000ed214b3dc8da2160bc39874c992b477d9e2b1b3283dc073",
+                "urls": [
+                    "bzz-raw://c345af1b0e7ea28d1216d6a04ab28f5534a5229b9edf9ca3cd0e84950ae58d26",
+                    "dweb:/ipfs/QmY63jtSrYpLRe8Gj1ep2vMDCKxGNNG3hnNVKBVnrs2nmA"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+                "keccak256": "0xd6fa4088198f04eef10c5bce8a2f4d60554b7ec4b987f684393c01bf79b94d9f",
+                "urls": [
+                    "bzz-raw://f95ee0bbd4dd3ac730d066ba3e785ded4565e890dbec2fa7d3b9fe3bad9d0d6e",
+                    "dweb:/ipfs/QmSLr6bHkPFWT7ntj34jmwfyskpwo97T9jZUrk5sz3sdtR"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/utils/Context.sol": {
+                "keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+                "urls": [
+                    "bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+                    "dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol": {
+                "keccak256": "0xa516cbf1c7d15d3517c2d668601ce016c54395bf5171918a14e2686977465f53",
+                "urls": [
+                    "bzz-raw://1e1d079e8edfb58efd23a311e315a4807b01b5d1cf153f8fa2d0608b9dec3e99",
+                    "dweb:/ipfs/QmTBExeX2SDTkn5xbk5ssbYSx7VqRp9H4Ux1CY4uQM4b9N"
+                ],
+                "license": "MIT"
+            },
+            "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol": {
+                "keccak256": "0xcf74f855663ce2ae00ed8352666b7935f6cddea2932fdf2c3ecd30a9b1cd0e97",
+                "urls": [
+                    "bzz-raw://9f660b1f351b757dfe01438e59888f31f33ded3afcf5cb5b0d9bf9aa6f320a8b",
+                    "dweb:/ipfs/QmarDJ5hZEgBtCmmrVzEZWjub9769eD686jmzb2XpSU1cM"
+                ],
+                "license": "MIT"
+            },
+            "src/AurumEngine.sol": {
+                "keccak256": "0x1412acb21c16ad3c87ce46e5558570081f4dbc5f01d46751909666cd75c760bd",
+                "urls": [
+                    "bzz-raw://e28860f78623e9c3f61f2b870b634c15b57f68e76e9de4ea3cb218bbecf8c85d",
+                    "dweb:/ipfs/QmVB5UXmpaw1Vh8ShZvXaz1UcyriViF1fVJoUFHMHHD6v9"
+                ],
+                "license": "MIT"
+            },
+            "src/AurumUSD.sol": {
+                "keccak256": "0x3a554da5935dffd244c16d58303960fff1935a7729f4bcd24b47ad219ae322c8",
+                "urls": [
+                    "bzz-raw://634c932b331d80c916b2b145e1244c14155778c2bc93bf742a76f98cca711dcf",
+                    "dweb:/ipfs/QmSft9FtSvzeQhJz7PEyucffMz6VBAjeUiNx1Qhtsp5dm1"
+                ],
+                "license": "MIT"
+            },
+            "src/libraries/OracleLib.sol": {
+                "keccak256": "0x18efbfe45caece07248a169e51669d66d7c07a0dfc619a9c80fd19b54ec1b752",
+                "urls": [
+                    "bzz-raw://9ae1b926e683d456d25daa8365281b2f6569ad904736d50418d02b340ecf9357",
+                    "dweb:/ipfs/QmQukGKXHYstNfiW5tQCWyfqYmR5f8TnYRdHnCV52UpRd3"
+                ],
+                "license": "MIT"
+            }
+        },
+        "version": 1
+    },
+    "id": 35
+}
