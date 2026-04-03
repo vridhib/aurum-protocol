@@ -1,4 +1,4 @@
-import { Abi, decodeErrorResult } from "viem";
+import { Abi, decodeErrorResult, formatEther } from "viem";
 import aurumEngineJson from "@/abis/AurumEngine.json";
 import { ONE, THRESHOLD, PRECISION } from "@/config/constants";
 
@@ -39,4 +39,20 @@ export function calculateProjectedHealthFactor(collateralWei: bigint, mintedWei:
     const projectedHealthFactor = (adjusted * ONE) / mintedWei;
     console.log("projectedHealthFactor: ", projectedHealthFactor);
     return projectedHealthFactor;
+}
+
+
+export function getHealthColor(healthWei: bigint | undefined): string {
+  if (healthWei === undefined) return "text-gray-400";
+  // Convert to number (wei -> decimal)
+  const health = Number(formatEther(healthWei));
+  if (health >= 1.5) return "text-green-400";
+  if (health >= 1.0) return "text-yellow-400";
+  return "text-red-400";
+}
+
+
+export function shortenAddress(address: string) {
+  if (!address) return "";
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
