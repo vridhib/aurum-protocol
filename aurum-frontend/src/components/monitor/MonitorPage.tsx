@@ -4,7 +4,7 @@ import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { formatEther } from "viem";
 import { useProtocolData } from "@/hooks/useProtocolData";
-import { calculateProjectedHealthFactor, getHealthColor, shortenAddress } from "@/utils/helperFunctions";
+import { calculateProjectedHealthFactor, formatHealthFactorForDisplay, getHealthColor, shortenAddress } from "@/utils/helperFunctions";
 import { TypedDocumentNode } from "@apollo/client";
 import { StatCard } from "@/components/dashboard/StatCard";
 
@@ -118,8 +118,7 @@ export default function MonitorPage() {
                                 const debtWei = BigInt(user.debt);
                                 const healthFactor = calculateProjectedHealthFactor(collateralWei, debtWei, (pricePerAur || 0n));
                                 const healthColor = getHealthColor(healthFactor);
-                                const healthDisplay = Number(formatEther(healthFactor || 0n)).toFixed(2);
-
+    
                                 return (
                                     <tr key={user.id} className="hover:bg-gray-700/50 transition">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-white">
@@ -132,7 +131,7 @@ export default function MonitorPage() {
                                             {formatEther(debtWei)}
                                         </td>
                                         <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${healthColor}`}>
-                                            {healthDisplay}
+                                            {formatHealthFactorForDisplay(healthFactor)}
                                         </td>
                                     </tr>
                                 );

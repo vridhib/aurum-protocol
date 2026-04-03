@@ -5,6 +5,7 @@ export const AUR_GOLD_ADDRESS = getAddress("0x7769F56edC2a1882a51cec1d3c96F31482
 export const AURUM_AUSD_ADDRESS = getAddress("0x3828120d97913be56ded3522a9d0926cd79d9fb2");
 export const AUR_FAUCET_ADDRESS = getAddress("0x25067322310e834498b1638423383b3e5603dd30");
 
-export const ONE = 10n ** 18n;       // 1e18
-export const THRESHOLD = 80n;        // LIQUIDATION_THRESHOLD
-export const PRECISION = 100n;       // LIQUIDATION_PRECISION
+export const ONE = 10n ** 18n;              // 1e18
+export const THRESHOLD = 80n;               // LIQUIDATION_THRESHOLD
+export const PRECISION = 100n;              // LIQUIDATION_PRECISION
+export const MAX_UINT256 = 2n ** 256n - 1n; // type(uint256).max
