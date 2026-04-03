@@ -1,3 +1,16 @@
+/**
+ * Mint section for the Aurum Protocol frontend.
+ * @param mintAmount Stores user's mint amount.
+ * @param setMintAmount State setter associated with `mintAmount`.
+ * @param onMint Function that handles the mint action.
+ * @param isPending Indicates whether the mint action is pending.
+ * @param error Stores any errors (user input or write errors) for the mint action.
+ * @param isDisabled Indicates whether the 'Mint' button is enabled or disabled.
+ * @param willBeHealthy Indicates whether a user can mint `mintAmount` and still have a HF >= 1.00
+ * @param isValid Indicates whether `mintAmount` falls within a valid range (>0).
+ * @component
+ * @returns The mint card UI containing an input field and a button.
+ */
 export function MintCard({
     mintAmount,
     setMintAmount,

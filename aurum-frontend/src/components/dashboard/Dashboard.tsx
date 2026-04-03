@@ -21,6 +21,17 @@ import { StatsGrid } from "./StatsGrid";
 import { AURUM_ENGINE_ADDRESS, AURUM_AUSD_ADDRESS, AUR_GOLD_ADDRESS, AUR_FAUCET_ADDRESS, ONE } from "@/config/constants";
 
 
+/**
+ * Main dashboard component for the Aurum Protocol frontend.
+ *
+ * Displays the user's collateral, debt, health factor, and provides forms for
+ * depositing/redeeming AUR collateral and minting/burning AUSD stablecoins.
+ * Handles all transaction flows, including token approvals, and shows a global
+ * pending action indicator.
+ *
+ * @component
+ * @returns The rendered dashboard UI.
+ */
 export default function Dashboard() {
   // ---------- State for Amounts & UI ----------
   const [depositAmount, setDepositAmount] = useState("");
@@ -57,6 +68,7 @@ export default function Dashboard() {
 
 
   // ---------- Custom Hooks For Deposit and Burn (Approval & Execution) ----------
+  // Write: Deposit AUR (approve and then deposit)
   const { start: startDeposit, isPending: isDepositPendingHook, currentAction: depositAction, approveWriteError: approveDepositWriteError, executeWriteError: executeDepositWriteError } = useApproveAndExecute({
     approveContract: AUR_GOLD_ADDRESS,
     approveAbi: aurumGoldJson.abi as Abi,
@@ -73,6 +85,7 @@ export default function Dashboard() {
     }
   });
 
+  // Write: Burn AUSD (approve and then burn)
   const { start: startBurn, isPending: isBurnPendingHook, currentAction: burnAction, approveWriteError: approveBurnWriteError, executeWriteError: executeBurnWriteError } = useApproveAndExecute({
     approveContract: AURUM_AUSD_ADDRESS,
     approveAbi: aurumAUSDJson.abi as Abi,
@@ -167,7 +180,7 @@ export default function Dashboard() {
     isClaimPending, isClaimConfirming
   ]);
 
-  // Success effects for redeem & mint (no approval) ----
+  // Success effects for redeem & mint (no approval)
   // Refetch data after successful redeem
   useEffect(() => {
     if (isRedeemSuccess) {
@@ -290,7 +303,7 @@ export default function Dashboard() {
         isClaimPending={isClaimPending}
         isClaimConfirming={isClaimConfirming}
       />
-
+      
       {/* Stats Grid */}
       <StatsGrid
         collateral={amountCollateral ?? 0n}
@@ -312,7 +325,6 @@ export default function Dashboard() {
           isValid={isDepositAmountValid}
           exceeds={doesDepositExceedBalance}
         />
-
         {/* Redeem Card */}
         <RedeemCard
           redeemAmount={redeemAmount}
@@ -325,7 +337,6 @@ export default function Dashboard() {
           isValid={isRedeemAmountValid}
           exceeds={doesRedeemExceedCollateral}
         />
-
         {/* Mint Card */}
         <MintCard
           mintAmount={mintAmount}
@@ -337,7 +348,6 @@ export default function Dashboard() {
           willBeHealthy={mintWouldBeHealthy}
           isValid={isMintAmountValid}
         />
-
         {/* Burn Card */}
         <BurnCard
           burnAmount={burnAmount}

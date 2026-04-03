@@ -1,5 +1,18 @@
 import { LoadingSpinner } from "./LoadingSpinner";
 
+
+/**
+ * Header section for the dashboard of the Aurum Protocol frontend. 
+ * @param isAnyTxPending Indicates whether any transaction is pending.
+ * @param pendingAction Stores the current pending action as a string.
+ * @param onRefresh Function that refreshes data.
+ * @param onClaim Function that handles a claim test AUR action.
+ * @param canClaim Indicates whether a user can claim test AUR.
+ * @param isClaimPending Indicates whether a claim action is pending.
+ * @param isClaimConfirming Indicates whether a claim action is confirming. 
+ * @component
+ * @returns A header section for the main dashboard.
+ */
 export function Header({
     isAnyTxPending,
     pendingAction,

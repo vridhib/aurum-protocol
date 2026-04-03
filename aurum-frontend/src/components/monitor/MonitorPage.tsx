@@ -1,5 +1,4 @@
 "use client";
-
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { formatEther } from "viem";
@@ -23,7 +22,7 @@ type ProtocolStats = {
     }>;
 };
 
-// Define variables (none)
+// Define variables
 type ProtocolStatsVariables = Record<string, never>;
 
 // GraphQL query
@@ -45,6 +44,20 @@ const GET_PROTOCOL_STATS: TypedDocumentNode<
   }
 `;
 
+/**
+ * Monitor page for the Aurum Protocol frontend.
+ *
+ * Fetches and displays aggregated protocol statistics and user positions from the subgraph (via Apollo Client). It shows:
+ * - Total collateral locked (AUR)
+ * - Total debt outstanding (AUSD)
+ * - Total number of users
+ * - A table showing all users with their collateral, debt, and health factor
+ *
+ * Health factors are computed using the current AUR price (from `useProtocolData()`) and are color‑coded.
+ *
+ * @component
+ * @returns The monitor page UI containing stats cards and a user table.
+ */
 export default function MonitorPage() {
     const { loading: queryLoading, error: queryError, data } = useQuery(GET_PROTOCOL_STATS);
     const { pricePerAur, isLoading: priceLoading } = useProtocolData();

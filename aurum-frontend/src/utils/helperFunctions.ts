@@ -3,7 +3,12 @@ import aurumEngineJson from "@/abis/AurumEngine.json";
 import { ONE, THRESHOLD, PRECISION, MAX_UINT256 } from "@/config/constants";
 
 
-// Gets user friendly error messages
+/**
+ * Converts an unknown error object into a user‑friendly error message.
+ * Handles wallet rejections and known contract revert reasons.
+ * @param error The error thrown by a contract write or transaction.
+ * @returns A human‑readable error message.
+ */
 export function getUserFriendlyErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message.includes("User rejected")) {
         return "Transaction was rejected in your wallet.";
@@ -31,7 +36,7 @@ export function getUserFriendlyErrorMessage(error: unknown): string {
 /**
  * Computes the health factor after a proposed change.
  * Formula: (collateral * price * THRESHOLD) / (minted * PRECISION * ONE)
- * Returns a value where >= ONE means healthy.
+ * @returns a value where >= ONE means healthy.
  */
 export function calculateProjectedHealthFactor(collateralWei: bigint, mintedWei: bigint, pricePerAurWei: bigint): bigint {
     // If debt is 0, return max uint256 value
@@ -43,7 +48,7 @@ export function calculateProjectedHealthFactor(collateralWei: bigint, mintedWei:
     return projectedHealthFactor;
 }
 
-
+// Formats the health factor for display purposes
 export function formatHealthFactorForDisplay(healthFactorWei: bigint | undefined): string {
     // If undefined, return loading string
     if (healthFactorWei == undefined) return "Loading...";
@@ -56,7 +61,7 @@ export function formatHealthFactorForDisplay(healthFactorWei: bigint | undefined
     return healthFactorNumber.toFixed(2);
 }
 
-
+// Gets the health color class according to the health factor range
 export function getHealthColor(healthWei: bigint | undefined): string {
     // If undefined, return gray
     if (healthWei === undefined) return "text-gray-400";
@@ -68,7 +73,7 @@ export function getHealthColor(healthWei: bigint | undefined): string {
     return "text-red-400";
 }
 
-
+// Shortens the address 
 export function shortenAddress(address: string) {
     if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;

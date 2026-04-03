@@ -6,6 +6,34 @@ import { useAccount, useReadContract } from "wagmi";
 import { useCallback } from "react";
 import { AURUM_ENGINE_ADDRESS, AURUM_AUSD_ADDRESS, AUR_GOLD_ADDRESS, AUR_FAUCET_ADDRESS } from "@/config/constants";
 
+
+/**
+ * Fetches and aggregates all user‑specific data from the AurumEngine contract.
+ *
+ * Reads the following on‑chain data for the currently connected wallet:
+ * - Collateral deposited (AUR)
+ * - AUSD minted (debt)
+ * - Health factor
+ * - AUR allowance for the Engine
+ * - AUR wallet account balance 
+ * - AUSD allowance for the Engine
+ * - Last claim time from the faucet (and a computed `canClaim` flag)
+ *
+ * @returns {Object} An object containing:
+ * - `amountCollateral` (`bigint | undefined`) – Total AUR deposited.
+ * - `mintedAmount` (`bigint | undefined`) – Total AUSD minted (debt).
+ * - `healthFactor` (`bigint | undefined`) – User's health factor (scaled by 1e18).
+ * - `aurAllowance` (`bigint | undefined`) – AUR allowance for the Engine.
+ * - `aurBalance` (`bigint | undefined`) – Current AUR wallet account balance.
+ * - `ausdAllowance` (`bigint | undefined`) – AUSD allowance for the Engine.
+ * - `lastClaimTime` (`bigint | undefined`) – Timestamp of the last faucet claim.
+ * - `canClaim` (`boolean`) – Whether the user can claim test AUR from the faucet.
+ * - `refetch` (`() => void`) – Function to manually refetch all data.
+ * - `isLoading` (`boolean`) – `true` while any of the reads are still loading.
+ *
+ * @example
+ * const { amountCollateral, refetch, isLoading } = useUserData();
+ */
 export function useUserData(): {
     refetch: () => void
     isLoading: boolean

@@ -1,3 +1,16 @@
+/**
+ * Deposit section for the Aurum Protocol frontend.
+ * @param depositAmount Stores user's deposit amount.
+ * @param setDepositAmount State setter associated with `depositAmount`.
+ * @param onDeposit Function that handles the deposit action.
+ * @param isPending Indicates whether the deposit action is pending.
+ * @param error Stores any errors (user input or write errors) for the deposit action.
+ * @param isDisabled Indicates whether the 'Deposit' button is enabled or disabled.
+ * @param isValid Indicates whether `depositAmount` falls within a valid range (>0).
+ * @param exceeds Indicates whether 'depositAmount` exceeds the user's valid range (<= wallet AUR balance).
+ * @component
+ * @returns The deposit card UI containing an input field and a button.
+ */
 export function DepositCard({
     depositAmount,
     setDepositAmount,

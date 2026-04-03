@@ -2,6 +2,44 @@ import { useEffect, useState } from "react";
 import { type Abi } from "viem";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
+
+/**
+ * Consolidates the approve and execute flow.
+ * Initiates an approval and, if the user already has a sufficient allowance, it skips to the execution step.
+ * 
+ * @param approveContract Contract address that needs to approve a transaction.
+ * @param approveAbi Contract ABI of the `approveContract`.
+ * @param approveFunction `approve()` function name.
+ * @param targetContract Contract address that needs an approval.
+ * @param targetAbi Contract ABI of `targetContract`.
+ * @param targetFunction Function from `targetContract` that needs approval before execution.
+ * @param onSuccess Function that is run upon successful execution.
+ * @param allowance Stores user's current allowance (skips approve step if `allowance` is enough).
+ * 
+ * @returns An object containing:
+ * - `start` (`(bigint) => void`) – Function that initiates the approve and execute flow.
+ * - `isPending` (`boolean`) – `true` while either of the actions are still pending.
+ * - `currentAction` (`string`) – Represents the current step of the approve and execute flow.
+ * - `approveWriteError` (`WriteContractErrorType | null`) – Stores any write errors (if any) in the approve step.
+ * - `executeWriteError` (`WriteContractErrorType | null`) – Stores any write errors (if any) in the execute step.
+
+ * 
+ * @example
+ * const { start: startDeposit, isPending: isDepositPendingHook, currentAction: depositAction, approveWriteError: approveDepositWriteError, executeWriteError: executeDepositWriteError } = useApproveAndExecute({
+     approveContract: AUR_GOLD_ADDRESS,
+     approveAbi: aurumGoldJson.abi as Abi,
+     approveFunction: "approve",
+     targetContract: AURUM_ENGINE_ADDRESS,
+     targetAbi: aurumEngineJson.abi as Abi,
+     targetFunction: "depositCollateral",
+     allowance: aurAllowance,
+     onSuccess: () => {
+       refetchUserData();  
+       setDepositAmount("");
+       setPendingAction(null);
+     }
+   });
+ */
 export function useApproveAndExecute({
     approveContract,
     approveAbi,
@@ -23,7 +61,6 @@ export function useApproveAndExecute({
 }) {
     const [step, setStep] = useState<"idle" | "approving" | "executing">("idle");
     const [amount, setAmount] = useState<bigint | null>(null);
-    const [error, setError] = useState<Error | null>(null);
 
     const { data: approveHash, isPending: isApproving, writeContract: approve, error: approveWriteError } = useWriteContract();
     const { isLoading: isApproveConfirmed, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash });
@@ -78,5 +115,5 @@ export function useApproveAndExecute({
     const isPending = isApproving || isApproveConfirmed || isExecuting || isExecuteConfirmed;
     const currentAction = step;
 
-    return { start, isPending, currentAction, error, approveWriteError, executeWriteError };
+    return { start, isPending, currentAction, approveWriteError, executeWriteError };
 }
