@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.34;
 
 import {Script} from "forge-std/Script.sol";
 import {AurumGold} from "../src/AurumGold.sol";
