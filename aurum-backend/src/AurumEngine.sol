@@ -7,95 +7,104 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {OracleLib} from "./libraries/OracleLib.sol";
 
-
 /**
  * @title AurumEngine
- * @author Vridhi Brahmbhatt
- * 
+ * @author vridhib
+ *
  * The system is designed to be as minimal as possible, and have the tokens maintain a 1 token == $1 peg.
  * This stablecoin has the following properties:
  *  - Exogenous Collateral
  *  - Dollar Pegged
  *  - Algorithmically Stable
- * 
- * The Aurum Protocol should always be "overcollateralized". At no point, should the value of all the collateral (AUR) <= the dollar backed value of all the AUSD.
- * 
- * @notice This contract is the core of the Aurum Protocol. It handles all the logic for minting and redeeming AUSD, as well as depositing and withdrawing collateral.
+ *
+ * The Aurum Protocol should always be "overcollateralized". At no point, should the value of all the collateral (AUR + WETH) <= the dollar backed value of all the AUSD.
+ *
+ * @notice This contract is the core of the Aurum Protocol. It handles all the logic for minting and redeeming AUSD as well as depositing and withdrawing collateral.
  */
 contract AurumEngine is ReentrancyGuard {
     /*----------Errors----------*/
+    error AurumEngine__TokenAddressesAndPriceFeedAddressesAmountsDontMatch();
+    error AurumEngine__TokenNotAllowed(address token);
     error AurumEngine__NeedsMoreThanZero();
     error AurumEngine__TransferFailed();
     error AurumEngine__BreaksHealthFactor(uint256 healthFactor);
     error AurumEngine__HealthFactorOkay();
     error AurumEngine__HealthFactorNotImproved();
     error AurumEngine__MintFailed();
-    error AurumEngine__ExceedsMaxSupply();
 
     using OracleLib for AggregatorV3Interface;
 
     /*----------Type Declarations----------*/
     /// @notice A type that aggregates critical account info together
     struct AccountInfo {
-        uint256 healthFactor;
-        uint256 totalAUSDMinted;
-        uint256 collateralValueInUsd;
+        uint256 healthFactor;          // Current user health factor
+        uint256 totalAUSDMinted;       // Total amount of minted AUSD
+        uint256 collateralValueInUsd;  // Total USD value of deposited collateral
+    }
+
+    /// @notice A type that aggregates critical collateral token info together
+    struct CollateralInfo {
+        address priceFeed;            // Chainlink price feed address
+        uint256 ltv;                  // Liquidation threshold
+        uint256 debtCeiling;          // Max total AUSD mintable against this collateral
+        uint256 totalDebt;            // Current total AUSD minted against this collateral
+        bool isActive;                // Can users deposit/mint against it?
     }
 
     /*----------State Variables----------*/
     // Precision Constants
     /// @notice Used to adjust the precision of Chainlink prices from 8 decimals to 18 decimals
-    uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;    
+    uint256 public constant ADDITIONAL_FEED_PRECISION = 1e10;
     /// @notice The standard precision used for AUSD calculations
-    uint256 private constant PRECISION = 1e18;       
+    uint256 public constant PRECISION = 1e18;
 
     // Economic Constants
     /// @notice The percentage (80%) of collateral value counted as "safe" for backing debt
     /// @dev 80% implies users must be 125% collateralized (100 / 80 = 1.25)
-    uint256 private constant LIQUIDATION_THRESHOLD = 80;          
-    
+    uint256 public constant LIQUIDATION_THRESHOLD = 80;   // To be scrapped with a future feature
+
+    uint256 public constant DEFAULT_LTV = 80; // 80%
+    uint256 public constant DEFAULT_DEBT_CEILING = 50_000_000 * 1e18; // 50M AUSD per collateral
+
     /// @notice Precision divisor for percentage calculations
-    uint256 private constant LIQUIDATION_PRECISION = 100;          
-    
+    uint256 public constant LIQUIDATION_PRECISION = 100;
+
     /// @notice The minimum health factor (1e18). Falling below this makes a user liquidatable
-    uint256 private constant MIN_HEALTH_FACTOR = 1e18;     
+    uint256 public constant MIN_HEALTH_FACTOR = 1e18;
 
     /// @notice If debt is below this amount, the close factor is ignored to allow full liquidation (cleaning dust)
-    uint256 private constant MIN_DUST_THRESHOLD = 1e18;       
-    
+    uint256 public constant MIN_DUST_THRESHOLD = 1e18;
+
     /// @notice A bonus percentage given to liquidators to incentivize clearing bad debt
     /// @dev Set to 5% (lower than standard 10%) because gold is less volatile
-    uint256 private constant LIQUIDATION_BONUS = 5;                
-    
-    /// @notice The percentage of the liquidation bonus taken by the protocol as revenue/insurance
-    uint256 private constant PROTOCOL_FEE = 5;                     
-    
-    /// @notice A hard limit on the total supply of AUSD to prevent infinite minting risks associated with RWAs
-    uint256 private constant MAX_AUSD_SUPPLY = 1000000 * 1e18;      
-    
-    /// @notice A liquidation limit of 50% of debt to prevent total user wipeouts on small dips
-    uint256 private constant LIQUIDATION_CLOSE_FACTOR = 50;
+    uint256 public constant LIQUIDATION_BONUS = 5;
 
+    /// @notice The percentage of the liquidation bonus taken by the protocol as revenue/insurance
+    uint256 public constant PROTOCOL_FEE = 5;
+
+    /// @notice A liquidation limit of 50% of debt to prevent total user wipeouts on small dips
+    uint256 public constant LIQUIDATION_CLOSE_FACTOR = 50;
 
     // Storage Variables
-    /// @notice The Chainlink XAU/USD price feed address
-    address private s_priceFeed;                                                       
-    
-    /// @notice A mapping of user addresses to deposited collateral amounts (AUR tokens)
-    mapping(address user => uint256 amountCollateral) private s_collateralDeposited;    
-    
+    /// @notice A mapping of user addresses to a mapping of deposited collateral amounts
+    mapping(address user => mapping(address collateralToken => uint256 amount)) private s_collateralDeposited;
+
     /// @notice A mapping of user addresses to the amount of AUSD debt they have minted
-    mapping(address user => uint256 amountAUSDMinted) private s_AUSDMinted;               
-    
-    /// @notice The ERC20 address of the Gold token (AUR) used as collateral
-    address private s_collateralToken;                                                 
-    
+    mapping(address user => uint256 amountAUSDMinted) private s_AUSDMinted;
+
+    /// @notice A mapping of collateral tokens to their info (price feed, ltv, debt ceiling, etc.)
+    mapping(address collateral => CollateralInfo info) private s_collateralInfo;
+
+    /// @notice The ERC20 address array of supported tokens (AUR + WETH)
+    address[] private s_collateralList;
+
     /// @notice The AUSD token address
-    AurumUSD private immutable i_ausd; 
+    AurumUSD private immutable i_ausd;
+
 
 
     /*----------Events----------*/
-    event CollateralDeposited(address indexed user, uint256 indexed amount);
+    event CollateralDeposited(address indexed user, address indexed token, uint256 indexed amount);
     event CollateralRedeemed(address indexed redeemedFrom, address indexed redeemedTo, uint256 amount);
     event Liquidated(address indexed user, address indexed liquidator, uint256 debtToCover, uint256 totalCollateralToRedeem, uint256 protocolShare);
     event MintAUSD(address indexed user, uint256 amount);
@@ -107,55 +116,85 @@ contract AurumEngine is ReentrancyGuard {
         _;
     }
 
-
-    /*----------Functions----------*/
-    constructor(address tokenAddress, address priceFeedAddress, address auAddress) {
-        s_priceFeed = priceFeedAddress;
-        s_collateralToken = tokenAddress;
-        i_ausd = AurumUSD(auAddress);
+    modifier isAllowedToken(address token) {
+        if (!s_collateralInfo[token].isActive) {
+            revert AurumEngine__TokenNotAllowed(token);
+        }
+        _;
     }
 
+    /*----------Functions----------*/
+    constructor(address[] memory tokenAddresses, address[] memory priceFeedAddresses, address ausdAddress) Ownable(msg.sender) {
+        if (tokenAddresses.length != priceFeedAddresses.length) {
+            revert AurumEngine__TokenAddressesAndPriceFeedAddressesAmountsDontMatch();
+        }
+
+        for (uint256 i = 0; i < tokenAddresses.length; i++) {
+            s_collateralInfo[tokenAddresses[i]] = CollateralInfo({
+                priceFeed: priceFeedAddresses[i],
+                ltv: DEFAULT_LTV,                  
+                debtCeiling: DEFAULT_DEBT_CEILING, 
+                totalDebt: 0,
+                isActive: true
+            });
+            s_collateralList.push(tokenAddresses[i]);
+        }
+        i_ausd = AurumUSD(ausdAddress);
+    }
 
     /**
+     * @param collateralToken The address of the collateral token to deposit
      * @param amountCollateral The amount of collateral to deposit
      * @param amountAUSDToMint The amount of AUSD to mint
      * @notice This function will deposit your collateral and mint the AUSD tokens in one transaction
      */
-    function depositCollateralAndMintAUSD(uint256 amountCollateral, uint256 amountAUSDToMint) external {
-        depositCollateral(amountCollateral);
+    function depositCollateralAndMintAUSD(address collateralToken, uint256 amountCollateral, uint256 amountAUSDToMint)
+        external 
+    {
+        depositCollateral(collateralToken, amountCollateral);
         mintAUSD(amountAUSDToMint);
     }
 
-
     /**
+     * @param collateralToken The address of the collateral token to redeem
      * @param amountCollateral The amount of collateral to redeem
      * @param amountAUSDToBurn The amount of AUSD to burn
      * @notice This function burns AUSD and redeems underlying collateral in one transaction
      */
-    function redeemCollateralAndBurnAUSD(uint256 amountCollateral, uint256 amountAUSDToBurn) external {
+    function redeemCollateralAndBurnAUSD(address collateralToken, uint256 amountCollateral, uint256 amountAUSDToBurn)
+        external
+    {
         burnAUSD(amountAUSDToBurn);
-        redeemCollateral(amountCollateral);
+        redeemCollateral(collateralToken, amountCollateral);
     }
 
-
     /**
+     * @param collateralToken The address of the collateral token to deposit
      * @param amountCollateral The amount of collateral to deposit
      * @notice This function will deposit a user's collateral into the protocol
      */
-    function depositCollateral(uint256 amountCollateral) public moreThanZero(amountCollateral) nonReentrant {
-        bool success = IERC20(s_collateralToken).transferFrom(msg.sender, address(this), amountCollateral);
+    function depositCollateral(address collateralToken, uint256 amountCollateral) public
+        moreThanZero(amountCollateral)
+        isAllowedToken(collateralToken)
+        nonReentrant
+    {
+        s_collateralDeposited[msg.sender][collateralToken] += amountCollateral;
+        emit CollateralDeposited(msg.sender, collateralToken, amountCollateral);
+        bool success = IERC20(collateralToken).transferFrom(msg.sender, address(this), amountCollateral);
         if (!success) revert AurumEngine__TransferFailed();
-        s_collateralDeposited[msg.sender] += amountCollateral;
-        emit CollateralDeposited(msg.sender, amountCollateral);
     }
 
-
     /**
+     * @param collateralToken The address of the collateral token to redeem
      * @param amountCollateral The amount of collateral to redeem
      * @notice To redeem collateral, the health factor must be at least 1 AFTER collateral is pulled
      */
-    function redeemCollateral(uint256 amountCollateral) public moreThanZero(amountCollateral) nonReentrant {
-        _redeemCollateral(msg.sender, msg.sender, amountCollateral);
+    function redeemCollateral(address collateralToken, uint256 amountCollateral) public 
+        moreThanZero(amountCollateral)
+        isAllowedToken(collateralToken)
+        nonReentrant
+    {
+        _redeemCollateral(collateralToken, amountCollateral, msg.sender, msg.sender);
         _revertIfHealthFactorIsBroken(msg.sender);
     }
 
@@ -165,14 +204,13 @@ contract AurumEngine is ReentrancyGuard {
      * @notice To mint AUSD, the user must have enough collateral to cover the minimum collateralization ratio of 125%
      */
     function mintAUSD(uint256 amountAUSDToMint) public moreThanZero(amountAUSDToMint) nonReentrant {
-        if (i_ausd.totalSupply() + amountAUSDToMint > MAX_AUSD_SUPPLY) revert AurumEngine__ExceedsMaxSupply();
         
+        // Update the user's total debt and mint them AUSD
         s_AUSDMinted[msg.sender] += amountAUSDToMint;
         _revertIfHealthFactorIsBroken(msg.sender);
         emit MintAUSD(msg.sender, amountAUSDToMint);
-
         bool minted = i_ausd.mint(msg.sender, amountAUSDToMint);
-        if(!minted) revert AurumEngine__MintFailed();
+        if (!minted) revert AurumEngine__MintFailed();
     }
 
 
@@ -184,8 +222,8 @@ contract AurumEngine is ReentrancyGuard {
         _burnAUSD(amount, msg.sender, msg.sender);
     }
 
-
     /**
+     * @param collateralToken The address of the collateral token to take from the user
      * @param user The user who has broken the health factor. Their health factor should be below MIN_HEALTH_FACTOR
      * @param debtToCover The amount of AUSD to burn to improve the user's health factor
      * @notice You can partially liquidate another user
@@ -194,7 +232,12 @@ contract AurumEngine is ReentrancyGuard {
      * @notice A known bug would be if the protocol were 100% or less collateralized, then we wouldn't be able to incentivize the liquidators.
      *         For example, if there was a "black swan" event causing a sharp drop in the price of gold, before anyone could be liquidated.
      */
-    function liquidate(address user, uint256 debtToCover) external moreThanZero(debtToCover) nonReentrant {
+    function liquidate(address collateralToken, address user, uint256 debtToCover)
+        external
+        moreThanZero(debtToCover)
+        isAllowedToken(collateralToken)
+        nonReentrant
+    {
         // Check health factor of user
         uint256 startingUserHealthFactor = _healthFactor(user);
         if (startingUserHealthFactor >= MIN_HEALTH_FACTOR) revert AurumEngine__HealthFactorOkay();
@@ -211,7 +254,7 @@ contract AurumEngine is ReentrancyGuard {
             debtToCover = currentDebt; // Pay 100%
         }
 
-        uint256 tokenAmountFromDebtCovered = getTokenAmountFromUsd(debtToCover);
+        uint256 tokenAmountFromDebtCovered = getTokenAmountFromUsd(collateralToken, debtToCover);
 
         // Calculate the protocol's and liquidator's share
         uint256 protocolShare = (tokenAmountFromDebtCovered * PROTOCOL_FEE) / LIQUIDATION_PRECISION;
@@ -221,8 +264,8 @@ contract AurumEngine is ReentrancyGuard {
         uint256 totalCollateralToRedeem = liquidatorShare + protocolShare;
 
         // Redeem collateral for liquidator and protocol
-        _redeemCollateral(user, msg.sender, liquidatorShare);
-        _redeemCollateral(user, address(this), protocolShare);
+        _redeemCollateral(collateralToken, liquidatorShare, user, msg.sender);
+        _redeemCollateral(collateralToken, protocolShare, user, address(this));
 
         // Burn AUSD
         _burnAUSD(debtToCover, user, msg.sender);
@@ -287,51 +330,57 @@ contract AurumEngine is ReentrancyGuard {
         if (userHealthFactor < MIN_HEALTH_FACTOR) revert AurumEngine__BreaksHealthFactor(userHealthFactor);
     }
 
-
     /************************************************************************************************/
     /********************************Public & External View Functions********************************/
     /************************************************************************************************/
     /**
+     * @param collateralToken The address of the collateral token
      * @param usdAmountInWei The USD amount in wei
      * @return The amount of collateral tokens given a USD value
      */
-    function getTokenAmountFromUsd(uint256 usdAmountInWei) public view returns(uint256) {
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeed);
+    function getTokenAmountFromUsd(address collateralToken, uint256 usdAmountInWei) public view returns (uint256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_collateralInfo[collateralToken].priceFeed);
         (, int256 price,,,) = priceFeed.staleCheckLatestRoundData();
         return (usdAmountInWei * PRECISION) / (uint256(price) * ADDITIONAL_FEED_PRECISION);
     }
 
     /**
      * @param user The user to query for account information
+     * @return totalCollateralValueInUsd The total collateral value in USD for a given user
+     */
+    function getAccountCollateralValueInUsd(address user) public view returns (uint256 totalCollateralValueInUsd) {
+        for (uint256 i = 0; i < s_collateralList.length; i++) {
+            address token = s_collateralList[i];
+            uint256 amount = s_collateralDeposited[user][token];
+            totalCollateralValueInUsd += _usdValue(token, amount);
+        }
+        return totalCollateralValueInUsd;
+    }
+
+    /**
+     * @param collateralToken The address of the collateral token
+     * @param user The user to query for account information
      * @return The total quantity of collateral tokens for a given user
      */
-    function getAmountCollateral(address user) external view returns (uint256) {
-        return s_collateralDeposited[user];
+    function getUserCollateralAmount(address collateralToken, address user) external view returns (uint256) {
+        return s_collateralDeposited[user][collateralToken];
     }
 
     /**
      * @param user The user to query for account information
      * @return The health factor value for a user
      */
-    function getHealthFactor(address user) external view returns (uint256) {
+    function getUserHealthFactor(address user) external view returns (uint256) {
         return _healthFactor(user);
     }
 
     /**
+     * @param collateralToken The address of the collateral token
      * @param amount The amount of collateral tokens
      * @return The USD value of a given amount of collateral tokens
      */
-    function getUsdValue(uint256 amount) external view returns (uint256) {
-        return _usdValue(amount);
-    }
-
-    /**
-     * @param user The user to query for account information
-     * @return The total collateral value in USD for a given user
-     */
-    function getAccountCollateralValueInUsd(address user) external view returns (uint256) {
-        (, uint256 collateralValueInUsd) = _getAccountInformation(user);
-        return collateralValueInUsd;
+    function getUsdValue(address collateralToken, uint256 amount) external view returns (uint256) {
+        return _usdValue(collateralToken, amount);
     }
 
     /**

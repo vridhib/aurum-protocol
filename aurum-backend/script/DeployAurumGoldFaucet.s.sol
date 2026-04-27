@@ -19,7 +19,7 @@ contract DeployAurumGoldFaucet is Script {
 
     function deploy() public returns (AurumGoldFaucet) {
         HelperConfig config = new HelperConfig();
-        (, address aurumGold, address deployerAccount) = config.activeNetworkConfig();
+        (, , address aurumGold, , address deployerAccount) = config.activeNetworkConfig();
 
         vm.startBroadcast(deployerAccount);
         AurumGoldFaucet faucet = new AurumGoldFaucet(aurumGold);
@@ -31,7 +31,7 @@ contract DeployAurumGoldFaucet is Script {
 
     function fund(AurumGoldFaucet faucet) public {
         HelperConfig config = new HelperConfig();
-        (, address aurumGold, address deployerAccount) = config.activeNetworkConfig();
+        (, , address aurumGold, , address deployerAccount) = config.activeNetworkConfig();
 
         uint256 fundAmount = 100_000 ether;     // 100,000 AUR
 

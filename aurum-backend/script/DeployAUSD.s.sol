@@ -9,13 +9,18 @@ import {HelperConfig} from "./HelperConfig.s.sol";
 
 
 contract DeployAUSD is Script {
+    address[] public tokenAddresses;
+    address[] public priceFeedAddresses;
+
     function run() external returns(AurumUSD, AurumEngine, HelperConfig) {
         HelperConfig config = new HelperConfig();
-        (address goldUsdPriceFeed, address goldToken, address deployerAccount) = config.activeNetworkConfig();
+        (address goldUsdPriceFeed, address wethUsdPriceFeed, address goldToken, address weth, address deployerAccount) = config.activeNetworkConfig();
+        tokenAddresses = [goldToken, weth];
+        priceFeedAddresses = [goldUsdPriceFeed, wethUsdPriceFeed];
 
         vm.startBroadcast(deployerAccount);
         AurumUSD ausd = new AurumUSD();
-        AurumEngine engine = new AurumEngine(goldToken, goldUsdPriceFeed, address(ausd));
+        AurumEngine engine = new AurumEngine(tokenAddresses, priceFeedAddresses, address(ausd));
 
         ausd.transferOwnership(address(engine));
         vm.stopBroadcast();
