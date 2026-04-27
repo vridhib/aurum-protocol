@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.34;
+
+import {BaseTest} from "../../shared/BaseTest.t.sol";
+import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {MockV3Aggregator} from "../../mocks/MockV3Aggregator.sol";
+import {AurumEngine} from "../../../src/AurumEngine.sol";
+
+contract DepositTests is BaseTest {
+    // Test that depositCollateral() reverts if the ERC20 transferFrom returns false
+    function testDepositCollateralRevertsIfTransferFails() public {
+        vm.startPrank(user);
+        ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
+
+        // Prepare the data for the mock call
+        bytes memory data = abi.encodeWithSignature("transferFrom(address,address,uint256)", user, address(aue), amountCollateral);
+        // Mock the call: when AurumEngine calls transferFrom on aurumGold with this specific data, force it to return false
+        vm.mockCall(aurumGold, data, abi.encode(false));
+
+        vm.expectRevert(AurumEngine.AurumEngine__TransferFailed.selector);
+        aue.depositCollateral(aurumGold, amountCollateral);
+    }
+
+    // Test that depositCollateral() reverts if the user deposits 0 collateral
+    function testRevertsIfUserDepositsZeroCollateral() public {
+        vm.startPrank(user);
+        ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
+        vm.expectRevert(AurumEngine.AurumEngine__NeedsMoreThanZero.selector);
+        aue.depositCollateral(aurumGold, 0);
+        vm.stopPrank();
+    }
+
+    // Test that depositCollateral() reverts if the user deposits an unsupported token
+    function testCannotDepositUnsupportedToken() public {
+        ERC20Mock wrongGoldToken = new ERC20Mock();
+        vm.expectRevert(abi.encodeWithSelector(AurumEngine.AurumEngine__TokenNotAllowed.selector, wrongGoldToken));
+        aue.depositCollateral(address(wrongGoldToken), amountCollateral);
+    }
+
+    // Test that depositCollateral() allows user to deposit collateral and updates account info
+    function testUserCanDepositCollateralAndGetAccountInfo() public depositedCollateral {
+        AurumEngine.AccountInfo memory userAccountInfo = aue.getAccountInformation(user);
+
+        uint256 expectedTotalAUSDMinted = 0;
+        uint256 actualTotalAUSDMinted = userAccountInfo.totalAUSDMinted;
+        uint256 expectedDepositValue = aurAmount * uint256(goldPrice) + wethAmount * uint256(wethPrice);
+        uint256 actualDepositValue = userAccountInfo.collateralValueInUsd;
+
+        assertEq(expectedTotalAUSDMinted, actualTotalAUSDMinted);
+        assertEq(expectedDepositValue, actualDepositValue);
+    }
+
+    // Test that depositCollateral() allows deposits of different collaterals
+    function testDepositTwoCollaterals() public depositedCollateral {
+        uint256 goldBalance = aue.getUserCollateralAmount(aurumGold, user);
+        uint256 wethBalance = aue.getUserCollateralAmount(weth, user);
+        assertEq(goldBalance, aurAmount);
+        assertEq(wethBalance, wethAmount);
+    }
+}
