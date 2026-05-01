@@ -50,7 +50,7 @@ contract RedeemTests is BaseTest {
         uint256 expectedAUSDMinted = 0;
         uint256 expectedCollateralAmount = 0;
 
-        uint256 actualAUSDMinted = aue.getAUSDMinted(user);
+        uint256 actualAUSDMinted = aue.getCurrentUserDebt(user);
         uint256 actualCollateralAmount = aue.getUserCollateralAmount(aurumGold, user) + aue.getUserCollateralAmount(weth, user);
 
         assertEq(expectedAUSDMinted, actualAUSDMinted);

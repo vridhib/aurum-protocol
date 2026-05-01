@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.34;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test, console2} from "forge-std/Test.sol";
 import {DeployAUSD} from "../../script/DeployAUSD.s.sol";
 import {AurumUSD} from "../../src/AurumUSD.sol";
 import {AurumEngine} from "../../src/AurumEngine.sol";
+import {InterestRateModel} from "../../src/interest/InterestRateModel.sol";
+import {AurumTreasury} from "../../src/treasury/AurumTreasury.sol";
+import {AurumSavings} from "../../src/treasury/AurumSavings.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
@@ -13,6 +16,8 @@ contract BaseTest is Test {
     DeployAUSD internal deployer;
     AurumUSD internal ausd;
     AurumEngine internal aue;
+    InterestRateModel internal interestRateModel;
+    AurumTreasury internal treasury;
     HelperConfig internal config;
     address internal goldUsdPriceFeed;
     address internal ethUsdPriceFeed;
@@ -28,6 +33,7 @@ contract BaseTest is Test {
     uint256 internal aurAmount = 60 ether;
     uint256 internal wethAmount = 40 ether;
     uint256 internal amountAUSD = 10 ether;
+    uint256 internal largeAUSDAmount = 40000 ether;
     uint256 internal debtToCover;
     uint256 internal partialCollateralToRedeem = 1 ether;
 
@@ -36,13 +42,18 @@ contract BaseTest is Test {
     uint256 internal constant LIQUIDATION_PRECISION = 100;
     uint256 internal constant MIN_HEALTH_FACTOR = 1e18;
     uint256 internal constant PRECISION = 1e18;
+    uint256 internal constant PROTOCOL_FEE_PRECISION = 100;
     uint256 internal constant ONE_AUSD = 1e18;
     uint256 internal constant ONE_AUR = 1e18;
     uint256 internal constant ONE_WETH = 1e18;
+    uint256 internal constant ONE_YEAR = 365 days;
 
     function setUp() public virtual {
         deployer = new DeployAUSD();
         (ausd, aue, config) = deployer.run();
+        interestRateModel = InterestRateModel(aue.getInterestRateModel());
+        treasury = AurumTreasury(aue.getTreasury());
+
         (goldUsdPriceFeed, ethUsdPriceFeed, aurumGold, weth,) = config.activeNetworkConfig();
 
         ERC20Mock(aurumGold).mint(user, STARTING_ERC20_BALANCE);
@@ -111,5 +122,25 @@ contract BaseTest is Test {
         uint256 wethUsd = wethAmount * uint256(wethPrice);
         uint256 totalUsd = goldUsd + wethUsd;
         return (totalUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
+    }
+
+    // Helper to generate fresh price feed data (using current block.timestamp)
+    function _getFreshPriceData(int256 price) internal view returns (bytes memory) {
+        return abi.encode(
+            uint80(1),               // roundId
+            price,                   // answer (e.g., goldPrice * 1e8)
+            block.timestamp,         // startedAt
+            block.timestamp,         // updatedAt (fresh)
+            uint80(1)                // answeredInRound
+        );
+    }
+
+    // Helper to mock all price feeds used by the engine with fresh timestamps
+    function _bypassStalePriceChecks() internal {
+        bytes memory goldMock = _getFreshPriceData(int256(goldPrice * 1e8));
+        bytes memory ethMock = _getFreshPriceData(int256(wethPrice * 1e8));
+
+        vm.mockCall(goldUsdPriceFeed, abi.encodeWithSignature("latestRoundData()"), goldMock);
+        vm.mockCall(ethUsdPriceFeed, abi.encodeWithSignature("latestRoundData()"), ethMock);
     }
 }

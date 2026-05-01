@@ -22,7 +22,7 @@ contract LiquidationTests is BaseTest {
         ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
         ausd.approve(address(aue), debtToCover);
         aue.depositCollateralAndMintAUSD(aurumGold, amountCollateral, debtToCover);
-        uint256 userAUSDAmount = aue.getAUSDMinted(user);
+        uint256 userAUSDAmount = aue.getCurrentUserDebt(user);
 
         // Act / Assert - liquidator tries to liquidate user
         vm.startPrank(liquidator);
@@ -60,7 +60,7 @@ contract LiquidationTests is BaseTest {
         vm.stopPrank();
 
         // Assert
-        uint256 remainingAUSDMinted = aue.getAUSDMinted(user);
+        uint256 remainingAUSDMinted = aue.getCurrentUserDebt(user);
         assertGt(remainingAUSDMinted, 0);
         assertLt(remainingAUSDMinted, auToMint);
     }
@@ -92,12 +92,12 @@ contract LiquidationTests is BaseTest {
         MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4000e8);
         
         // Liquidator tries to liquidate the remaining debt
-        uint256 debtBeforeSecondLiquidation = aue.getAUSDMinted(user);
+        uint256 debtBeforeSecondLiquidation = aue.getCurrentUserDebt(user);
         aue.liquidate(aurumGold, user, debtBeforeSecondLiquidation); 
         vm.stopPrank();
 
         // Assert
-        uint256 remainingAUSDMinted = aue.getAUSDMinted(user);
+        uint256 remainingAUSDMinted = aue.getCurrentUserDebt(user);
         // user's AUSD: 400k -> 200k -> 100k
         assertEq(remainingAUSDMinted, auToMint / 4); 
     }
@@ -113,7 +113,7 @@ contract LiquidationTests is BaseTest {
     function testLiquidatorBalanceIsUpdatedAfterLiquidation() public liquidated {
         uint256 startingLiquidatorBalance = 0; 
 
-        uint256 actualDebtCovered = debtToCover - aue.getAUSDMinted(user);
+        uint256 actualDebtCovered = debtToCover - aue.getCurrentUserDebt(user);
         uint256 tokenAmountFromDebt = aue.getTokenAmountFromUsd(aurumGold, actualDebtCovered);
         uint256 liquidatorPayout = tokenAmountFromDebt + (tokenAmountFromDebt * aue.LIQUIDATION_BONUS() / aue.LIQUIDATION_PRECISION());
 
@@ -128,7 +128,7 @@ contract LiquidationTests is BaseTest {
     function testProtocolBalanceIsUpdatedAfterLiquidation() public liquidated {
         uint256 startingProtocolBalance = amountCollateral + amountCollateral; 
 
-        uint256 actualDebtCovered = debtToCover - aue.getAUSDMinted(user);
+        uint256 actualDebtCovered = debtToCover - aue.getCurrentUserDebt(user);
         uint256 tokenAmountFromDebt = aue.getTokenAmountFromUsd(aurumGold, actualDebtCovered);
         uint256 liquidatorPayout = tokenAmountFromDebt + (tokenAmountFromDebt * aue.LIQUIDATION_BONUS() / aue.LIQUIDATION_PRECISION());
 
@@ -172,6 +172,6 @@ contract LiquidationTests is BaseTest {
         vm.stopPrank();
 
         // Verify that user debt == 0
-        assertEq(aue.getAUSDMinted(user), 0);
+        assertEq(aue.getCurrentUserDebt(user), 0);
     }
 }

@@ -1,151 +1,172 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity 0.8.34;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.34;
 
-// import {Test, console} from "forge-std/Test.sol";
-// import {AurumEngine} from "../../src/AurumEngine.sol";
-// import {AurumUSD} from "../../src/AurumUSD.sol";
-// import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
-// import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
+import {Test, console} from "forge-std/Test.sol";
+import {AurumEngine} from "../../src/AurumEngine.sol";
+import {AurumUSD} from "../../src/AurumUSD.sol";
+import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
 
 
-// contract Handler is Test {
-//     AurumEngine public aue;
-//     AurumUSD public ausd;
-//     address public goldToken;
-//     address public goldPriceFeed;
+contract Handler is Test {
+    AurumEngine public aue;
+    AurumUSD public ausd;
+    address public goldToken;
+    address public goldPriceFeed;
 
-//     address[] public usersWithCollateralDeposited;
+    address[] public collateralTokens;
+    mapping(address => address) public tokenPriceFeeds;
+
+    address[] public usersWithCollateralDeposited;
     
-//     uint256 public constant MAX_DEPOSIT_SIZE = type(uint96).max;
-//     uint256 public constant MIN_PRICE = 100e8; 
-//     uint256 public constant MAX_PRICE = 100000e8;
+    uint256 public constant MAX_DEPOSIT_SIZE = type(uint96).max;
+    uint256 public constant MIN_PRICE = 100e8; 
+    uint256 public constant MAX_PRICE = 100000e8;
 
-//     constructor(AurumEngine _auEngine, AurumUSD _ausd, address _goldToken, address _priceFeed) {
-//         aue = _auEngine;
-//         ausd = _ausd;
-//         goldToken = _goldToken;
-//         goldPriceFeed = _priceFeed;
-//     }
+    constructor(
+        AurumEngine _ausdEngine, 
+        AurumUSD _ausd, 
+        address[] memory _collateralTokens, 
+        address[] memory _tokenPriceFeeds
+    ) 
+    {
+        require(_collateralTokens.length == _tokenPriceFeeds.length);
+        for (uint256 i = 0; i < _collateralTokens.length; i++) {
+            collateralTokens.push(_collateralTokens[i]);
+            tokenPriceFeeds[_collateralTokens[i]] = _tokenPriceFeeds[i];
+        }
+        aue = _ausdEngine;
+        ausd = _ausd;
+    }
 
-//     function depositCollateral(uint256 amountCollateral) public {
-//         amountCollateral = bound(amountCollateral, 1, MAX_DEPOSIT_SIZE);
+    // Helpers:
+        function _getUserTotalBorrowingPower(address user) internal view returns (uint256) {
+        uint256 totalPower;
+        for (uint256 i = 0; i < collateralTokens.length; i++) {
+            address token = collateralTokens[i];
+            uint256 deposited = aue.getUserCollateralAmount(token, user);
+            if (deposited == 0) continue;
+            uint256 usdValue = aue.getUsdValue(token, deposited);
+            uint256 ltv = aue.getCollateralTokenLtv(token);   // you'll need to add this getter
+            totalPower += (usdValue * ltv) / 100;
+        }
+        return totalPower;
+    }
 
-//         vm.startPrank(msg.sender);
-//         ERC20Mock(goldToken).mint(msg.sender, amountCollateral);
-//         ERC20Mock(goldToken).approve(address(aue), amountCollateral);
-//         aue.depositCollateral(amountCollateral);
-//         vm.stopPrank();
+    function depositCollateral(uint256 tokenSeed, uint256 amountCollateral) public {
+        address token = collateralTokens[tokenSeed % collateralTokens.length];
+        amountCollateral = bound(amountCollateral, 1, MAX_DEPOSIT_SIZE);
 
-//         usersWithCollateralDeposited.push(msg.sender);
-//     }
+        // Fund the user
+        vm.startPrank(msg.sender);
+        ERC20Mock(token).mint(msg.sender, amountCollateral);
+        ERC20Mock(token).approve(address(aue), amountCollateral);
+        aue.depositCollateral(token, amountCollateral);
+        vm.stopPrank();
 
-//     function mintAUSD(uint256 amountAUSDToMint, uint256 addressSeed) public {
-//         if (usersWithCollateralDeposited.length == 0) return;
+        // Track unique users
+        bool found;
+        for (uint256 i = 0; i < usersWithCollateralDeposited.length; i++) {
+            if (usersWithCollateralDeposited[i] == msg.sender) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) usersWithCollateralDeposited.push(msg.sender);
+    }
 
-//         address sender = usersWithCollateralDeposited[addressSeed % usersWithCollateralDeposited.length];
-//         uint256 collateralValueInUsd = aue.getAccountCollateralValueInUsd(sender);
-//         uint256 totalAUSDMinted = aue.getAUSDMinted(sender);
+    function mintAUSD(uint256 amountAUSDToMint, uint256 addressSeed) public {
+        if (usersWithCollateralDeposited.length == 0) return;
+        address sender = usersWithCollateralDeposited[addressSeed % usersWithCollateralDeposited.length];
 
-//         // Calculate max amount based on 80% LTV
-//         uint256 maxUserAUSD = (collateralValueInUsd * 80) / 100;
+        // Calculate the user's borrowing power and current debt to determine how much they can mint
+        uint256 borrowingPower = _getUserTotalBorrowingPower(sender);
+        uint256 currentDebt = aue.getCurrentUserDebt(sender);
+        if (borrowingPower <= currentDebt) return;
+
+        uint256 maxUserMintAmount = borrowingPower - currentDebt;
+        // Calculate max supply based on the global supply cap and take the minimum of the two limits
+        uint256 totalAusdSupply = ausd.totalSupply();
+        uint256 maxAusdSupply = type(uint128).max;
+        uint256 availableGlobal = maxAusdSupply > totalAusdSupply ? maxAusdSupply - totalAusdSupply : 0;
+
+        uint256 actualLimit = maxUserMintAmount < availableGlobal ? maxUserMintAmount : availableGlobal;
+        if (actualLimit == 0) return;
+
+        amountAUSDToMint = bound(amountAUSDToMint, 0, actualLimit);
+        if (amountAUSDToMint == 0) return;
+
+        vm.startPrank(sender);
+        aue.mintAUSD(amountAUSDToMint);
+        vm.stopPrank();
+    }
+
+
+    function redeemCollateral(uint256 tokenSeed, uint256 amountCollateral) public {
+        address token = collateralTokens[tokenSeed % collateralTokens.length];
+        uint256 maxCollateral = aue.getUserCollateralAmount(token, msg.sender);
+        amountCollateral = bound(amountCollateral, 0, maxCollateral);
+        if (amountCollateral == 0) return;
+
+        vm.prank(msg.sender);
+        aue.redeemCollateral(token, amountCollateral);
+    }
+
+
+    function burnAUSD(uint256 amountAUSDToBurn) public {
+        uint256 maxAUSD = ausd.balanceOf(msg.sender);
+        amountAUSDToBurn = bound(amountAUSDToBurn, 0, maxAUSD);
+        if (amountAUSDToBurn == 0) return;
+
+        vm.startPrank(msg.sender);
+        ausd.approve(address(aue), amountAUSDToBurn);
+        aue.burnAUSD(amountAUSDToBurn);
+        vm.stopPrank();
+    }
+
+
+    function liquidate(uint256 tokenSeed, uint256 userSeed, uint256 debtToCover) public {
+        address token = collateralTokens[tokenSeed % collateralTokens.length];
+        if (usersWithCollateralDeposited.length == 0) return;
+
+        address userToLiquidate = usersWithCollateralDeposited[userSeed % usersWithCollateralDeposited.length];
         
-//         if (maxUserAUSD <= totalAUSDMinted) return;
-        
-//         uint256 availableUserMint = maxUserAUSD - totalAUSDMinted;
-        
-//         // Calculate max supply based on the global supply cap
-//         uint256 totalAUSDSupply = ausd.totalSupply();
-//         uint256 maxSupply = aue.getMaxAUSDSupply();
-        
-//         uint256 availableGlobalMint = maxSupply - totalAUSDSupply;
-        
-//         // Take the minimum of the two limits
-//         uint256 actualLimit = availableUserMint < availableGlobalMint ? availableUserMint : availableGlobalMint;
-        
-//         if (actualLimit == 0) return;
+        // Make sure liquidator has enough AUSD to pay the debt
+        uint256 liquidatorBalance = ausd.balanceOf(msg.sender);
+        if (liquidatorBalance < debtToCover) {
+            uint256 borrowingPower = _getUserTotalBorrowingPower(msg.sender);
 
-//         amountAUSDToMint = bound(amountAUSDToMint, 0, actualLimit);
-        
-//         if (amountAUSDToMint == 0) return;
+            if (borrowingPower > 0) {
+                vm.prank(msg.sender);
+                aue.mintAUSD(borrowingPower / 2);
+            }
+        }
 
-//         vm.startPrank(sender);
-        
-//         try aue.mintAUSD(amountAUSDToMint) {} catch {}
-        
-//         vm.stopPrank();
-//     }
+        debtToCover = bound(debtToCover, 0, type(uint256).max); 
+        vm.prank(msg.sender);
+        aue.liquidate(token, userToLiquidate, debtToCover);
+    }
 
 
-//     function redeemCollateral(uint256 amountCollateral) public {
-//         uint256 maxCollateral = aue.getAmountCollateral(msg.sender);
-//         amountCollateral = bound(amountCollateral, 0, maxCollateral);
-        
-//         if (amountCollateral == 0) return;
+    function updateCollateralPrices(uint256 priceChangeSeed) public {
+        for (uint256 i = 0; i < collateralTokens.length; i++) {
+            address token = collateralTokens[i];
+            address feed = tokenPriceFeeds[token];
+            (, int256 currentPrice, , , ) = MockV3Aggregator(feed).latestRoundData();
+            if (currentPrice <= 0) currentPrice = 1e8;
 
-//         vm.prank(msg.sender);
-//         try aue.redeemCollateral(amountCollateral) {} catch {}
-//     }
+            uint256 minPrice = uint256(currentPrice) * 98 / 100;
+            uint256 maxPrice = uint256(currentPrice) * 102 / 100;
+            if (minPrice < MIN_PRICE) minPrice = MIN_PRICE;
+            if (maxPrice > MAX_PRICE) maxPrice = MAX_PRICE;
+            if (minPrice > maxPrice) minPrice = maxPrice;
 
+            uint256 newPrice = bound(priceChangeSeed + i, minPrice, maxPrice);
+            MockV3Aggregator(feed).updateAnswer(int256(newPrice));
+        }
+    }
 
-//     function burnAUSD(uint256 amountAUSDToBurn) public {
-//         uint256 maxAUSD = ausd.balanceOf(msg.sender);
-//         amountAUSDToBurn = bound(amountAUSDToBurn, 0, maxAUSD);
-        
-//         if (amountAUSDToBurn == 0) return;
-
-//         vm.startPrank(msg.sender);
-//         ausd.approve(address(aue), amountAUSDToBurn);
-//         aue.burnAUSD(amountAUSDToBurn);
-//         vm.stopPrank();
-//     }
-
-
-//     function liquidate(uint256 userSeed, uint256 debtToCover) public {
-//         if (usersWithCollateralDeposited.length == 0) return;
-
-//         address userToLiquidate = usersWithCollateralDeposited[userSeed % usersWithCollateralDeposited.length];
-        
-//         uint256 collateralValueInUsd = aue.getAccountCollateralValueInUsd(msg.sender);
-//         if (collateralValueInUsd > 0) {
-//              try aue.mintAUSD(collateralValueInUsd / 2) {} catch {}
-//         }
-
-//         vm.startPrank(msg.sender);
-//         debtToCover = bound(debtToCover, 0, type(uint256).max); 
-//         try aue.liquidate(userToLiquidate, debtToCover) {} catch {}
-//         vm.stopPrank();
-//     }
-
-
-//     function updateCollateralPrice(uint256 priceChangeSeed) public {
-//         (, int256 currentPrice, , , ) = MockV3Aggregator(goldPriceFeed).latestRoundData();
-
-//         // Handle negative prices
-//         if (currentPrice <= 0) {
-//             currentPrice = 1e8;
-//         }
-
-//         // Simulate volatility swings of 2%
-//         uint256 minPrice = uint256(currentPrice) * 98 / 100; // -2%
-//         uint256 maxPrice = uint256(currentPrice) * 102 / 100; // +2%
-
-//         // Prevent the price from dropping to $0 or going infinity due to math wrapping
-//         uint256 HARD_FLOOR_PRICE = 100e8; 
-//         uint256 HARD_CEILING_PRICE = 1000000e8;
-
-//         // Adjust bounds if they hit the hard limits
-//         if (minPrice < HARD_FLOOR_PRICE) {
-//             minPrice = HARD_FLOOR_PRICE;
-//         }
-//         if (maxPrice > HARD_CEILING_PRICE) {
-//             maxPrice = HARD_CEILING_PRICE;
-//         }
-//         if (minPrice > maxPrice) {
-//             minPrice = maxPrice;
-//         }
-
-//         int256 newPrice = int256(bound(priceChangeSeed, minPrice, maxPrice));
-        
-//         MockV3Aggregator(goldPriceFeed).updateAnswer(newPrice);
-//     }
-// }
+    function triggerInterestAccrual() public {
+        aue.updateIndex();
+    }
+}

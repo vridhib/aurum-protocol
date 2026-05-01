@@ -2,7 +2,7 @@
 pragma solidity 0.8.34;
 
 import {Test, console} from "forge-std/Test.sol";
-import {AurumGoldFaucet} from "../../src/AurumGoldFaucet.sol";
+import {AurumGoldFaucet} from "../../src/faucet/AurumGoldFaucet.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {DeployAUSD} from "../../script/DeployAUSD.s.sol";
 import {DeployAurumGoldFaucet} from "../../script/DeployAurumGoldFaucet.s.sol";
