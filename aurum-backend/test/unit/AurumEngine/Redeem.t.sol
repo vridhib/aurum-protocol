@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.34;
 
+import {Test, console2} from "forge-std/Test.sol";
 import {BaseTest} from "../../shared/BaseTest.t.sol";
 import {AurumEngine} from "../../../src/AurumEngine.sol";
 
@@ -8,10 +9,10 @@ import {AurumEngine} from "../../../src/AurumEngine.sol";
 contract RedeemTests is BaseTest {
     // Test that redeemCollater() allows a user to redeeem partial collateral
     function testUserCollateralAmountGetsUpdatedWhenRedeemed() public depositedCollateral {
-        uint256 startingCollateralAmount = aue.getUserCollateralAmount(aurumGold, user);
+        uint256 startingCollateralAmount = aue.getUserAccountData(user).collateralAmounts[0]; 
         vm.prank(user);
         aue.redeemCollateral(aurumGold, partialCollateralToRedeem);
-        uint256 endingCollateralAmount = aue.getUserCollateralAmount(aurumGold, user);
+        uint256 endingCollateralAmount = aue.getUserAccountData(user).collateralAmounts[0];
         assertGt(startingCollateralAmount, endingCollateralAmount);
     }
 
@@ -50,11 +51,13 @@ contract RedeemTests is BaseTest {
         uint256 expectedAUSDMinted = 0;
         uint256 expectedCollateralAmount = 0;
 
-        uint256 actualAUSDMinted = aue.getCurrentUserDebt(user);
-        uint256 actualCollateralAmount = aue.getUserCollateralAmount(aurumGold, user) + aue.getUserCollateralAmount(weth, user);
-
+        uint256 actualAUSDMinted = aue.getUserAccountData(user).totalDebt;
+        uint256[] memory collateralAmounts = aue.getUserAccountData(user).collateralAmounts;
+        uint256 actualCollateralValue = aue.getUserAccountData(user).totalCollateralValueInUsd;
+        
+        assertEq(actualCollateralValue, 0);
         assertEq(expectedAUSDMinted, actualAUSDMinted);
-        assertEq(expectedCollateralAmount, actualCollateralAmount);
+        assertEq(expectedCollateralAmount, collateralAmounts.length);
     }
 
 

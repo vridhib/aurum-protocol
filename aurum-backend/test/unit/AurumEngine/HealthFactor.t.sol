@@ -19,7 +19,7 @@ contract HealthFactorTests is BaseTest {
         vm.prank(user);
         aue.mintAUSD(ausdToMint);
 
-        uint256 actualHealthFactor = aue.getUserHealthFactor(user);
+        uint256 actualHealthFactor = aue.getUserAccountData(user).healthFactor;
         assertEq(expectedHealthFactor, actualHealthFactor);
     }
 
@@ -33,7 +33,7 @@ contract HealthFactorTests is BaseTest {
         vm.prank(user);
         aue.mintAUSD(auToMint);
 
-        uint256 actualHealthFactor = aue.getUserHealthFactor(user);
+        uint256 actualHealthFactor = aue.getUserAccountData(user).healthFactor;
         assertEq(expectedHealthFactor, actualHealthFactor);
     }
 
@@ -41,7 +41,7 @@ contract HealthFactorTests is BaseTest {
     // Test case 3: getUserHealthFactor() returns type(uint256).max if no AUSD is minted
     function testHealthFactorReturnsMaxIfNoDebt() public depositedSingleCollateral {
         uint256 expectedHealthFactor = type(uint256).max;
-        uint256 actualHealthFactor = aue.getUserHealthFactor(user);
+        uint256 actualHealthFactor = aue.getUserAccountData(user).healthFactor;
         assertEq(expectedHealthFactor, actualHealthFactor);
     }
 
@@ -50,7 +50,7 @@ contract HealthFactorTests is BaseTest {
     function testHealthFactorCanGoBelowMinHealthFactor() public depositedCollateralAndMintedAUSD(getMaxSafeMint()) {
         uint256 startingHealthFactor = 1e18;
         MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4950e8);
-        uint256 endingHealthFactor = aue.getUserHealthFactor(user);
+        uint256 endingHealthFactor = aue.getUserAccountData(user).healthFactor;
         assertGt(startingHealthFactor, endingHealthFactor);
     }
 

@@ -33,7 +33,7 @@ contract MintBurnTests is BaseTest {
     // Test that mintAUSD() allows users to mint AUSD
     function testUsersCanMintAUSD() public depositedCollateralAndMintedAUSD(amountAUSD) {
         uint256 expectedAUSDAmount = amountAUSD;
-        uint256 actualAUSDAmount = aue.getCurrentUserDebt(user);
+        uint256 actualAUSDAmount = aue.getUserAccountData(user).totalDebt;
         assertEq(expectedAUSDAmount, actualAUSDAmount);
     }
 
@@ -60,7 +60,7 @@ contract MintBurnTests is BaseTest {
         vm.prank(user);
         aue.burnAUSD(amountToBurn);
         uint256 expectedAUSDAmount = amountAUSD - amountToBurn;
-        uint256 actualAUSDAmount = aue.getCurrentUserDebt(user);
+        uint256 actualAUSDAmount = aue.getUserAccountData(user).totalDebt;
         assertEq(expectedAUSDAmount, actualAUSDAmount);
     }
 
@@ -103,8 +103,8 @@ contract MintBurnTests is BaseTest {
         uint256 expectedWethDebt = (mintAmount * wethValue) / totalValue;
 
         // Check actual debt allocation
-        uint256 actualGoldDebt = aue.getUserDebtAllocation(user, aurumGold);
-        uint256 actualWethDebt = aue.getUserDebtAllocation(user, weth);
+        uint256 actualGoldDebt = aue.getUserAccountData(user).debtAllocations[0];
+        uint256 actualWethDebt = aue.getUserAccountData(user).debtAllocations[1];
 
         // Allow for rounding errors (dust)
         assertApproxEqAbs(actualGoldDebt, expectedGoldDebt, 1e15);
@@ -136,17 +136,17 @@ contract MintBurnTests is BaseTest {
 
         // Expect DebtCeilingHit event for WETH
         vm.expectEmit(address(aue));
-        emit DebtCeilingHit(weth, aue.getCollateralTotalDebt(weth), attemptedWethAllocation);
+        emit DebtCeilingHit(weth, 0, attemptedWethAllocation);
 
         // Mint AUSD
         vm.prank(user);
         aue.mintAUSD(mintAmount);
  
         // Verify the ceiling was enforced
-        assertEq(aue.getCollateralTotalDebt(weth), 0);
-        assertEq(aue.getCollateralTotalDebt(aurumGold), mintAmount);
-        assertEq(aue.getUserDebtAllocation(user, weth), 0);
-        assertEq(aue.getUserDebtAllocation(user, aurumGold), mintAmount);
+        assertEq(aue.getCollateralInfo(weth).totalNormalizedDebt, 0);
+        assertEq(aue.getCollateralInfo(aurumGold).totalNormalizedDebt, mintAmount);
+        assertEq(aue.getUserAccountData(user).debtAllocations[1], 0);
+        assertEq(aue.getUserAccountData(user).debtAllocations[0], mintAmount);
     }
 
     // Revert when there is no valid collateral
@@ -182,8 +182,8 @@ contract MintBurnTests is BaseTest {
         aue.mintAUSD(mintAmount);
 
         // Get actual debt allocations
-        uint256 actualGoldAllocation = aue.getUserDebtAllocation(user, aurumGold);
-        uint256 actualWethAllocation = aue.getUserDebtAllocation(user, weth);
+        uint256 actualGoldAllocation = aue.getUserAccountData(user).debtAllocations[0];
+        uint256 actualWethAllocation = aue.getUserAccountData(user).debtAllocations[1];
 
         // Calculate expected proportional amounts (truncated)
         uint256 goldWeight = (goldValue * aue.PRECISION()) / totalValue;
@@ -195,8 +195,8 @@ contract MintBurnTests is BaseTest {
 
         assertEq(actualGoldAllocation, expectedGoldAllocation);
         assertEq(actualWethAllocation, expectedWethAllocation);
-        assertEq(aue.getCollateralTotalDebt(aurumGold), expectedGoldAllocation);
-        assertEq(aue.getCollateralTotalDebt(weth), expectedWethAllocation);
+        assertEq(aue.getCollateralInfo(aurumGold).totalNormalizedDebt, expectedGoldAllocation);
+        assertEq(aue.getCollateralInfo(weth).totalNormalizedDebt, expectedWethAllocation);
     }
 
     function testDustHandlingInMintAUSDForSingleCollateral() public {
@@ -210,9 +210,9 @@ contract MintBurnTests is BaseTest {
         vm.prank(user);
         aue.mintAUSD(mintAmount);
 
-        uint256 goldAllocation = aue.getUserDebtAllocation(user, aurumGold);
+        uint256 goldAllocation = aue.getUserAccountData(user).debtAllocations[0];
         assertEq(goldAllocation, mintAmount);
-        assertEq(aue.getCollateralTotalDebt(aurumGold), mintAmount);
+        assertEq(aue.getCollateralInfo(aurumGold).totalNormalizedDebt, mintAmount);
     }
 
        // Deallocation on burn – after burning part of the debt, check that each collateral’s totalDebt and user’s allocation decrease proportionally.
@@ -230,8 +230,8 @@ contract MintBurnTests is BaseTest {
         vm.stopPrank();
 
         // Capture debt allocations after burn
-        uint256 goldAllocationAfterBurn = aue.getUserDebtAllocation(user, aurumGold);
-        uint256 wethAllocationAfterBurn = aue.getUserDebtAllocation(user, weth);
+        uint256 goldAllocationAfterBurn = aue.getUserAccountData(user).debtAllocations[0];
+        uint256 wethAllocationAfterBurn = aue.getUserAccountData(user).debtAllocations[1];
         uint256 expectedRemainingDebt = mintAmount - burnAmount;
 
         // Calculate expected proportional reductions (same logic as mint allocation)
@@ -250,8 +250,8 @@ contract MintBurnTests is BaseTest {
         // Assert that allocations decreased proportionally 
         assertEq(goldAllocationAfterBurn, expectedGoldRemaining);
         assertEq(wethAllocationAfterBurn, expectedWethRemaining);
-        assertEq(aue.getCollateralTotalDebt(aurumGold), goldAllocationAfterBurn);
-        assertEq(aue.getCollateralTotalDebt(weth), wethAllocationAfterBurn);
+        assertEq(aue.getCollateralInfo(aurumGold).totalNormalizedDebt, goldAllocationAfterBurn);
+        assertEq(aue.getCollateralInfo(weth).totalNormalizedDebt, wethAllocationAfterBurn);
     }
     /***************************************************************************/
     /*******************Interest Accrual Tests********************/
@@ -259,25 +259,25 @@ contract MintBurnTests is BaseTest {
     // Test that the cumulative index increases after time passes
     function testCumulativeIndexAndUserDebtIncreaseOverTime() public depositedCollateralAndMintedAUSD(largeAUSDAmount) {
         // Deposited 100 collateral and minted 10000e18 (10,000 AUSD)
-        uint256 currentIndexBefore = aue.getCumulativeIndex();
-        uint256 normalizedDebtBefore = aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth);
-        uint256 actualdebtBefore = aue.getCurrentUserDebt(user);
+        uint256 currentIndexBefore = aue.s_cumulativeIndex();
+        uint256 normalizedDebtBefore = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
+        uint256 actualdebtBefore = aue.getUserAccountData(user).totalDebt;
 
         // Warp forward 1 year
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();
         // Update index without minting
         aue.updateIndex();
-        uint256 currentIndexAfter = aue.getCumulativeIndex();
-        uint256 normalizedDebtAfter = aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth);
-        uint256 actualDebtAfter = aue.getCurrentUserDebt(user);
+        uint256 currentIndexAfter = aue.s_cumulativeIndex();
+        uint256 normalizedDebtAfter = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
+        uint256 actualDebtAfter = aue.getUserAccountData(user).totalDebt;
         uint256 expectedDebtAfter = actualdebtBefore * currentIndexAfter / currentIndexBefore;
 
         assertEq(expectedDebtAfter, actualDebtAfter);
         assertEq(normalizedDebtBefore, normalizedDebtAfter);
         assertGt(currentIndexAfter, currentIndexBefore);
-        assertEq(aue.getUserLastIndex(user), currentIndexBefore);
-        assertEq(aue.getCollateralTotalDebt(aurumGold) + aue.getCollateralTotalDebt(weth), normalizedDebtBefore);
+        assertEq(aue.getUserAccountData(user).lastIndex, currentIndexBefore);
+        assertEq(aue.getCollateralInfo(aurumGold).totalNormalizedDebt + aue.getCollateralInfo(weth).totalNormalizedDebt, normalizedDebtBefore);
     }
 
     // Test that protocol fee is minted to treasury when interest is paid via burn
@@ -293,13 +293,13 @@ contract MintBurnTests is BaseTest {
         vm.prank(user);
         ausd.approve(address(aue), amountAUSD);
 
-        uint256 initialDebt = aue.getCurrentUserDebt(user);
+        uint256 initialDebt = aue.getUserAccountData(user).totalDebt;
         // Warp forward 1 year
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();  // prevent stale price revert
         // Trigger interest accrual
         aue.updateIndex();
-        uint256 debtWithInterest = aue.getCurrentUserDebt(user);
+        uint256 debtWithInterest = aue.getUserAccountData(user).totalDebt;
         uint256 interest = debtWithInterest - initialDebt;
 
         // User burns the full debt (including interest)
@@ -309,46 +309,46 @@ contract MintBurnTests is BaseTest {
         vm.stopPrank();
     
         // Treasury should have received PROTOCOL_RESERVE_PERCENT of the interest
-        uint256 expectedFee = (interest * aue.PROTOCOL_RESERVE_PERCENT()) / aue.PROTOCOL_FEE_PRECISION();
-        uint256 treasuryBalance = ausd.balanceOf(aue.getTreasury());
-        uint256 finalUserActualDebt = aue.getCurrentUserDebt(user);
-        uint256 finalUserNormalizedDebt = aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth);
-        uint256 finalGlobalNormalizedDebt = aue.getCollateralTotalDebt(aurumGold) + aue.getCollateralTotalDebt(weth);
+        uint256 expectedFee = (interest * aue.PROTOCOL_RESERVE_PERCENT()) / aue.LIQUIDATION_AND_FEE_PRECISION();
+        uint256 treasuryBalance = ausd.balanceOf(aue.i_treasury());
+        uint256 finalUserActualDebt = aue.getUserAccountData(user).totalDebt;
+        uint256 finalUserNormalizedDebt = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
+        uint256 finalGlobalNormalizedDebt = aue.getCollateralInfo(aurumGold).totalNormalizedDebt + aue.getCollateralInfo(weth).totalNormalizedDebt;
 
         assertEq(treasuryBalance, expectedFee);
         assertEq(finalUserActualDebt, 0);
         assertEq(finalUserNormalizedDebt, 0);
         assertEq(finalGlobalNormalizedDebt, 0);
-        assertEq(aue.getUserLastIndex(user), aue.getCumulativeIndex());
+        assertEq(aue.getUserAccountData(user).lastIndex, aue.s_cumulativeIndex());
     }
 
     // Ensure that calling `updateIndex()` immediately after a mint doesn't change the index or debt
     function testNoAccrualWhenTimeHasNotPassed() public depositedCollateralAndMintedAUSD(amountAUSD) {
-        uint256 indexBefore = aue.getCumulativeIndex();
-        uint256 userLastIndexBefore = aue.getUserLastIndex(user);
-        uint256 actualDebtBefore = aue.getCurrentUserDebt(user);
-        uint256 normalizedDebtBefore = aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth);
+        uint256 indexBefore = aue.s_cumulativeIndex();
+        uint256 userLastIndexBefore = aue.getUserAccountData(user).lastIndex;
+        uint256 actualDebtBefore = aue.getUserAccountData(user).totalDebt;
+        uint256 normalizedDebtBefore = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
 
         aue.updateIndex();
-        assertEq(aue.getCumulativeIndex(), indexBefore);
-        assertEq(aue.getUserLastIndex(user), userLastIndexBefore);
-        assertEq(aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth), normalizedDebtBefore);
-        assertEq(aue.getCurrentUserDebt(user), actualDebtBefore);
+        assertEq(aue.s_cumulativeIndex(), indexBefore);
+        assertEq(aue.getUserAccountData(user).lastIndex, userLastIndexBefore);
+        assertEq(aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1], normalizedDebtBefore);
+        assertEq(aue.getUserAccountData(user).totalDebt, actualDebtBefore);
     }
 
     // Ensure there is no index change when a user's debt is 0
     function testNoAccrualWhenZeroTotalDebt() public depositedCollateral {
-        uint256 indexBefore = aue.getCumulativeIndex();
-        uint256 actualDebtBefore = aue.getCurrentUserDebt(user);
-        uint256 normalizedDebtBefore = aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth);
+        uint256 indexBefore = aue.s_cumulativeIndex();
+        uint256 actualDebtBefore = aue.getUserAccountData(user).totalDebt;
+        uint256 normalizedDebtBefore = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
         
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks(); 
         aue.updateIndex();
         
-        assertEq(aue.getCumulativeIndex(), indexBefore);
-        assertEq(aue.getCurrentUserDebt(user), actualDebtBefore);
-        assertEq(aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth), normalizedDebtBefore);
+        assertEq(aue.s_cumulativeIndex(), indexBefore);
+        assertEq(aue.getUserAccountData(user).totalDebt, actualDebtBefore);
+        assertEq(aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1], normalizedDebtBefore);
     }
 
     // Ensure the interest accrual is different for different users
@@ -381,22 +381,22 @@ contract MintBurnTests is BaseTest {
         _bypassStalePriceChecks();
         aue.updateIndex();
         
-        uint256 actualDebtA = aue.getCurrentUserDebt(userA);
-        uint256 actualDebtB = aue.getCurrentUserDebt(userB);
+        uint256 actualDebtA = aue.getUserAccountData(userA).totalDebt;
+        uint256 actualDebtB = aue.getUserAccountData(userB).totalDebt;
         // debtA should have accrued interest for 360 days and debtB for 180 days.
-        uint256 expectedDebtA = (aue.getUserDebtAllocation(userA, aurumGold) + aue.getUserDebtAllocation(userA, weth)) * aue.getCumulativeIndex() / PRECISION;
-        uint256 expectedDebtB = aue.getUserDebtAllocation(userB, aurumGold) * aue.getCumulativeIndex() / PRECISION;
+        uint256 expectedDebtA = (aue.getUserAccountData(userA).debtAllocations[0] + aue.getUserAccountData(userA).debtAllocations[1]) * aue.s_cumulativeIndex() / PRECISION;
+        uint256 expectedDebtB = aue.getUserAccountData(userB).debtAllocations[0] * aue.s_cumulativeIndex() / PRECISION;
 
         assertGt(actualDebtA, actualDebtB);
         assertEq(expectedDebtA, actualDebtA);
         assertEq(expectedDebtB, actualDebtB);
-        assertGt(aue.getUserLastIndex(userB), aue.getUserLastIndex(userA));
+        assertGt(aue.getUserAccountData(userB).lastIndex, aue.getUserAccountData(userA).lastIndex);
     }
 
     function testPartialBurnPreservesProportionalDebt() public depositedCollateralAndMintedAUSD(amountAUSD) {
         // amounts from modifier: user has collateral in gold & weth, minted amountAUSD (10e18)
-        uint256 userNormGoldBefore = aue.getUserDebtAllocation(user, aurumGold);
-        uint256 userNormWethBefore = aue.getUserDebtAllocation(user, weth);
+        uint256 userNormGoldBefore = aue.getUserAccountData(user).debtAllocations[0];
+        uint256 userNormWethBefore = aue.getUserAccountData(user).debtAllocations[1];
         uint256 totalUserNormBefore = userNormGoldBefore + userNormWethBefore;
 
         // User burns half of the minted amount (no time passed so debt = minted amount)
@@ -407,15 +407,15 @@ contract MintBurnTests is BaseTest {
         vm.stopPrank();
 
         // After burning half, normalized debt should be halved
-        uint256 userNormGoldAfter = aue.getUserDebtAllocation(user, aurumGold);
-        uint256 userNormWethAfter = aue.getUserDebtAllocation(user, weth);
+        uint256 userNormGoldAfter = aue.getUserAccountData(user).debtAllocations[0];
+        uint256 userNormWethAfter = aue.getUserAccountData(user).debtAllocations[1];
         uint256 totalUserNormAfter = userNormGoldAfter + userNormWethAfter;
         // allow 1 wei rounding difference
         assertApproxEqAbs(totalUserNormAfter, totalUserNormBefore / 2, 1);
 
         // Global normalized debt must match user's (only user in system)
-        uint256 globalNormGoldAfter = aue.getCollateralTotalDebt(aurumGold);
-        uint256 globalNormWethAfter = aue.getCollateralTotalDebt(weth);
+        uint256 globalNormGoldAfter = aue.getCollateralInfo(aurumGold).totalNormalizedDebt;
+        uint256 globalNormWethAfter = aue.getCollateralInfo(weth).totalNormalizedDebt;
         assertEq(globalNormGoldAfter, userNormGoldAfter);
         assertEq(globalNormWethAfter, userNormWethAfter);
 
@@ -424,23 +424,23 @@ contract MintBurnTests is BaseTest {
         _bypassStalePriceChecks();
         aue.updateIndex();
 
-        uint256 currentIndex = aue.getCumulativeIndex();
+        uint256 currentIndex = aue.s_cumulativeIndex();
         uint256 expectedRemainingDebt = (totalUserNormAfter * currentIndex) / PRECISION;
-        uint256 actualRemainingDebt = aue.getCurrentUserDebt(user);
+        uint256 actualRemainingDebt = aue.getUserAccountData(user).totalDebt;
 
         assertEq(actualRemainingDebt, expectedRemainingDebt);
     }
 
     // Test user's last index is updated to current cumulative index on mint
     function testLastIndexUpdatesOnMintAfterAccrual() public depositedCollateralAndMintedAUSD(amountAUSD) {
-        uint256 oldIndex = aue.getUserLastIndex(user);
+        uint256 oldIndex = aue.getUserAccountData(user).lastIndex;
         vm.warp(block.timestamp + 30 days);
         _bypassStalePriceChecks();
         vm.prank(user);
         aue.mintAUSD(ONE_AUSD);
-        uint256 newIndex = aue.getUserLastIndex(user);
+        uint256 newIndex = aue.getUserAccountData(user).lastIndex;
         assertGt(newIndex, oldIndex);
-        assertEq(newIndex, aue.getCumulativeIndex());
+        assertEq(newIndex, aue.s_cumulativeIndex());
     }
 
     //  Ensure no overflow when utilization > 100% (capped) and interest rate model’s jump multiplier works.
@@ -472,9 +472,9 @@ contract MintBurnTests is BaseTest {
         vm.warp(block.timestamp + 100); // 100 seconds
         _bypassStalePriceChecks();
 
-        uint256 indexBefore = aue.getCumulativeIndex();
+        uint256 indexBefore = aue.s_cumulativeIndex();
         aue.updateIndex();
-        uint256 indexAfter = aue.getCumulativeIndex();
+        uint256 indexAfter = aue.s_cumulativeIndex();
 
         assertGt(indexAfter, indexBefore);
     }
@@ -482,7 +482,7 @@ contract MintBurnTests is BaseTest {
     // When user repays only part of the debt, the fee should be proportional to the interest portion of that repayment.
     function testProtocolFeeOnlyOnInterestPaid() public depositedCollateralAndMintedAUSD(amountAUSD) {
         // User deposited 60 AUR + 40 WETH and minted 10e18 AUSD
-        uint256 initialDebt = aue.getCurrentUserDebt(user);
+        uint256 initialDebt = aue.getUserAccountData(user).totalDebt;
         // Pre‑fund user with extra AUSD to pay the interest later
         vm.prank(ausd.owner());
         ausd.mint(user, 100e18); // more than enough
@@ -493,7 +493,7 @@ contract MintBurnTests is BaseTest {
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();
         aue.updateIndex();
-        uint256 totalDebt = aue.getCurrentUserDebt(user);
+        uint256 totalDebt = aue.getUserAccountData(user).totalDebt;
         uint256 interest = totalDebt - initialDebt;
 
         // Burn only the interest amount
@@ -502,46 +502,46 @@ contract MintBurnTests is BaseTest {
         vm.stopPrank();
 
         // Treasury receives 10% of the interest
-        uint256 expectedFee = (interest * aue.PROTOCOL_RESERVE_PERCENT()) / aue.PROTOCOL_FEE_PRECISION();
-        assertEq(ausd.balanceOf(aue.getTreasury()), expectedFee);
+        uint256 expectedFee = (interest * aue.PROTOCOL_RESERVE_PERCENT()) / aue.LIQUIDATION_AND_FEE_PRECISION();
+        assertEq(ausd.balanceOf(aue.i_treasury()), expectedFee);
         // User's remaining debt should be approximately the principal
-        uint256 remainingDebt = aue.getCurrentUserDebt(user);
+        uint256 remainingDebt = aue.getUserAccountData(user).totalDebt;
         assertApproxEqAbs(remainingDebt, initialDebt, 1e10);
         // User's normalized debt should be reduced proportionally
-        uint256 userNormAfter = aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth);
+        uint256 userNormAfter = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
         assertGt(userNormAfter, 0);
     }
 
     function testFullBurnZeroesNormalizedDebt() public depositedCollateralAndMintedAUSD(amountAUSD) {
-        uint256 actualDebt = aue.getCurrentUserDebt(user);
+        uint256 actualDebt = aue.getUserAccountData(user).totalDebt;
         vm.startPrank(user);
         ausd.approve(address(aue), actualDebt);
         aue.burnAUSD(actualDebt);
         vm.stopPrank();
 
-        uint256 normDebt = aue.getUserDebtAllocation(user, aurumGold) + aue.getUserDebtAllocation(user, weth);
+        uint256 normDebt = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
         assertEq(normDebt, 0);
 
         // Global normalized debt should also be zero since this is the only user
-        uint256 globalNormDebt = aue.getCollateralTotalDebt(aurumGold) + aue.getCollateralTotalDebt(weth);
+        uint256 globalNormDebt = aue.getCollateralInfo(aurumGold).totalNormalizedDebt + aue.getCollateralInfo(weth).totalNormalizedDebt;
         assertEq(globalNormDebt, 0);
     }
 
     function testBurnWithoutInterestNoFee() public depositedCollateralAndMintedAUSD(amountAUSD) {
         // No time warp, so no accrued interest
-        uint256 treasuryBefore = ausd.balanceOf(aue.getTreasury());
-        uint256 debt = aue.getCurrentUserDebt(user);
+        uint256 treasuryBefore = ausd.balanceOf(aue.i_treasury());
+        uint256 debt = aue.getUserAccountData(user).totalDebt;
 
         vm.startPrank(user);
         ausd.approve(address(aue), debt);
         aue.burnAUSD(debt);
         vm.stopPrank();
 
-        assertEq(ausd.balanceOf(aue.getTreasury()), treasuryBefore);
+        assertEq(ausd.balanceOf(aue.i_treasury()), treasuryBefore);
     }
 
     function testBurnMoreThanDebtCapped() public depositedCollateralAndMintedAUSD(amountAUSD) {
-        uint256 debt = aue.getCurrentUserDebt(user);
+        uint256 debt = aue.getUserAccountData(user).totalDebt;
         uint256 overAmount = debt * 2;
 
         // Fund user with enough to burn
@@ -555,7 +555,7 @@ contract MintBurnTests is BaseTest {
         vm.stopPrank();
 
         // Debt should be zero, and user should only lose `debt` amount not `overAmount`
-        assertEq(aue.getCurrentUserDebt(user), 0);
+        assertEq(aue.getUserAccountData(user).totalDebt, 0);
         assertEq(ausd.balanceOf(user), userBalanceBefore - debt);
     }
 }

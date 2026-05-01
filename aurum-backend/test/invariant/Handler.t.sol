@@ -44,10 +44,11 @@ contract Handler is Test {
         uint256 totalPower;
         for (uint256 i = 0; i < collateralTokens.length; i++) {
             address token = collateralTokens[i];
-            uint256 deposited = aue.getUserCollateralAmount(token, user);
+            // aue.getUserAccountData(msg.sender).collateralAmounts[tokenSeed % collateralTokens.length];
+            uint256 deposited = aue.getUserAccountData(user).collateralAmounts[i]; //getUserCollateralAmount(token, user);
             if (deposited == 0) continue;
             uint256 usdValue = aue.getUsdValue(token, deposited);
-            uint256 ltv = aue.getCollateralTokenLtv(token);   // you'll need to add this getter
+            uint256 ltv = aue.getCollateralInfo(token).ltv;
             totalPower += (usdValue * ltv) / 100;
         }
         return totalPower;
@@ -81,7 +82,7 @@ contract Handler is Test {
 
         // Calculate the user's borrowing power and current debt to determine how much they can mint
         uint256 borrowingPower = _getUserTotalBorrowingPower(sender);
-        uint256 currentDebt = aue.getCurrentUserDebt(sender);
+        uint256 currentDebt = aue.getUserAccountData(sender).totalDebt;
         if (borrowingPower <= currentDebt) return;
 
         uint256 maxUserMintAmount = borrowingPower - currentDebt;
@@ -104,7 +105,7 @@ contract Handler is Test {
 
     function redeemCollateral(uint256 tokenSeed, uint256 amountCollateral) public {
         address token = collateralTokens[tokenSeed % collateralTokens.length];
-        uint256 maxCollateral = aue.getUserCollateralAmount(token, msg.sender);
+        uint256 maxCollateral = aue.getUserAccountData(msg.sender).collateralAmounts[tokenSeed % collateralTokens.length];
         amountCollateral = bound(amountCollateral, 0, maxCollateral);
         if (amountCollateral == 0) return;
 

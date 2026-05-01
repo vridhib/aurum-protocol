@@ -2,16 +2,18 @@
 pragma solidity 0.8.34;
 
 import {BaseTest} from "../../shared/BaseTest.t.sol";
-
+import {AurumEngine} from "../../../src/AurumEngine.sol";
 
 contract ViewPureFunctionsTests is BaseTest {
     /******************************************************************************************/
     /********************************View & Pure Function Tests********************************/
     /******************************************************************************************/
-    // Test that getCollateralTokenPriceFeed() returns the correct price feed
-    function testGetCollateralTokenPriceFeed() public view {
-        address priceFeed = aue.getCollateralTokenPriceFeed(aurumGold);
-        assertEq(priceFeed, goldUsdPriceFeed);
+    // Test that getCollateralInfo() returns the correct collateral price feed address
+    function testGetCollateralInfo() public view {
+        AurumEngine.CollateralInfo memory goldInfo = aue.getCollateralInfo(aurumGold);
+        AurumEngine.CollateralInfo memory wethInfo = aue.getCollateralInfo(weth);
+        assertEq(goldInfo.priceFeed, goldUsdPriceFeed);
+        assertEq(wethInfo.priceFeed, ethUsdPriceFeed);
     }
 
     // Test that getMinHealthFactor() returns the correct minimum health factor
@@ -26,17 +28,16 @@ contract ViewPureFunctionsTests is BaseTest {
         assertEq(liquidationThreshold, LIQUIDATION_THRESHOLD);
     }
 
-    // Test that getUserCollateralAmount() returns the correct amount of tokens for a user
-    function testGetCollateralBalanceOfUser() public depositedCollateral {
-        uint256 aurBalance = aue.getUserCollateralAmount(aurumGold, user);
-        uint256 wethBalance = aue.getUserCollateralAmount(weth, user);
-        assertEq(aurBalance, aurAmount);
-        assertEq(wethBalance, wethAmount);
+    // Test that getUserAccountData() returns the correct collateral amounts for a user
+    function testGetUserAccountData() public depositedCollateral {
+        AurumEngine.UserAccountData memory userData = aue.getUserAccountData(user);
+        assertEq(userData.collateralAmounts[0], aurAmount);
+        assertEq(userData.collateralAmounts[1], wethAmount);
     }
 
     // Test that getAccountCollateralValueInUsd() returns the correct USD value of a user's collateral tokens
     function testGetAccountCollateralValue() public depositedCollateral {
-        uint256 collateralValue = aue.getAccountCollateralValueInUsd(user);
+        uint256 collateralValue = aue.getUserAccountData(user).totalCollateralValueInUsd;
         uint256 expectedAurValue = aue.getUsdValue(aurumGold, aurAmount);
         uint256 expectedWethValue = aue.getUsdValue(weth, wethAmount);
 
@@ -45,14 +46,14 @@ contract ViewPureFunctionsTests is BaseTest {
 
     // Test that getAUSD() returns the correct AurumUSD address
     function testGetAUSD() public view {
-        address ausdAddress = aue.getAUSD();
+        address ausdAddress = address(aue.i_ausd());
         assertEq(ausdAddress, address(ausd));
     }
 
     // Test that getLiquidationPrecision() returns the correct liquidation precision
     function testGetLiquidationPrecision() public view {
         uint256 expectedLiquidationPrecision = 100;
-        uint256 actualLiquidationPrecision = aue.LIQUIDATION_PRECISION();
+        uint256 actualLiquidationPrecision = aue.LIQUIDATION_AND_FEE_PRECISION();
         assertEq(actualLiquidationPrecision, expectedLiquidationPrecision);
     }
 

@@ -39,12 +39,12 @@ contract DepositTests is BaseTest {
 
     // Test that depositCollateral() allows user to deposit collateral and updates account info
     function testUserCanDepositCollateralAndGetAccountInfo() public depositedCollateral {
-        AurumEngine.AccountInfo memory userAccountInfo = aue.getAccountInformation(user);
+        AurumEngine.UserAccountData memory userAccountInfo = aue.getUserAccountData(user);
 
         uint256 expectedTotalAUSDMinted = 0;
-        uint256 actualTotalAUSDMinted = userAccountInfo.totalAUSDMinted;
+        uint256 actualTotalAUSDMinted = userAccountInfo.totalDebt;
         uint256 expectedDepositValue = aurAmount * uint256(goldPrice) + wethAmount * uint256(wethPrice);
-        uint256 actualDepositValue = userAccountInfo.collateralValueInUsd;
+        uint256 actualDepositValue = userAccountInfo.totalCollateralValueInUsd;
 
         assertEq(expectedTotalAUSDMinted, actualTotalAUSDMinted);
         assertEq(expectedDepositValue, actualDepositValue);
@@ -52,9 +52,11 @@ contract DepositTests is BaseTest {
 
     // Test that depositCollateral() allows deposits of different collaterals
     function testDepositTwoCollaterals() public depositedCollateral {
-        uint256 goldBalance = aue.getUserCollateralAmount(aurumGold, user);
-        uint256 wethBalance = aue.getUserCollateralAmount(weth, user);
-        assertEq(goldBalance, aurAmount);
+        AurumEngine.UserAccountData memory userAccountInfo = aue.getUserAccountData(user);
+        uint256 aurBalance = userAccountInfo.collateralAmounts[0];
+        uint256 wethBalance = userAccountInfo.collateralAmounts[1];
+
+        assertEq(aurBalance, aurAmount);
         assertEq(wethBalance, wethAmount);
     }
 }

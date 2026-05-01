@@ -50,8 +50,8 @@ contract InvariantsTest is StdInvariant, Test {
         uint256 totalActualDebt = 0;
         for (uint256 i = 0; i < collateralTokens.length; i++) {
             address token = collateralTokens[i];
-            uint256 normDebt = aue.getCollateralTotalDebt(token);
-            totalActualDebt += (normDebt * aue.getCumulativeIndex()) / 1e18;
+            uint256 normDebt = aue.getCollateralInfo(token).totalNormalizedDebt;
+            totalActualDebt += (normDebt * aue.s_cumulativeIndex()) / 1e18;
         }
 
         console.log("Total Collateral Value:", totalCollateralValue);
@@ -62,7 +62,7 @@ contract InvariantsTest is StdInvariant, Test {
 
     // Invariant 2: The cumulative index never decreases
     function invariant_cumulativeIndexNonDecreasing() external {
-        uint256 currentIndex = aue.getCumulativeIndex();
+        uint256 currentIndex = aue.s_cumulativeIndex();
         assert(currentIndex >= previousCumulativeIndex);
         previousCumulativeIndex = currentIndex;
     }
@@ -70,15 +70,15 @@ contract InvariantsTest is StdInvariant, Test {
     // Invariant 3: User actual debt = Σ normalized * index / 1e18
     function invariant_userActualDebtMatchesNormalized() external view {
         address[] memory users;
-        uint256 currentIndex = aue.getCumulativeIndex();
+        uint256 currentIndex = aue.s_cumulativeIndex();
         for (uint256 i = 0; i < users.length; i++) {
             address user = handler.usersWithCollateralDeposited(i);
             uint256 expectedDebt = 0;
             for (uint256 j = 0; j < collateralTokens.length; j++) {
-                uint256 norm = aue.getUserDebtAllocation(user, collateralTokens[j]);
+                uint256 norm = aue.getUserAccountData(user).debtAllocations[j];
                 expectedDebt += (norm * currentIndex) / 1e18;
             }
-            uint256 actualDebt = aue.getCurrentUserDebt(user);
+            uint256 actualDebt = aue.getUserAccountData(user).totalDebt;
             assertEq(expectedDebt, actualDebt);
         }
     }
@@ -90,14 +90,8 @@ contract InvariantsTest is StdInvariant, Test {
         address token = collateralTokens[0];
 
         aue.getUsdValue(token, 1e18);
-        aue.getCurrentUserDebt(user);
-        aue.getCumulativeIndex();
-        aue.getTreasury();
-        aue.getAUSD();
-        aue.getCollateralTotalDebt(token);
-        aue.getCollateralTokenPriceFeed(token);
-        aue.getAccountInformation(user);
-        aue.getAccountCollateralValueInUsd(user);
-        aue.getTotalProtocolCollateralValue();
+        aue.getTokenAmountFromUsd(token, 1e18);
+        aue.getCollateralInfo(token);
+        aue.getUserAccountData(user);
     }
 }

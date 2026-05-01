@@ -51,8 +51,8 @@ contract BaseTest is Test {
     function setUp() public virtual {
         deployer = new DeployAUSD();
         (ausd, aue, config) = deployer.run();
-        interestRateModel = InterestRateModel(aue.getInterestRateModel());
-        treasury = AurumTreasury(aue.getTreasury());
+        interestRateModel = InterestRateModel(aue.i_interestRateModel());
+        treasury = AurumTreasury(aue.i_treasury());
 
         (goldUsdPriceFeed, ethUsdPriceFeed, aurumGold, weth,) = config.activeNetworkConfig();
 

@@ -22,7 +22,7 @@ contract LiquidationTests is BaseTest {
         ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
         ausd.approve(address(aue), debtToCover);
         aue.depositCollateralAndMintAUSD(aurumGold, amountCollateral, debtToCover);
-        uint256 userAUSDAmount = aue.getCurrentUserDebt(user);
+        uint256 userAUSDAmount = aue.getUserAccountData(user).totalDebt;
 
         // Act / Assert - liquidator tries to liquidate user
         vm.startPrank(liquidator);
@@ -60,7 +60,7 @@ contract LiquidationTests is BaseTest {
         vm.stopPrank();
 
         // Assert
-        uint256 remainingAUSDMinted = aue.getCurrentUserDebt(user);
+        uint256 remainingAUSDMinted = aue.getUserAccountData(user).totalDebt;
         assertGt(remainingAUSDMinted, 0);
         assertLt(remainingAUSDMinted, auToMint);
     }
@@ -92,12 +92,12 @@ contract LiquidationTests is BaseTest {
         MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4000e8);
         
         // Liquidator tries to liquidate the remaining debt
-        uint256 debtBeforeSecondLiquidation = aue.getCurrentUserDebt(user);
+        uint256 debtBeforeSecondLiquidation = aue.getUserAccountData(user).totalDebt;
         aue.liquidate(aurumGold, user, debtBeforeSecondLiquidation); 
         vm.stopPrank();
 
         // Assert
-        uint256 remainingAUSDMinted = aue.getCurrentUserDebt(user);
+        uint256 remainingAUSDMinted = aue.getUserAccountData(user).totalDebt;
         // user's AUSD: 400k -> 200k -> 100k
         assertEq(remainingAUSDMinted, auToMint / 4); 
     }
@@ -105,7 +105,7 @@ contract LiquidationTests is BaseTest {
 
     // Check liquidate() successfully updates user healthFactor from bad --> good
     function testUserHealthFactorIsGoodAfterBeingLiquidated() public liquidated {
-        assertGe(aue.getUserHealthFactor(user), 1e18);
+        assertGe(aue.getUserAccountData(user).healthFactor, 1e18);
     }
 
 
@@ -113,9 +113,9 @@ contract LiquidationTests is BaseTest {
     function testLiquidatorBalanceIsUpdatedAfterLiquidation() public liquidated {
         uint256 startingLiquidatorBalance = 0; 
 
-        uint256 actualDebtCovered = debtToCover - aue.getCurrentUserDebt(user);
+        uint256 actualDebtCovered = debtToCover - aue.getUserAccountData(user).totalDebt;
         uint256 tokenAmountFromDebt = aue.getTokenAmountFromUsd(aurumGold, actualDebtCovered);
-        uint256 liquidatorPayout = tokenAmountFromDebt + (tokenAmountFromDebt * aue.LIQUIDATION_BONUS() / aue.LIQUIDATION_PRECISION());
+        uint256 liquidatorPayout = tokenAmountFromDebt + (tokenAmountFromDebt * aue.LIQUIDATION_BONUS() / aue.LIQUIDATION_AND_FEE_PRECISION());
 
         uint256 expectedEndingLiquidatorBalance = startingLiquidatorBalance + liquidatorPayout;
         uint256 actualEndingLiquidatorBalance = ERC20Mock(aurumGold).balanceOf(liquidator);
@@ -128,9 +128,9 @@ contract LiquidationTests is BaseTest {
     function testProtocolBalanceIsUpdatedAfterLiquidation() public liquidated {
         uint256 startingProtocolBalance = amountCollateral + amountCollateral; 
 
-        uint256 actualDebtCovered = debtToCover - aue.getCurrentUserDebt(user);
+        uint256 actualDebtCovered = debtToCover - aue.getUserAccountData(user).totalDebt;
         uint256 tokenAmountFromDebt = aue.getTokenAmountFromUsd(aurumGold, actualDebtCovered);
-        uint256 liquidatorPayout = tokenAmountFromDebt + (tokenAmountFromDebt * aue.LIQUIDATION_BONUS() / aue.LIQUIDATION_PRECISION());
+        uint256 liquidatorPayout = tokenAmountFromDebt + (tokenAmountFromDebt * aue.LIQUIDATION_BONUS() / aue.LIQUIDATION_AND_FEE_PRECISION());
 
         uint256 expectedEndingProtocolBalance = startingProtocolBalance - liquidatorPayout;
         uint256 actualEndingProtocolBalance = ERC20Mock(aurumGold).balanceOf(address(aue));
@@ -172,6 +172,6 @@ contract LiquidationTests is BaseTest {
         vm.stopPrank();
 
         // Verify that user debt == 0
-        assertEq(aue.getCurrentUserDebt(user), 0);
+        assertEq(aue.getUserAccountData(user).totalDebt, 0);
     }
 }
