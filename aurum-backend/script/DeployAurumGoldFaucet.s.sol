@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.34;
 
-import {AurumGoldFaucet} from "../src/AurumGoldFaucet.sol";
+import {AurumGoldFaucet} from "../src/faucet/AurumGoldFaucet.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {Script} from "forge-std/Script.sol";
