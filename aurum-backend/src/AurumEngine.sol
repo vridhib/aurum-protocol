@@ -4,6 +4,7 @@ pragma solidity 0.8.34;
 import {AurumUSD} from "./AurumUSD.sol";
 import {OracleLib} from "./libraries/OracleLib.sol";
 import {InterestRateModel} from "./interest/InterestRateModel.sol";
+import {IVolatilityOracle} from "./oracles/IVolatilityOracle.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
@@ -26,7 +27,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  */
 contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     /*----------Errors----------*/
-    error AurumEngine__TokenAddressesAndPriceFeedAddressesAmountsDontMatch();
     error AurumEngine__TokenNotAllowed(address token);
     error AurumEngine__NeedsMoreThanZero();
     error AurumEngine__TransferFailed();
@@ -55,7 +55,11 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     /// @notice A type that aggregates critical collateral token info together
     struct CollateralInfo {
         address priceFeed;                  // Chainlink price feed address
-        uint256 ltv;                        // Liquidation threshold
+        address volatilityFeed;             // Chainlink ETH & mock gold volatility feed addresses
+        uint256 baselineVolatility;
+        uint256 baseLtv;                    // 0.15e18 for gold, 0.6 for WETH
+        uint256 minLtv;                     // floor LTV when volatility spikes
+        uint256 ltv;                        // current dynamic LTV
         uint256 debtCeiling;                // Max total AUSD mintable against this collateral
         uint256 totalNormalizedDebt;        // Current total AUSD minted against this collateral
         bool isActive;                      // Can users deposit/mint against it?
@@ -67,15 +71,17 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     uint256 public constant PRECISION = 1e18;
     uint256 public constant LIQUIDATION_AND_FEE_PRECISION = 100;      // percentage divisor
     // Economic Constants
-    uint256 public constant LIQUIDATION_THRESHOLD = 80;               // To be scrapped with a future feature
-    uint256 public constant DEFAULT_LTV = 80;                         // 80% 
-    uint256 public constant DEFAULT_DEBT_CEILING = 50_000_000 * 1e18; // 50M AUSD per collateral
+    uint256 public constant VOLATILITY_REDUCTION_FACTOR = 5;          // For every 10% volatility increase, reduce LTV by 5%
     uint256 public constant MIN_HEALTH_FACTOR = 1e18;
     uint256 public constant MIN_DUST_THRESHOLD = 1e18;                // If user debt < 1e18 allow 100% liquidation
-    uint256 public constant LIQUIDATION_BONUS = 5;                    // % liquidator bonus
-    uint256 public constant PROTOCOL_FEE = 5;                         // % of liquidation bonus to treasury
-    uint256 public constant PROTOCOL_RESERVE_PERCENT = 10;            // % of interest to treasury
     uint256 public constant LIQUIDATION_CLOSE_FACTOR = 50;            // Max % of debt liquidatable in 1 call
+    uint256 public constant LIQUIDATION_BONUS = 5;                    // % liquidator bonus
+    uint256 public constant PROTOCOL_LIQUIDATION_FEE = 5;             // % of liquidation bonus to treasury
+    uint256 public constant PROTOCOL_RESERVE_PERCENT = 10;            // % of interest to treasury
+
+    uint256 public constant INDEX_UPDATE_INTERVAL = 1 hours;
+    uint256 public constant LTV_UPDATE_INTERVAL = 1 days;
+
 
     // Storage Variables
     mapping(address => mapping(address => uint256)) private s_collateralDeposited;
@@ -85,7 +91,8 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     address[] public s_collateralList;                                // AUR + WETH
 
     uint256 public s_cumulativeIndex = 1e18;
-    uint256 public s_lastUpdateTimestamp;
+    uint256 public s_indexLastUpdate;
+    uint256 public s_ltvLastUpdate;
 
     address public immutable i_treasury;
     InterestRateModel public immutable i_interestRateModel;
@@ -119,21 +126,26 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     constructor(
         address[] memory tokenAddresses, 
         address[] memory priceFeedAddresses, 
+        address[] memory volatilityFeedAddresses,
+        uint256[] memory baselineVolatilities,
+        uint256[] memory baseLtvs,
+        uint256[] memory minLtvs,
+        uint256[] memory debtCeilings,
         address ausdAddress,
         address interestRateModelAddress,
         address treasuryAddress
     ) 
         Ownable(msg.sender) 
     {
-        if (tokenAddresses.length != priceFeedAddresses.length) {
-            revert AurumEngine__TokenAddressesAndPriceFeedAddressesAmountsDontMatch();
-        }
-
         for (uint256 i = 0; i < tokenAddresses.length; i++) {
             s_collateralInfo[tokenAddresses[i]] = CollateralInfo({
                 priceFeed: priceFeedAddresses[i],
-                ltv: DEFAULT_LTV,                  
-                debtCeiling: DEFAULT_DEBT_CEILING, 
+                volatilityFeed: volatilityFeedAddresses[i],
+                baselineVolatility: baselineVolatilities[i],
+                baseLtv: baseLtvs[i],
+                minLtv: minLtvs[i],
+                ltv: baseLtvs[i], // initialize as base LTV, adjusted later based on volatility                 
+                debtCeiling: debtCeilings[i], 
                 totalNormalizedDebt: 0,
                 isActive: true
             });
@@ -142,41 +154,30 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         i_ausd = AurumUSD(ausdAddress);
         i_interestRateModel = InterestRateModel(interestRateModelAddress);
         i_treasury = treasuryAddress;
-        s_lastUpdateTimestamp = block.timestamp;
-    }
-
-    function updateIndex() external {
-        _updateIndex();
+        s_indexLastUpdate = block.timestamp;
+        s_ltvLastUpdate = block.timestamp;
     }
 
     /**
      * @notice Called by Chainlink nodes to determine if an upkeep is needed
-     * @param checkData optional data passed in when upkeep was registered
      * @return upkeepNeeded true if conditions are met to call performUpkeep
      * @return performData encoded data to pass to performUpkeep
      */
-    function checkUpkeep(bytes calldata checkData) public view override
+    function checkUpkeep(bytes calldata /*checkData*/) public view override
         returns (bool upkeepNeeded, bytes memory performData)
     {
-        // Always return false if no debt exists
         uint256 totalNormalizedDebt = 0;
         for (uint256 i = 0; i < s_collateralList.length; i++) {
             totalNormalizedDebt += s_collateralInfo[s_collateralList[i]].totalNormalizedDebt;
         }
-        if (totalNormalizedDebt == 0) return (false, "0");
+        if (totalNormalizedDebt == 0) return (false, "");
 
-        // Return false if no time has passed since last update
-        if (block.timestamp <= s_lastUpdateTimestamp) return (false, "0");
+        bool indexUpdateNeeded = (block.timestamp - s_indexLastUpdate) >= INDEX_UPDATE_INTERVAL;
+        bool ltvUpdateNeeded = (block.timestamp - s_ltvLastUpdate) >= LTV_UPDATE_INTERVAL;
 
-        // Check if enough time has elapsed
-        uint256 minInterval = 1 hours;
-        if (block.timestamp - s_lastUpdateTimestamp < minInterval) {
-            return (false, "0");
-        }
-
-        // If all checks pass, upkeep is needed
-        upkeepNeeded = true;
-        performData = checkData;
+        // Upkeep if either action's interval has passed
+        upkeepNeeded = indexUpdateNeeded || ltvUpdateNeeded;
+        performData = abi.encode(indexUpdateNeeded, ltvUpdateNeeded);
     }
 
     /**
@@ -184,33 +185,50 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
      * @param performData data passed from `checkUpkeep`
      */
     function performUpkeep(bytes calldata performData) external override {
-        (bool upkeepNeeded, ) = checkUpkeep(performData);
-        if (!upkeepNeeded) return;
-        _updateIndex();
+        (bool indexUpdateNeeded, bool ltvUpdateNeeded) = abi.decode(performData, (bool, bool));
+        if (indexUpdateNeeded) _updateIndex();
+        if (ltvUpdateNeeded) _updateLTVs();
     }
 
     /**
      * @param collateralToken The collateral token address
-     * @param newLtv The new LTV value
-     * @param newDebtCeiling The new debt ceiling
-     * @param isActive The new active flag value
-     * @notice Allows the owner to update the LTV, debt ceiling, and active flags for a collateral token
+     * @param volatilityFeed The new volatility feed address for the specified collateral token
+     * @param newLtv The new LTV value for the specified collateral token
+     * @param newDebtCeiling The new debt ceiling for the specified collateral token
+     * @param isActive The new active flag value for the specified collateral token
+     * @notice Allows the owner to update the LTV, debt ceiling, and active flags for a collateral token. Enter 0 or address(0) for any parameter you don't want to update.
      */
     function setCollateralInfo(
-        address collateralToken, 
+        address collateralToken,
+        address volatilityFeed,
         uint256 newLtv, 
         uint256 newDebtCeiling, 
         bool isActive
     ) external onlyOwner 
     {
-        s_collateralInfo[collateralToken] = CollateralInfo({
-            priceFeed: s_collateralInfo[collateralToken].priceFeed,
-            ltv: newLtv,                  
-            debtCeiling: newDebtCeiling, 
-            totalNormalizedDebt: s_collateralInfo[collateralToken].totalNormalizedDebt,
-            isActive: isActive
-        });
+        CollateralInfo storage info = s_collateralInfo[collateralToken];
+        if (volatilityFeed != address(0)) info.volatilityFeed = volatilityFeed;
+        if (newLtv != 0) info.ltv = newLtv;
+        if (newDebtCeiling != 0) info.debtCeiling = newDebtCeiling;
+        info.isActive = isActive;
     }
+
+    // function updateLTVBasedOnVolatility(address collateralToken) public {
+    //     CollateralInfo storage info = s_collateralInfo[collateralToken];
+    //     uint256 volatility = IVolatilityOracle(info.volatilityFeed).getAnnualizedVolatility(); // 18 decimals
+
+    //     uint256 reduction = 0;
+    //     uint256 baseline = info.baselineVolatility;
+    //     if (volatility > baseline) {
+    //         uint256 excess = volatility - baseline;
+    //         reduction = (excess * VOLATILITY_REDUCTION_FACTOR) / 1e17;
+    //     }
+
+    //     uint256 newLtv = info.baseLtv >= reduction ? info.baseLtv - reduction : 0;
+    //     if (newLtv < info.minLtv) newLtv = info.minLtv; 
+    //     if (newLtv > info.baseLtv) newLtv = info.baseLtv;
+    //     info.ltv = newLtv;
+    // }
 
     /**
      * @param collateralToken The address of the collateral token to deposit
@@ -335,16 +353,12 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         if (debtToCover > maxDebtToCover) {
             debtToCover = maxDebtToCover;
         }
-
-        // If the result is tiny (dust), just let liquidator pay off all of user's debt
-        if (maxDebtToCover < MIN_DUST_THRESHOLD) {
-            debtToCover = currentDebt; // Pay 100%
-        }
-
+        // If the result is tiny (dust), just let liquidator pay off 100% of user's debt
+        if (maxDebtToCover < MIN_DUST_THRESHOLD) debtToCover = currentDebt;
         uint256 tokenAmountFromDebtCovered = getTokenAmountFromUsd(collateralToken, debtToCover);
 
         // Calculate the protocol's and liquidator's share
-        uint256 protocolShare = (tokenAmountFromDebtCovered * PROTOCOL_FEE) / LIQUIDATION_AND_FEE_PRECISION;
+        uint256 protocolShare = (tokenAmountFromDebtCovered * PROTOCOL_LIQUIDATION_FEE) / LIQUIDATION_AND_FEE_PRECISION;
         uint256 liquidatorBonus = (tokenAmountFromDebtCovered * LIQUIDATION_BONUS) / LIQUIDATION_AND_FEE_PRECISION;
         uint256 liquidatorShare = tokenAmountFromDebtCovered + liquidatorBonus;
 
@@ -364,7 +378,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     /*******************Private & Internal View Functions**********************/
     /**************************************************************************/
     function _updateIndex() internal {
-        if (block.timestamp == s_lastUpdateTimestamp) return;
+        if (block.timestamp == s_indexLastUpdate) return;
 
         // Get total actual debt = sum of all normalized debt * current index / 1e18
         // Since index may have changed, need the total normalized debt first
@@ -378,7 +392,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         uint256 totalCollateralValue = getTotalProtocolCollateralValue();
 
         if (totalActualDebt == 0 || totalCollateralValue == 0) {
-            s_lastUpdateTimestamp = block.timestamp;
+            s_indexLastUpdate = block.timestamp;
             return;
         }
 
@@ -386,11 +400,28 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         if (utilization > PRECISION) utilization = PRECISION; // safety
 
         uint256 borrowRatePerSecond = i_interestRateModel.getBorrowRate(utilization);
-        uint256 timeElapsed = block.timestamp - s_lastUpdateTimestamp;
+        uint256 timeElapsed = block.timestamp - s_indexLastUpdate;
 
         // newIndex = oldIndex * (1 + rate * time)
         s_cumulativeIndex = s_cumulativeIndex * (PRECISION + borrowRatePerSecond * timeElapsed) / PRECISION;
-        s_lastUpdateTimestamp = block.timestamp;
+        s_indexLastUpdate = block.timestamp;
+    }
+
+
+    function _updateLTVs() internal {
+        for (uint256 i = 0; i < s_collateralList.length; i++) {
+            CollateralInfo storage info = s_collateralInfo[s_collateralList[i]];
+
+            uint256 volatility = IVolatilityOracle(info.volatilityFeed).getAnnualizedVolatility(); // 18 decimals
+            uint256 excess = volatility > info.baselineVolatility ? volatility - info.baselineVolatility : 0;
+            uint256 reduction = (excess * VOLATILITY_REDUCTION_FACTOR) / 0.10e18;
+
+            uint256 newLtv = info.baseLtv >= reduction ? info.baseLtv - reduction : 0;
+            if (newLtv < info.minLtv) newLtv = info.minLtv; 
+            if (newLtv > info.baseLtv) newLtv = info.baseLtv;
+            info.ltv = newLtv;
+        }
+        s_ltvLastUpdate = block.timestamp;
     }
 
 
@@ -649,7 +680,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
 
     /**
      * @param collateralToken The address of the collateral token
-     * @return All collateral token info (price feed, ltv, debt ceiling, total normalized debt, and active flag) for a collateral token
+     * @return CollateralInfo collateral token info (price feed, ltv, debt ceiling, total normalized debt, and active flag) for a collateral token
      */
     function getCollateralInfo(address collateralToken) external view returns (CollateralInfo memory) {
         return s_collateralInfo[collateralToken];

@@ -12,16 +12,31 @@ import {HelperConfig} from "./HelperConfig.s.sol";
 
 
 contract DeployAUSD is Script {
-    address[] public tokenAddresses;
-    address[] public priceFeedAddresses;
-
     function run() external returns(AurumUSD, AurumEngine, HelperConfig) {
         HelperConfig config = new HelperConfig();
-        (address goldUsdPriceFeed, address wethUsdPriceFeed, address goldToken, address weth, address deployerAccount) = config.activeNetworkConfig();
-        tokenAddresses = [goldToken, weth];
-        priceFeedAddresses = [goldUsdPriceFeed, wethUsdPriceFeed];
+        HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
 
-        vm.startBroadcast(deployerAccount);
+        uint256 length = networkConfig.collaterals.length;
+        address[] memory tokens = new address[](length);
+        address[] memory priceFeeds = new address[](length);
+        address[] memory volFeeds = new address[](length);
+        uint256[] memory baseVols = new uint256[](length);
+        uint256[] memory baseLtvs = new uint256[](length);
+        uint256[] memory minLtvs = new uint256[](length);
+        uint256[] memory debtCeilings = new uint256[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            HelperConfig.CollateralConfig memory cc = networkConfig.collaterals[i];
+            tokens[i] = cc.token;
+            priceFeeds[i] = cc.priceFeed;
+            volFeeds[i] = cc.volatilityFeed;
+            baseVols[i] = cc.baselineVolatility;
+            baseLtvs[i] = cc.baseLtv;
+            minLtvs[i] = cc.minLtv;
+            debtCeilings[i] = cc.debtCeiling;
+        }
+
+        vm.startBroadcast(networkConfig.deployerAccount);
         AurumUSD ausd = new AurumUSD();
 
         AurumTreasury treasury = new AurumTreasury(address(ausd));
@@ -30,8 +45,13 @@ contract DeployAUSD is Script {
 
         InterestRateModel interestRateModel = new InterestRateModel();
         AurumEngine engine = new AurumEngine(
-            tokenAddresses, 
-            priceFeedAddresses, 
+            tokens, 
+            priceFeeds,
+            volFeeds,
+            baseVols,
+            baseLtvs,
+            minLtvs,
+            debtCeilings, 
             address(ausd), 
             address(interestRateModel), 
             address(treasury)
