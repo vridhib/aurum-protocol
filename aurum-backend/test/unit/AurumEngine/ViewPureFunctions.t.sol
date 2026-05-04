@@ -5,9 +5,6 @@ import {BaseTest} from "../../shared/BaseTest.t.sol";
 import {AurumEngine} from "../../../src/AurumEngine.sol";
 
 contract ViewPureFunctionsTests is BaseTest {
-    /******************************************************************************************/
-    /********************************View & Pure Function Tests********************************/
-    /******************************************************************************************/
     // Test that getCollateralInfo() returns the correct collateral price feed address
     function testGetCollateralInfo() public view {
         AurumEngine.CollateralInfo memory goldInfo = aue.getCollateralInfo(aurumGold);
@@ -20,12 +17,6 @@ contract ViewPureFunctionsTests is BaseTest {
     function testGetMinHealthFactor() public view {
         uint256 minHealthFactor = aue.MIN_HEALTH_FACTOR();
         assertEq(minHealthFactor, MIN_HEALTH_FACTOR);
-    }
-
-    // Test that getLiquidationThreshold() returns the correct liqiudation threshold
-    function testGetLiquidationThreshold() public view {
-        uint256 liquidationThreshold = aue.LIQUIDATION_THRESHOLD();
-        assertEq(liquidationThreshold, LIQUIDATION_THRESHOLD);
     }
 
     // Test that getUserAccountData() returns the correct collateral amounts for a user
@@ -67,7 +58,7 @@ contract ViewPureFunctionsTests is BaseTest {
     // Test that getProtocolFee() returns the correct protocol fee percentage
     function testGetProtocolFee() public view {
         uint256 expectedProtocolFee = 5;
-        uint256 actualProtocolFee = aue.PROTOCOL_FEE();
+        uint256 actualProtocolFee = aue.PROTOCOL_LIQUIDATION_FEE();
         assertEq(actualProtocolFee, expectedProtocolFee);
     }
 

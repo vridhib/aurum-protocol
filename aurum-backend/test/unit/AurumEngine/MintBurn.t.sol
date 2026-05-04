@@ -116,7 +116,7 @@ contract MintBurnTests is BaseTest {
         // Lower WETH's debt ceiling to a small value
         uint256 loweredDebtCeiling = 1000e18; // 1000 AUSD
         vm.startPrank(aue.owner());
-        aue.setCollateralInfo(weth, aue.DEFAULT_LTV(), loweredDebtCeiling, true);
+        aue.setCollateralInfo(weth, address(0), 0, loweredDebtCeiling, true);
         vm.stopPrank();
 
         // Calculate USD values
@@ -152,10 +152,10 @@ contract MintBurnTests is BaseTest {
     // Revert when there is no valid collateral
     function testRevertWhenNoValidCollateral() public depositedCollateral {
         // Set both gold and WETH debt ceilings to 0
-        uint256 zeroCeiling = 0;
+        uint256 almostZeroCeiling = 1;
         vm.startPrank(aue.owner());
-        aue.setCollateralInfo(aurumGold, aue.DEFAULT_LTV(), zeroCeiling, true);
-        aue.setCollateralInfo(weth, aue.DEFAULT_LTV(), zeroCeiling, true);
+        aue.setCollateralInfo(aurumGold, address(0), 0, almostZeroCeiling, true);
+        aue.setCollateralInfo(weth, address(0), 0, almostZeroCeiling, true);
         vm.stopPrank();
 
         // User attempts to mint any amount but reverts
@@ -267,7 +267,7 @@ contract MintBurnTests is BaseTest {
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();
         // Update index without minting
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false));
         uint256 currentIndexAfter = aue.s_cumulativeIndex();
         uint256 normalizedDebtAfter = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
         uint256 actualDebtAfter = aue.getUserAccountData(user).totalDebt;
@@ -298,7 +298,7 @@ contract MintBurnTests is BaseTest {
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();  // prevent stale price revert
         // Trigger interest accrual
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false)); // only update index 
         uint256 debtWithInterest = aue.getUserAccountData(user).totalDebt;
         uint256 interest = debtWithInterest - initialDebt;
 
@@ -329,7 +329,7 @@ contract MintBurnTests is BaseTest {
         uint256 actualDebtBefore = aue.getUserAccountData(user).totalDebt;
         uint256 normalizedDebtBefore = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
 
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false)); // only update index 
         assertEq(aue.s_cumulativeIndex(), indexBefore);
         assertEq(aue.getUserAccountData(user).lastIndex, userLastIndexBefore);
         assertEq(aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1], normalizedDebtBefore);
@@ -344,7 +344,7 @@ contract MintBurnTests is BaseTest {
         
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks(); 
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false)); // only update index 
         
         assertEq(aue.s_cumulativeIndex(), indexBefore);
         assertEq(aue.getUserAccountData(user).totalDebt, actualDebtBefore);
@@ -379,7 +379,7 @@ contract MintBurnTests is BaseTest {
         
         vm.warp(block.timestamp + 180 days);
         _bypassStalePriceChecks();
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false)); // only update index 
         
         uint256 actualDebtA = aue.getUserAccountData(userA).totalDebt;
         uint256 actualDebtB = aue.getUserAccountData(userB).totalDebt;
@@ -422,7 +422,7 @@ contract MintBurnTests is BaseTest {
         // Now warp forward to accrue interest on the remaining debt
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false)); // only update index 
 
         uint256 currentIndex = aue.s_cumulativeIndex();
         uint256 expectedRemainingDebt = (totalUserNormAfter * currentIndex) / PRECISION;
@@ -447,7 +447,7 @@ contract MintBurnTests is BaseTest {
     function testHighUtilizationNoOverflow() public {
         // Set up collateral token with LTV = 100% to allow minteing up to full collateral value
         vm.startPrank(aue.owner());
-        aue.setCollateralInfo(aurumGold, 100, aue.DEFAULT_DEBT_CEILING(), true);
+        aue.setCollateralInfo(aurumGold, address(0), 100, 0, true);
         vm.stopPrank();
 
         // Give user some gold and deposit
@@ -473,7 +473,7 @@ contract MintBurnTests is BaseTest {
         _bypassStalePriceChecks();
 
         uint256 indexBefore = aue.s_cumulativeIndex();
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false)); // only update index 
         uint256 indexAfter = aue.s_cumulativeIndex();
 
         assertGt(indexAfter, indexBefore);
@@ -492,7 +492,7 @@ contract MintBurnTests is BaseTest {
         // Warp 1 year to accrue interest
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false)); // only update index 
         uint256 totalDebt = aue.getUserAccountData(user).totalDebt;
         uint256 interest = totalDebt - initialDebt;
 

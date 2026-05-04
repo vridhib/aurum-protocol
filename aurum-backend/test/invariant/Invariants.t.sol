@@ -28,14 +28,19 @@ contract InvariantsTest is StdInvariant, Test {
     function setUp() external {
         deployer = new DeployAUSD();
         (ausd, aue, config) = deployer.run();
-        (address goldPriceFeed, address wethPriceFeed, address goldToken, address weth, ) = config.activeNetworkConfig();
+
+        HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
+        address goldUsdPriceFeed = networkConfig.collaterals[0].priceFeed;
+        address ethUsdPriceFeed = networkConfig.collaterals[1].priceFeed;
+        address aurumGold = networkConfig.collaterals[0].token;
+        address weth = networkConfig.collaterals[1].token;
 
         address[] memory tokens = new address[](2);
-        tokens[0] = goldToken;
+        tokens[0] = aurumGold;
         tokens[1] = weth;
         address[] memory feeds = new address[](2);
-        feeds[0] = goldPriceFeed;
-        feeds[1] = wethPriceFeed;
+        feeds[0] = goldUsdPriceFeed;
+        feeds[1] = ethUsdPriceFeed;
         
         collateralTokens = tokens;
         

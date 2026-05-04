@@ -26,7 +26,10 @@ contract AurumGoldFaucetTest is Test {
     function setUp() public {
         protocolDeployer = new DeployAUSD();
         (,, config) = protocolDeployer.run();
-        (,, aurumGold,,) = config.activeNetworkConfig(); 
+        // (,, aurumGold,,) = config.activeNetworkConfig(); 
+        HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
+        aurumGold = networkConfig.collaterals[0].token;
+
 
         faucet = new AurumGoldFaucet(aurumGold);
         faucet.transferOwnership(owner); 

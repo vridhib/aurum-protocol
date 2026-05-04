@@ -21,6 +21,8 @@ contract BaseTest is Test {
     HelperConfig internal config;
     address internal goldUsdPriceFeed;
     address internal ethUsdPriceFeed;
+    address internal goldVolatilityFeed;
+    address internal ethVolatilityFeed;
     address internal aurumGold;
     address internal weth;
 
@@ -54,7 +56,13 @@ contract BaseTest is Test {
         interestRateModel = InterestRateModel(aue.i_interestRateModel());
         treasury = AurumTreasury(aue.i_treasury());
 
-        (goldUsdPriceFeed, ethUsdPriceFeed, aurumGold, weth,) = config.activeNetworkConfig();
+        HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
+        goldUsdPriceFeed = networkConfig.collaterals[0].priceFeed;
+        ethUsdPriceFeed = networkConfig.collaterals[1].priceFeed;
+        goldVolatilityFeed = networkConfig.collaterals[0].volatilityFeed;
+        ethVolatilityFeed = networkConfig.collaterals[1].volatilityFeed;
+        aurumGold = networkConfig.collaterals[0].token;
+        weth = networkConfig.collaterals[1].token;
 
         ERC20Mock(aurumGold).mint(user, STARTING_ERC20_BALANCE);
         ERC20Mock(weth).mint(user, STARTING_ERC20_BALANCE);
@@ -97,7 +105,7 @@ contract BaseTest is Test {
 
     modifier liquidated {
         uint256 collateralValueUsd = (amountCollateral * uint256(goldPrice));
-        uint256 aurToMint = ((collateralValueUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION);
+        uint256 aurToMint = ((collateralValueUsd * aue.getCollateralInfo(aurumGold).ltv) / LIQUIDATION_PRECISION);
 
         vm.startPrank(user);
         ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
@@ -120,8 +128,10 @@ contract BaseTest is Test {
     function getMaxSafeMint() internal view returns (uint256) {
         uint256 goldUsd = aurAmount * uint256(goldPrice);
         uint256 wethUsd = wethAmount * uint256(wethPrice);
-        uint256 totalUsd = goldUsd + wethUsd;
-        return (totalUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
+        uint256 goldLtv = aue.getCollateralInfo(aurumGold).ltv;
+        uint256 wethLtv = aue.getCollateralInfo(weth).ltv;
+
+        return (goldUsd * goldLtv + wethUsd * wethLtv) / LIQUIDATION_PRECISION;
     }
 
     // Helper to generate fresh price feed data (using current block.timestamp)

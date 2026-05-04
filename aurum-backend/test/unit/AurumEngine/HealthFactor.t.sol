@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.34;
 
+import {console2} from "forge-std/Test.sol";
 import {BaseTest} from "../../shared/BaseTest.t.sol";
 import {MockV3Aggregator} from "../../mocks/MockV3Aggregator.sol";
 
@@ -13,8 +14,13 @@ contract HealthFactorTests is BaseTest {
     // Test case 1: getUserHealthFactor() returns 1 (1e18) when collateral value covers the exact collateralization ratio
     function testHealthFactorIsAtMinWhenThresholdIsMet() public depositedSingleCollateral {
         uint256 expectedHealthFactor = 1e18;
-        uint256 collateralAdjustedForThreshold = ((amountCollateral * uint256(goldPrice)) * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION; 
-        uint256 ausdToMint = (collateralAdjustedForThreshold * PRECISION) / expectedHealthFactor; // should be 400000 ether
+        uint256 collateralAdjustedForThreshold = ((amountCollateral * uint256(goldPrice)) * aue.getCollateralInfo(aurumGold).ltv) / LIQUIDATION_PRECISION; 
+        
+        uint256 ausdToMint = (collateralAdjustedForThreshold * PRECISION) / expectedHealthFactor; 
+        console2.log("ausdToMint: ", ausdToMint);
+
+        console2.log("collateralAdjustedForThreshold: ", collateralAdjustedForThreshold);
+        console2.log("ausdToMint: ", ausdToMint);
 
         vm.prank(user);
         aue.mintAUSD(ausdToMint);
@@ -27,7 +33,7 @@ contract HealthFactorTests is BaseTest {
     // Test case 2: getUserHealthFactor() returns 2 (2e18) when over-collateralized
     function testHealthFactorIsCorrectWhenOvercollateralized() public depositedSingleCollateral {
         uint256 expectedHealthFactor = 2e18;
-        uint256 collateralAdjustedForThreshold = ((amountCollateral * uint256(goldPrice)) * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION; 
+        uint256 collateralAdjustedForThreshold = ((amountCollateral * uint256(goldPrice)) * aue.getCollateralInfo(aurumGold).ltv) / LIQUIDATION_PRECISION; 
         uint256 auToMint = (collateralAdjustedForThreshold * PRECISION) / expectedHealthFactor; // should be 200000 ether
 
         vm.prank(user);

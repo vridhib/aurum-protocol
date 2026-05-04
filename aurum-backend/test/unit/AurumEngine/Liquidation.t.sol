@@ -7,7 +7,7 @@ import {MockV3Aggregator} from "../../mocks/MockV3Aggregator.sol";
 import {AurumEngine} from "../../../src/AurumEngine.sol";
 
 contract LiquidationTests is BaseTest {
-// Test that liquidate() reverts if liquidators try to liquidate users with a good health factor
+    // Test that liquidate() reverts if liquidators try to liquidate users with a good health factor
     function testLiquidateRevertsIfUserHealthFactorIsGood() public {
         // Arrange - user setup
         vm.startPrank(user);
@@ -34,19 +34,19 @@ contract LiquidationTests is BaseTest {
 
     // Test that the liquidation close factor prevents 100% liquidation over small dips for users with exact collateralization ratio
     function testLiquidationCloseFactorSafetyMechanism() public {      
-        // Calculate auToMint to set user at exact collateralization ratio
+        // Calculate ausdToMint to set user at exact collateralization ratio
         uint256 collateralValueUsd = (amountCollateral * uint256(goldPrice));
-        uint256 auToMint = ((collateralValueUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION);
+        uint256 ausdToMint = ((collateralValueUsd * aue.getCollateralInfo(aurumGold).ltv) / LIQUIDATION_PRECISION);
 
         // Arrange - user setup
         vm.startPrank(user);
         ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
-        ausd.approve(address(aue), auToMint);
-        aue.depositCollateralAndMintAUSD(aurumGold, amountCollateral, auToMint);
+        ausd.approve(address(aue), ausdToMint);
+        aue.depositCollateralAndMintAUSD(aurumGold, amountCollateral, ausdToMint);
         vm.stopPrank();
 
         // Arrange - liquidator setup
-        debtToCover = auToMint;          // liquidator tries to completely liquidate the user (but can only do 50%)
+        debtToCover = ausdToMint;          // liquidator tries to completely liquidate the user (but can only do 50%)
         vm.startPrank(liquidator);
         ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
         ausd.approve(address(aue), debtToCover);
@@ -62,25 +62,25 @@ contract LiquidationTests is BaseTest {
         // Assert
         uint256 remainingAUSDMinted = aue.getUserAccountData(user).totalDebt;
         assertGt(remainingAUSDMinted, 0);
-        assertLt(remainingAUSDMinted, auToMint);
+        assertLt(remainingAUSDMinted, ausdToMint);
     }
 
 
     // Test the liquidation close factor requires liquidators to liquidate a max of 50% one time, then another 50% again after another dip
     function testUsersCanBePartiallyLiquidatedTwice() public {      
-        // Calculate auToMint to set user at exact collateralization ratio
+        // Calculate ausdToMint to set user at exact collateralization ratio
         uint256 collateralValueUsd = (amountCollateral * uint256(goldPrice));
-        uint256 auToMint = ((collateralValueUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION);
+        uint256 ausdToMint = ((collateralValueUsd * aue.getCollateralInfo(aurumGold).ltv) / LIQUIDATION_PRECISION);
 
         // Arrange - user setup
         vm.startPrank(user);
         ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
-        ausd.approve(address(aue), auToMint);
-        aue.depositCollateralAndMintAUSD(aurumGold, amountCollateral, auToMint);
+        ausd.approve(address(aue), ausdToMint);
+        aue.depositCollateralAndMintAUSD(aurumGold, amountCollateral, ausdToMint);
         vm.stopPrank();
 
         // Arrange - liquidator setup
-        debtToCover = auToMint;          // liquidator tries to completely liquidate the user (but can only do 50%)
+        debtToCover = ausdToMint;          // liquidator tries to completely liquidate the user (but can only do 50%)
         vm.startPrank(liquidator);
         ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
         ausd.approve(address(aue), debtToCover);
@@ -88,7 +88,7 @@ contract LiquidationTests is BaseTest {
 
         // Act - first simulate a small dip, then a massive crash
         MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4950e8);
-        aue.liquidate(aurumGold, user, auToMint); 
+        aue.liquidate(aurumGold, user, ausdToMint); 
         MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4000e8);
         
         // Liquidator tries to liquidate the remaining debt
@@ -99,7 +99,7 @@ contract LiquidationTests is BaseTest {
         // Assert
         uint256 remainingAUSDMinted = aue.getUserAccountData(user).totalDebt;
         // user's AUSD: 400k -> 200k -> 100k
-        assertEq(remainingAUSDMinted, auToMint / 4); 
+        assertEq(remainingAUSDMinted, ausdToMint / 4); 
     }
 
 

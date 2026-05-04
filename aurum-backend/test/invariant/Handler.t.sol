@@ -168,6 +168,6 @@ contract Handler is Test {
     }
 
     function triggerInterestAccrual() public {
-        aue.updateIndex();
+        aue.performUpkeep(abi.encode(true, false));
     }
 }
