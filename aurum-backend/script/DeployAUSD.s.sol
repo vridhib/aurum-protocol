@@ -24,6 +24,8 @@ contract DeployAUSD is Script {
         uint256[] memory baseLtvs = new uint256[](length);
         uint256[] memory minLtvs = new uint256[](length);
         uint256[] memory debtCeilings = new uint256[](length);
+        uint256[] memory minCloseFactors = new uint256[](length);
+        uint256[] memory maxCloseFactors = new uint256[](length);
 
         for (uint256 i = 0; i < length; i++) {
             HelperConfig.CollateralConfig memory cc = networkConfig.collaterals[i];
@@ -34,6 +36,8 @@ contract DeployAUSD is Script {
             baseLtvs[i] = cc.baseLtv;
             minLtvs[i] = cc.minLtv;
             debtCeilings[i] = cc.debtCeiling;
+            minCloseFactors[i] = cc.minCloseFactor;
+            maxCloseFactors[i] = cc.maxCloseFactor;
         }
 
         vm.startBroadcast(networkConfig.deployerAccount);
@@ -51,7 +55,9 @@ contract DeployAUSD is Script {
             baseVols,
             baseLtvs,
             minLtvs,
-            debtCeilings, 
+            debtCeilings,
+            minCloseFactors,
+            maxCloseFactors, 
             address(ausd), 
             address(interestRateModel), 
             address(treasury)

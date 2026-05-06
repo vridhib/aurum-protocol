@@ -63,6 +63,8 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         uint256 debtCeiling;                // Max total AUSD mintable against this collateral
         uint256 totalNormalizedDebt;        // Current total AUSD minted against this collateral
         bool isActive;                      // Can users deposit/mint against it?
+        uint256 minCloseFactor;
+        uint256 maxCloseFactor;
     }
 
     /*----------State Variables----------*/
@@ -70,11 +72,12 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     uint256 public constant ADDITIONAL_FEED_PRECISION = 1e10;         // 8 => 18 decimals for price feeds
     uint256 public constant PRECISION = 1e18;
     uint256 public constant LIQUIDATION_AND_FEE_PRECISION = 100;      // percentage divisor
+    uint256 private constant TEN_PERCENT = 0.10e18;
     // Economic Constants
     uint256 public constant VOLATILITY_REDUCTION_FACTOR = 5;          // For every 10% volatility increase, reduce LTV by 5%
+    uint256 public constant CLOSE_FACTOR_BOOST_PER_STEP = 0.05e18;
     uint256 public constant MIN_HEALTH_FACTOR = 1e18;
-    uint256 public constant MIN_DUST_THRESHOLD = 1e18;                // If user debt < 1e18 allow 100% liquidation
-    uint256 public constant LIQUIDATION_CLOSE_FACTOR = 50;            // Max % of debt liquidatable in 1 call
+    uint256 public constant MIN_DUST_THRESHOLD = 100e18;              // If user debt < 100e18 allow 100% liquidation
     uint256 public constant LIQUIDATION_BONUS = 5;                    // % liquidator bonus
     uint256 public constant PROTOCOL_LIQUIDATION_FEE = 5;             // % of liquidation bonus to treasury
     uint256 public constant PROTOCOL_RESERVE_PERCENT = 10;            // % of interest to treasury
@@ -131,6 +134,8 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         uint256[] memory baseLtvs,
         uint256[] memory minLtvs,
         uint256[] memory debtCeilings,
+        uint256[] memory minCloseFactors,
+        uint256[] memory maxCloseFactors,
         address ausdAddress,
         address interestRateModelAddress,
         address treasuryAddress
@@ -147,7 +152,9 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
                 ltv: baseLtvs[i], // initialize as base LTV, adjusted later based on volatility                 
                 debtCeiling: debtCeilings[i], 
                 totalNormalizedDebt: 0,
-                isActive: true
+                isActive: true,
+                minCloseFactor: minCloseFactors[i],
+                maxCloseFactor: maxCloseFactors[i]
             });
             s_collateralList.push(tokenAddresses[i]);
         }
@@ -212,23 +219,6 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         if (newDebtCeiling != 0) info.debtCeiling = newDebtCeiling;
         info.isActive = isActive;
     }
-
-    // function updateLTVBasedOnVolatility(address collateralToken) public {
-    //     CollateralInfo storage info = s_collateralInfo[collateralToken];
-    //     uint256 volatility = IVolatilityOracle(info.volatilityFeed).getAnnualizedVolatility(); // 18 decimals
-
-    //     uint256 reduction = 0;
-    //     uint256 baseline = info.baselineVolatility;
-    //     if (volatility > baseline) {
-    //         uint256 excess = volatility - baseline;
-    //         reduction = (excess * VOLATILITY_REDUCTION_FACTOR) / 1e17;
-    //     }
-
-    //     uint256 newLtv = info.baseLtv >= reduction ? info.baseLtv - reduction : 0;
-    //     if (newLtv < info.minLtv) newLtv = info.minLtv; 
-    //     if (newLtv > info.baseLtv) newLtv = info.baseLtv;
-    //     info.ltv = newLtv;
-    // }
 
     /**
      * @param collateralToken The address of the collateral token to deposit
@@ -347,14 +337,14 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         uint256 startingUserHealthFactor = _healthFactor(user);
         if (startingUserHealthFactor >= MIN_HEALTH_FACTOR) revert AurumEngine__HealthFactorOkay();
 
-        // Prevent user from being 100% liquidated over small dips
+        // Calculte dynamic close factor
         uint256 currentDebt = _getCurrentUserDebt(user);
-        uint256 maxDebtToCover = (currentDebt * LIQUIDATION_CLOSE_FACTOR) / 100;
-        if (debtToCover > maxDebtToCover) {
-            debtToCover = maxDebtToCover;
-        }
-        // If the result is tiny (dust), just let liquidator pay off 100% of user's debt
-        if (maxDebtToCover < MIN_DUST_THRESHOLD) debtToCover = currentDebt;
+        uint256 closeFactor = _closeFactor(user, collateralToken);
+        uint256 maxDebtToCover = (currentDebt * closeFactor) / PRECISION;
+
+        if (debtToCover > maxDebtToCover) debtToCover = maxDebtToCover;
+        if (maxDebtToCover < MIN_DUST_THRESHOLD) debtToCover = currentDebt; // if dust pay off 100%
+        
         uint256 tokenAmountFromDebtCovered = getTokenAmountFromUsd(collateralToken, debtToCover);
 
         // Calculate the protocol's and liquidator's share
@@ -414,7 +404,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
 
             uint256 volatility = IVolatilityOracle(info.volatilityFeed).getAnnualizedVolatility(); // 18 decimals
             uint256 excess = volatility > info.baselineVolatility ? volatility - info.baselineVolatility : 0;
-            uint256 reduction = (excess * VOLATILITY_REDUCTION_FACTOR) / 0.10e18;
+            uint256 reduction = (excess * VOLATILITY_REDUCTION_FACTOR) / TEN_PERCENT;
 
             uint256 newLtv = info.baseLtv >= reduction ? info.baseLtv - reduction : 0;
             if (newLtv < info.minLtv) newLtv = info.minLtv; 
@@ -622,6 +612,26 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
             totalAdjustedCollateral += (usdValue * ltv) / LIQUIDATION_AND_FEE_PRECISION;
         }
         return (totalAdjustedCollateral * PRECISION) / totalActualDebt;
+    }
+
+
+    /// @dev This is only called within liquidate() (which already checks and reverts if user's HF >= 1e18) to calculate the dynamic close factor
+    function _closeFactor(address user, address collateralToken) private view returns (uint256) {
+        uint256 userHf = _healthFactor(user);
+
+        // Calculate volatility excess
+        CollateralInfo memory info = s_collateralInfo[collateralToken];
+        uint256 volatility = IVolatilityOracle(info.volatilityFeed).getAnnualizedVolatility();
+        uint256 excess = volatility > info.baselineVolatility ? volatility - info.baselineVolatility : 0;
+        uint256 volatilityBoost = (excess * CLOSE_FACTOR_BOOST_PER_STEP) / TEN_PERCENT;
+        uint256 effectiveMaxCloseFactor = info.maxCloseFactor + volatilityBoost;
+        if (effectiveMaxCloseFactor > PRECISION) effectiveMaxCloseFactor = PRECISION;
+
+        // Calculate close factor
+        uint256 deficit = MIN_HEALTH_FACTOR - userHf;
+        uint256 closeFactor = info.minCloseFactor + ((effectiveMaxCloseFactor - info.minCloseFactor) * deficit) / PRECISION;
+ 
+        return closeFactor;
     }
 
     // Check the health factor and revert if it is below MIN_HEALTH_FACTOR

@@ -16,6 +16,8 @@ contract HelperConfig is Script {
         uint256 baseLtv;
         uint256 minLtv;
         uint256 debtCeiling;
+        uint256 minCloseFactor;
+        uint256 maxCloseFactor;
     }
 
     struct NetworkConfig {
@@ -57,7 +59,9 @@ contract HelperConfig is Script {
             baselineVolatility: 0.15e18,
             baseLtv: 85, 
             minLtv: 60,
-            debtCeiling: 50_000_000 * 1e18
+            debtCeiling: 50_000_000 * 1e18,
+            minCloseFactor: 0.155e18,
+            maxCloseFactor: 0.75e18
         });
         collaterals[1] = CollateralConfig({                               // WETH collateral config
             token: 0xdd13E55209Fd76AfE204dBda4007C227904f0a81,            // Sepolia WETH address
@@ -66,7 +70,9 @@ contract HelperConfig is Script {
             baselineVolatility: 0.60e18,
             baseLtv: 65, 
             minLtv: 40,
-            debtCeiling: 30_000_000 * 1e18
+            debtCeiling: 30_000_000 * 1e18,
+            minCloseFactor: 0.20e18,
+            maxCloseFactor: 0.85e18
         });
 
         return NetworkConfig({
@@ -100,7 +106,9 @@ contract HelperConfig is Script {
             baselineVolatility: 0.15e18,
             baseLtv: 85, 
             minLtv: 60,
-            debtCeiling: 50_000_000 * 1e18
+            debtCeiling: 50_000_000 * 1e18,
+            minCloseFactor: 0.155e18,
+            maxCloseFactor: 0.75e18
         });
         collaterals[1] = CollateralConfig({ // WETH collateral config
             token: address(wethMock),
@@ -109,7 +117,9 @@ contract HelperConfig is Script {
             baselineVolatility: 0.60e18,
             baseLtv: 65, 
             minLtv: 40,
-            debtCeiling: 30_000_000 * 1e18
+            debtCeiling: 30_000_000 * 1e18,
+            minCloseFactor: 0.20e18,
+            maxCloseFactor: 0.85e18
         });
 
         return NetworkConfig({
