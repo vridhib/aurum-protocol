@@ -103,27 +103,7 @@ contract BaseTest is Test {
         _;
     }
 
-    modifier liquidated {
-        uint256 collateralValueUsd = (amountCollateral * uint256(goldPrice));
-        uint256 aurToMint = ((collateralValueUsd * aue.getCollateralInfo(aurumGold).ltv) / LIQUIDATION_PRECISION);
 
-        vm.startPrank(user);
-        ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
-        ausd.approve(address(aue), aurToMint);
-        aue.depositCollateralAndMintAUSD(aurumGold, amountCollateral, aurToMint);
-        vm.stopPrank();
-
-        debtToCover = aurToMint;  
-        vm.startPrank(liquidator);
-        ERC20Mock(aurumGold).approve(address(aue), amountCollateral);
-        ausd.approve(address(aue), debtToCover);
-        aue.depositCollateralAndMintAUSD(aurumGold, amountCollateral, debtToCover);
-
-        MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4950e8);
-        aue.liquidate(aurumGold, user, aurToMint); 
-        vm.stopPrank();
-        _;
-    }
 
     function getMaxSafeMint() internal view returns (uint256) {
         uint256 goldUsd = aurAmount * uint256(goldPrice);
