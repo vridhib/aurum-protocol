@@ -66,6 +66,21 @@ contract LiquidationTests is BaseTest {
         vm.stopPrank();
     }
 
+    function _setUpLiquidatedAccount(uint256 aurAmount, uint256 wethAmount, uint256 mintAmount) private {
+        vm.startPrank(user);
+        if (aurAmount > 0) {
+            ERC20Mock(aurumGold).approve(address(aue), aurAmount);
+            aue.depositCollateral(aurumGold, aurAmount);
+        }   
+        if (wethAmount > 0) {
+            ERC20Mock(weth).approve(address(aue), wethAmount);
+            aue.depositCollateral(weth, wethAmount);
+            
+        }
+        if (aurAmount > 0 || wethAmount > 0) aue.mintAUSD(mintAmount);
+        vm.stopPrank();
+    }
+
     function _expectedCloseFactor(uint256 hf, uint256 maxCf, uint256 minCf, uint256 excessVol) private pure returns (uint256) {
         uint256 boost = (excessVol * 0.05e18) / 0.10e18;
         uint256 effectiveMax = maxCf + boost;
@@ -317,37 +332,97 @@ contract LiquidationTests is BaseTest {
 
 
     /********************************************************/
+    /**********************Minimum Profit********************/
+    /********************************************************/
+    function testLiquidationRevertsWhenProfitTooLow() public {
+        // Set up liquidated account and liquidator
+        // ((0.01 * 5000) * 0.85 = 42.5 
+        _setUpLiquidatedAccount(0.01e18, 0, 42.5e18);
+        _setUpLiquidator();
+
+        // Price drops slightly
+        MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4999e8);
+        assertLt(aue.getUserAccountData(user).healthFactor, aue.MIN_HEALTH_FACTOR());
+
+        uint256 debtToCover = aue.getUserAccountData(user).totalDebt;
+        vm.prank(liquidator);
+        vm.expectRevert(AurumEngine.AurumEngine__LiquidationNotProfitable.selector);
+        aue.liquidate(aurumGold, user, debtToCover);
+    }
+
+
+    function testLiquidationSucceedsWhenProfitSufficient() public {
+        // Set up liquidated account and liquidator
+        // User: 2 AUR, mint 8500 AUSD -> profit will be above 50
+        // ((2 * 5000) * 0.85 = 8500
+        _setUpLiquidatedAccount(2e18, 0, 8500e18);
+        _setUpLiquidator();
+
+        // Price drops slightly
+        MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4999e8);
+        assertLt(aue.getUserAccountData(user).healthFactor, aue.MIN_HEALTH_FACTOR());
+
+        uint256 debtBefore = aue.getUserAccountData(user).totalDebt;
+        vm.prank(liquidator);
+        aue.liquidate(aurumGold, user, debtBefore);
+        uint256 debtAfter = aue.getUserAccountData(user).totalDebt;
+        assertLt(debtAfter, debtBefore);
+    }
+
+
+    function testDustLiquidationRevertsWhenProfitTooLow() public {
+        // Tiny debt that is fully liquidatable (< MIN_DUST_THRESHOLD) but profit < 50e18
+        // Use 0.02 AUR and mint 85 AUSD
+        _setUpLiquidatedAccount(0.02e18, 0, 85e18);
+        _setUpLiquidator();
+
+        // Price drop so HF < 1 (collateral value still sufficient, just to trigger liquidation)
+        MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4999e8);
+        assertLt(aue.getUserAccountData(user).healthFactor, 1e18);
+        // debtBefore = 85e18 < MIN_DUST_THRESHOLD (100e18), so full liquidation will be attempted
+        uint256 debtBefore = aue.getUserAccountData(user).totalDebt;
+        vm.prank(liquidator);
+        vm.expectRevert(AurumEngine.AurumEngine__LiquidationNotProfitable.selector);
+        aue.liquidate(aurumGold, user, debtBefore);
+    }
+
+    function testGetLiquidationProfitReturnsValidData() public depositedCollateralAndMintedAUSD(getMaxSafeMint()){
+        MockV3Aggregator(goldUsdPriceFeed).updateAnswer(4999e8);
+        uint256 hf = aue.getUserAccountData(user).healthFactor;
+        uint256 currentDebt = aue.getUserAccountData(user).totalDebt;
+
+        // Get expected liquidator profit and bonus collateral
+        (uint256 profitUsd, uint256 bonusCollateral) = aue.getLiquidationProfit(aurumGold, user, currentDebt);
+
+        // Compute expected values
+        uint256 expectedCf = _expectedCloseFactor(hf, goldMaxCloseFactor, goldMinCloseFactor, 0);
+        uint256 expectedMaxDebtToCover = (currentDebt * expectedCf) / 1e18;
+        uint256 expectedTokenAmount = aue.getTokenAmountFromUsd(aurumGold, expectedMaxDebtToCover);
+        uint256 expectedBonus = (expectedTokenAmount * aue.LIQUIDATION_BONUS()) / aue.LIQUIDATION_AND_FEE_PRECISION();
+        uint256 expectedProfitUsd = aue.getUsdValue(aurumGold, expectedBonus);
+
+        assertEq(profitUsd, expectedProfitUsd);
+        assertEq(bonusCollateral, expectedBonus);
+    }
+
+
+    /********************************************************/
     /***********************Edge Cases***********************/
     /********************************************************/
-    function testLiquidationClearsDustDebt() public {
-        // Setup specific price environment (1 Gold Token = $2.00 USD)
-        int256 price = 2e8; 
-        MockV3Aggregator(goldUsdPriceFeed).updateAnswer(price);
+    function testDustLiquidationSucceedsAboveProfitFloor() public {
+        // 1 AUR at price=5000 -> max borrow 4250 AUSD, but we borrow a small dust amount
+        _setUpLiquidatedAccount(0.03e18, 0, 101e18);
+        _setUpLiquidator();
+        uint256 currentDebt = aue.getUserAccountData(user).totalDebt;
 
-        // User deposits 1 Gold and mints 1 AUSD
-        // Initial health factor = ($2.00 * 0.8) / $1.00 = 1.6
-        vm.startPrank(user);
-        ERC20Mock(aurumGold).approve(address(aue), ONE_AUR);
-        ausd.approve(address(aue), ONE_AUR);
-        aue.depositCollateralAndMintAUSD(aurumGold, ONE_AUR, ONE_AUSD);
-        vm.stopPrank();
+        // Drop price to trigger HF < 1 (collateral still sufficient)
+        MockV3Aggregator(goldUsdPriceFeed).updateAnswer(3960e8); // just enough to go underwater
+        uint256 hf = aue.getUserAccountData(user).healthFactor;
+        assertLt(hf, 1e18);
 
-        // Setup Liquidator with 1 AUSD
-        vm.prank(address(aue));
-        ausd.mint(liquidator, ONE_AUSD);
-        
-        vm.startPrank(liquidator);
-        ausd.approve(address(aue), ONE_AUR);
-
-        // Crash the gold price (to $1.10) to trigger liquidation
-        // Updated health factor = ($1.10 * 0.8) / $1.00 = 0.88 (Liquidatable!)
-        MockV3Aggregator(goldUsdPriceFeed).updateAnswer(1.1e8);
-
-        // Liquidate user: should set debtToCover to 1 AUSD (100%) and wipe the user out.
-        aue.liquidate(aurumGold, user, ONE_AUSD);
-        vm.stopPrank();
-
-        // Verify that user debt == 0
+        // Full liquidation should succeed because profit > MIN_LIQUIDATION_PROFIT (5e18)
+        vm.prank(liquidator);
+        aue.liquidate(aurumGold, user, currentDebt);
         assertEq(aue.getUserAccountData(user).totalDebt, 0);
     }
 
