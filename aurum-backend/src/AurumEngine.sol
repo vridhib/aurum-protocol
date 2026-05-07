@@ -37,6 +37,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     error AurumEngine__NothingToBurn();
     error AurumEngine__NoCollateralDeposited();
     error AurumEngine__NoCollateralAvailableForDebt();
+    error AurumEngine__LiquidationNotProfitable();
 
     using OracleLib for AggregatorV3Interface;
 
@@ -69,15 +70,16 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
 
     /*----------State Variables----------*/
     // Precision Constants
-    uint256 public constant ADDITIONAL_FEED_PRECISION = 1e10;         // 8 => 18 decimals for price feeds
+    uint256 public constant ADDITIONAL_FEED_PRECISION = 1e10;         // 8 -> 18 decimals for price feeds
     uint256 public constant PRECISION = 1e18;
-    uint256 public constant LIQUIDATION_AND_FEE_PRECISION = 100;      // percentage divisor
+    uint256 public constant LIQUIDATION_AND_FEE_PRECISION = 100;      // Percentage divisor
     uint256 private constant TEN_PERCENT = 0.10e18;
     // Economic Constants
     uint256 public constant VOLATILITY_REDUCTION_FACTOR = 5;          // For every 10% volatility increase, reduce LTV by 5%
     uint256 public constant CLOSE_FACTOR_BOOST_PER_STEP = 0.05e18;
     uint256 public constant MIN_HEALTH_FACTOR = 1e18;
     uint256 public constant MIN_DUST_THRESHOLD = 100e18;              // If user debt < 100e18 allow 100% liquidation
+    uint256 public constant MIN_LIQUIDATION_PROFIT = 5e18;            // Min $5 profit for a keeper; would be 50-100 for mainnet
     uint256 public constant LIQUIDATION_BONUS = 5;                    // % liquidator bonus
     uint256 public constant PROTOCOL_LIQUIDATION_FEE = 5;             // % of liquidation bonus to treasury
     uint256 public constant PROTOCOL_RESERVE_PERCENT = 10;            // % of interest to treasury
@@ -347,11 +349,14 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         
         uint256 tokenAmountFromDebtCovered = getTokenAmountFromUsd(collateralToken, debtToCover);
 
+        // Ensure the liquidator's profit is above the threshold
+        uint256 liquidatorBonus = (tokenAmountFromDebtCovered * LIQUIDATION_BONUS) / LIQUIDATION_AND_FEE_PRECISION;
+        uint256 profitUsd = _usdValue(collateralToken, liquidatorBonus);
+        if (profitUsd < MIN_LIQUIDATION_PROFIT) revert AurumEngine__LiquidationNotProfitable();
+
         // Calculate the protocol's and liquidator's share
         uint256 protocolShare = (tokenAmountFromDebtCovered * PROTOCOL_LIQUIDATION_FEE) / LIQUIDATION_AND_FEE_PRECISION;
-        uint256 liquidatorBonus = (tokenAmountFromDebtCovered * LIQUIDATION_BONUS) / LIQUIDATION_AND_FEE_PRECISION;
         uint256 liquidatorShare = tokenAmountFromDebtCovered + liquidatorBonus;
-
         uint256 totalCollateralToRedeem = liquidatorShare + protocolShare;
 
         // Redeem collateral for liquidator and protocol
@@ -686,6 +691,21 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
             uint256 balance = IERC20(token).balanceOf(address(this));
             total += _usdValue(token, balance);
         }
+    }
+
+
+    function getLiquidationProfit(address collateralToken, address user, uint256 debtToCover) external view returns (uint256 profitUsd, uint256 bonusCollateral) {
+        if (_healthFactor(user) >= MIN_HEALTH_FACTOR) revert AurumEngine__HealthFactorOkay();
+
+        uint256 currentDebt = _getCurrentUserDebt(user);
+        uint256 closeFactor = _closeFactor(user, collateralToken);
+        uint256 maxDebtToCover = (debtToCover * closeFactor) / PRECISION;
+        if (debtToCover > maxDebtToCover) debtToCover = maxDebtToCover;
+        if (maxDebtToCover < MIN_DUST_THRESHOLD) debtToCover = currentDebt;
+        
+        uint256 tokenAmount = getTokenAmountFromUsd(collateralToken, debtToCover);
+        bonusCollateral = (tokenAmount * LIQUIDATION_BONUS) / LIQUIDATION_AND_FEE_PRECISION;
+        profitUsd = _usdValue(collateralToken, bonusCollateral);
     }
 
     /**
