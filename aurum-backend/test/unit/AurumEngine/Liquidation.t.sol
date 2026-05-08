@@ -318,16 +318,20 @@ contract LiquidationTests is BaseTest {
     }
 
 
-    function testProtocolBalanceIsUpdatedAfterLiquidation() public liquidated {
-        uint256 startingProtocolBalance = amountCollateral + amountCollateral; 
+    function testTreasuryBalanceIsUpdatedAfterLiquidation() public liquidated {
+        uint256 startingProtocolBalance = amountCollateral + amountCollateral;
 
-        uint256 actualDebtCovered = debtToCover - aue.getUserAccountData(user).totalDebt;
+        uint256 actualDebtCovered = maxAusdAmount - aue.getUserAccountData(user).totalDebt;
         uint256 tokenAmountFromDebt = aue.getTokenAmountFromUsd(aurumGold, actualDebtCovered);
-        uint256 liquidatorPayout = tokenAmountFromDebt + (tokenAmountFromDebt * aue.LIQUIDATION_BONUS() / aue.LIQUIDATION_AND_FEE_PRECISION());
+        uint256 protocolLiquidationFee = tokenAmountFromDebt * aue.PROTOCOL_LIQUIDATION_FEE() / aue.LIQUIDATION_AND_FEE_PRECISION();
+        uint256 liquidatorShare = tokenAmountFromDebt + protocolLiquidationFee;
 
-        uint256 expectedEndingProtocolBalance = startingProtocolBalance - liquidatorPayout;
-        uint256 actualEndingProtocolBalance = ERC20Mock(aurumGold).balanceOf(address(aue));
-        assertEq(expectedEndingProtocolBalance, actualEndingProtocolBalance);
+        uint256 expectedEndingProtocolBalance = startingProtocolBalance - liquidatorShare - protocolLiquidationFee;
+        uint256 expectedTreasuryBalance = protocolLiquidationFee;
+        uint256 actualTreasuryBalance = ERC20Mock(aurumGold).balanceOf(address(treasury));
+
+        assertEq(expectedTreasuryBalance, actualTreasuryBalance);   // Treasury balance should be updated
+        assertEq(expectedEndingProtocolBalance, ERC20Mock(aurumGold).balanceOf(address(aue))); // fees should not go to the engine
     }
 
 
@@ -404,7 +408,6 @@ contract LiquidationTests is BaseTest {
         assertEq(profitUsd, expectedProfitUsd);
         assertEq(bonusCollateral, expectedBonus);
     }
-
 
     /********************************************************/
     /***********************Edge Cases***********************/

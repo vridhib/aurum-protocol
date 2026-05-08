@@ -10,6 +10,7 @@ import {BaseTest} from "../shared/BaseTest.t.sol";
 contract AurumTreasuryTest is BaseTest {
     address owner = makeAddr("owner");
     AurumSavings savings;
+    address engine = makeAddr("engine");
     uint256 constant INITIAL_SUPPLY = 1_000_000e18;
     uint256 yieldAmount = 1000e18;
 
@@ -17,48 +18,49 @@ contract AurumTreasuryTest is BaseTest {
         vm.startPrank(owner);
         ausd = new AurumUSD();
         ausd.mint(owner, INITIAL_SUPPLY);
+        engine = makeAddr("engine");
         treasury = new AurumTreasury(address(ausd));
         savings = new AurumSavings(address(ausd), address(treasury));
         ausd.transfer(address(treasury), INITIAL_SUPPLY);
         vm.stopPrank();
     }
 
-    modifier setSavingsAddress {
+    modifier initializeAddresses {
         vm.prank(owner);
-        treasury.setSavingsAddress(address(savings));
+        treasury.initializeAddresses(address(savings), engine);
         _;
     }
 
     // ------------ setSavings() Tests ------------
-    function testOwnerCanSetSavingsAddress() public {
+    function testOwnerCanInitializeAddresses() public {
         vm.prank(owner);
-        treasury.setSavingsAddress(address(savings));
+        treasury.initializeAddresses(address(savings), engine);
         assertEq(treasury.getSavings(), address(savings));
     }
 
-    function testRevertIfNonOwnerSetsSavingsAddress() public {
+    function testRevertIfNonOwnerCallsInitializeAddresses() public {
         vm.prank(user);
         vm.expectRevert();
-        treasury.setSavingsAddress(address(savings));
+        treasury.initializeAddresses(address(savings), engine);
     }
 
-    function testRevertIfOwnerSetsSavingsAddressTwice() public {
+    function testRevertIfOwnerCallsInitializeAddressesTwice() public {
         vm.startPrank(owner);
-        treasury.setSavingsAddress(address(savings));
+        treasury.initializeAddresses(address(savings), engine);
 
-        vm.expectRevert(AurumTreasury.AurumTreasury__SavingsAlreadySet.selector);
-        treasury.setSavingsAddress(address(savings));
+        vm.expectRevert(AurumTreasury.AurumTreasury__AlreadyInitialized.selector);
+        treasury.initializeAddresses(address(savings), engine);
         vm.stopPrank();
     }
 
     // ------------ distributeYield() Tests ------------
-    function testRevertIfNonOwnerDistributesYield() public setSavingsAddress {
+    function testRevertIfNonOwnerDistributesYield() public initializeAddresses {
         vm.prank(user);
         vm.expectRevert();
         treasury.distributeYield(yieldAmount);
     }
 
-    function testOwnerCanDistributeYield() public setSavingsAddress {
+    function testOwnerCanDistributeYield() public initializeAddresses {
         vm.prank(owner);
         treasury.distributeYield(yieldAmount);
 
@@ -66,7 +68,7 @@ contract AurumTreasuryTest is BaseTest {
         assertEq(ausd.balanceOf(address(treasury)), INITIAL_SUPPLY - yieldAmount);
     }
 
-    function testDistributeYieldInsufficientReserves() public setSavingsAddress {
+    function testDistributeYieldInsufficientReserves() public initializeAddresses {
         vm.prank(owner);
         vm.expectRevert(AurumTreasury.AurumTreasury__InsufficientReserves.selector);
         treasury.distributeYield(INITIAL_SUPPLY + 1);
