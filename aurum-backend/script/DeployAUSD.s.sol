@@ -45,7 +45,6 @@ contract DeployAUSD is Script {
 
         AurumTreasury treasury = new AurumTreasury(address(ausd));
         AurumSavings savings = new AurumSavings(address(ausd), address(treasury));
-        treasury.setSavingsAddress(address(savings));
 
         InterestRateModel interestRateModel = new InterestRateModel();
         AurumEngine engine = new AurumEngine(
@@ -62,6 +61,8 @@ contract DeployAUSD is Script {
             address(interestRateModel), 
             address(treasury)
         );
+
+        treasury.initializeAddresses(address(savings), address(engine));
 
         ausd.transferOwnership(address(engine));
         vm.stopBroadcast();

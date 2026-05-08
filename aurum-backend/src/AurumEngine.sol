@@ -38,6 +38,8 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     error AurumEngine__NoCollateralDeposited();
     error AurumEngine__NoCollateralAvailableForDebt();
     error AurumEngine__LiquidationNotProfitable();
+    error AurumEngine__NoDebtToAbsorb();
+    error AurumEngine__IneligibleForForceClose();
 
     using OracleLib for AggregatorV3Interface;
 
@@ -79,6 +81,8 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     uint256 public constant CLOSE_FACTOR_BOOST_PER_STEP = 0.05e18;
     uint256 public constant MIN_HEALTH_FACTOR = 1e18;
     uint256 public constant MIN_DUST_THRESHOLD = 100e18;              // If user debt < 100e18 allow 100% liquidation
+    uint256 public constant MAX_FORCE_CLOSE_COLLATERAL_VALUE = 100e18;   // $100
+    uint256 public constant FORCE_CLOSE_HF_THRESHOLD = 0.50e18;    // 50% health factor           
     uint256 public constant MIN_LIQUIDATION_PROFIT = 5e18;            // Min $5 profit for a keeper; would be 50-100 for mainnet
     uint256 public constant LIQUIDATION_BONUS = 5;                    // % liquidator bonus
     uint256 public constant PROTOCOL_LIQUIDATION_FEE = 5;             // % of liquidation bonus to treasury
@@ -113,6 +117,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     event DebtAllocated(address user, address token, uint256 allocatedDebt);
     event DebtDeallocated(address user, address token, uint256 debtReduction);
     event BurnAUSD(address indexed user, uint256 amount);
+    event ForceClosed(address indexed user, uint256 debtAbsorbed, uint256 collateralSeized);
 
     /*----------Modifiers----------*/
     modifier moreThanZero(uint256 amount) {
@@ -197,6 +202,47 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         (bool indexUpdateNeeded, bool ltvUpdateNeeded) = abi.decode(performData, (bool, bool));
         if (indexUpdateNeeded) _updateIndex();
         if (ltvUpdateNeeded) _updateLTVs();
+    }
+
+
+    function forceClose(address user) external nonReentrant {
+        uint256 totalCollateralValue = _getAccountCollateralValueInUsd(user);
+        uint256 hf = _healthFactor(user);
+        uint256 debt = _getCurrentUserDebt(user);
+        
+        // Must be underwater in 1 of the 2 "stuck" scenarios
+        if (debt == 0) revert AurumEngine__NoDebtToAbsorb();
+        if (hf >= MIN_HEALTH_FACTOR) revert AurumEngine__HealthFactorOkay();
+        if ((totalCollateralValue > MAX_FORCE_CLOSE_COLLATERAL_VALUE) && (hf > FORCE_CLOSE_HF_THRESHOLD)) {
+            revert AurumEngine__IneligibleForForceClose(); 
+        }
+    
+        // Seize all collateral for the treasury
+        if (totalCollateralValue > 0) { 
+            for (uint256 i = 0; i < s_collateralList.length; i++) {
+                address token = s_collateralList[i];
+                uint256 amount = s_collateralDeposited[user][token];
+                if (amount > 0) {
+                    s_collateralDeposited[user][token] = 0;
+                    IERC20(token).transfer(i_treasury, amount);
+                }
+            }
+        }
+        // Clear user's debt
+        for (uint256 i = 0; i < s_collateralList.length; i++) {
+            address token = s_collateralList[i];
+            uint256 allocatedDebt = s_userDebtAllocation[user][token];
+            if (allocatedDebt > 0) {
+                s_userDebtAllocation[user][token] = 0;
+                s_collateralInfo[token].totalNormalizedDebt -= allocatedDebt;
+            }
+        }
+        s_userLastIndex[user] = s_cumulativeIndex;
+
+        // Burn the debt from treasury AUSD
+        i_ausd.transferFrom(i_treasury, address(this), debt);
+        i_ausd.burn(debt);
+        emit ForceClosed(user, debt, totalCollateralValue);
     }
 
     /**
@@ -361,7 +407,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
 
         // Redeem collateral for liquidator and protocol
         _redeemCollateral(collateralToken, liquidatorShare, user, msg.sender);
-        _redeemCollateral(collateralToken, protocolShare, user, address(this));
+        _redeemCollateral(collateralToken, protocolShare, user, i_treasury);
 
         // Burn AUSD
         _burnAUSD(debtToCover, user, msg.sender);

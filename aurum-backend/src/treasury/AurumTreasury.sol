@@ -14,25 +14,35 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  */
 contract AurumTreasury is Ownable {
     error AurumTreasury__InsufficientReserves();
-    error AurumTreasury__SavingsAlreadySet();
+    error AurumTreasury__AlreadyInitialized();
 
     using SafeERC20 for IERC20;
 
     IERC20 private immutable i_ausd;
     address private s_aurumSavings;
+    address private s_aurumEngine;
 
     event YieldDistributed(uint256 amount);
     event SavingsAddressSet(address savings);
+    event EngineAddressSet(address engine);
 
     /// @dev Sets the AUSD token and the AurumSavings contract addresses.
     constructor(address ausd) Ownable(msg.sender) {
         i_ausd = IERC20(ausd);
     }
 
-    function setSavingsAddress(address savings) external onlyOwner {
-        if (s_aurumSavings != address(0)) revert AurumTreasury__SavingsAlreadySet();
+    /// @notice Initializes the treasury with the addresses of the savings and engine contracts and provides infinite approval to the trusted engine.
+    function initializeAddresses(address savings, address engine) external onlyOwner {
+        if (s_aurumSavings != address(0) || s_aurumEngine != address(0)) {
+            revert AurumTreasury__AlreadyInitialized();
+        }
+
         s_aurumSavings = savings;
+        s_aurumEngine = engine;
         emit SavingsAddressSet(savings);
+        emit EngineAddressSet(engine);
+
+        i_ausd.forceApprove(engine, type(uint256).max);
     }
 
     /**
