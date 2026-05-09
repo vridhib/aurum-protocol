@@ -10,6 +10,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title AurumEngine
@@ -25,7 +26,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  *
  * @notice This contract is the core of the Aurum Protocol. It handles all the logic for minting and redeeming AUSD as well as depositing and withdrawing collateral.
  */
-contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
+contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable {
     /*----------Errors----------*/
     error AurumEngine__TokenNotAllowed(address token);
     error AurumEngine__NeedsMoreThanZero();
@@ -40,6 +41,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
     error AurumEngine__LiquidationNotProfitable();
     error AurumEngine__NoDebtToAbsorb();
     error AurumEngine__IneligibleForForceClose();
+    error AurumEngine__PauseConditionNotMet();
 
     using OracleLib for AggregatorV3Interface;
 
@@ -172,12 +174,33 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         s_ltvLastUpdate = block.timestamp;
     }
 
+    function pause() external onlyOwner {
+        if (!_canPause()) revert AurumEngine__PauseConditionNotMet();
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    function canPause() external view returns (bool) {
+        return _canPause();
+    }
+
+    function _canPause() internal view returns (bool) {
+        // Check total collateral value is less than 110% of total debt
+        uint256 totalDebt = _getTotalDebt();
+        if (totalDebt == 0) return false;
+        uint256 totalCollateralValue = getTotalProtocolCollateralValue();
+        return (totalCollateralValue * PRECISION) / totalDebt < (PRECISION + TEN_PERCENT);
+    }
+
     /**
      * @notice Called by Chainlink nodes to determine if an upkeep is needed
      * @return upkeepNeeded true if conditions are met to call performUpkeep
      * @return performData encoded data to pass to performUpkeep
      */
-    function checkUpkeep(bytes calldata /*checkData*/) public view override
+    function checkUpkeep(bytes calldata /*checkData*/) external view override
         returns (bool upkeepNeeded, bytes memory performData)
     {
         uint256 totalNormalizedDebt = 0;
@@ -198,14 +221,14 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
      * @notice Called by Chainlink nodes when `checkUpkeep` returns true
      * @param performData data passed from `checkUpkeep`
      */
-    function performUpkeep(bytes calldata performData) external override {
+    function performUpkeep(bytes calldata performData) external override whenNotPaused {
         (bool indexUpdateNeeded, bool ltvUpdateNeeded) = abi.decode(performData, (bool, bool));
         if (indexUpdateNeeded) _updateIndex();
         if (ltvUpdateNeeded) _updateLTVs();
     }
 
 
-    function forceClose(address user) external nonReentrant {
+    function forceClose(address user) external nonReentrant whenNotPaused {
         uint256 totalCollateralValue = _getAccountCollateralValueInUsd(user);
         uint256 hf = _healthFactor(user);
         uint256 debt = _getCurrentUserDebt(user);
@@ -303,6 +326,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         moreThanZero(amountCollateral)
         isAllowedToken(collateralToken)
         nonReentrant
+        whenNotPaused
     {
         s_collateralDeposited[msg.sender][collateralToken] += amountCollateral;
         emit CollateralDeposited(msg.sender, collateralToken, amountCollateral);
@@ -319,6 +343,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         moreThanZero(amountCollateral)
         isAllowedToken(collateralToken)
         nonReentrant
+        whenNotPaused
     {
         _redeemCollateral(collateralToken, amountCollateral, msg.sender, msg.sender);
         _revertIfHealthFactorIsBroken(msg.sender);
@@ -329,7 +354,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
      * @param amountAUSDToMint The number of AUSD tokens to mint
      * @notice To mint AUSD, the user must have enough collateral to cover the minimum collateralization ratio of 125%
      */
-    function mintAUSD(uint256 amountAUSDToMint) public moreThanZero(amountAUSDToMint) nonReentrant {
+    function mintAUSD(uint256 amountAUSDToMint) public moreThanZero(amountAUSDToMint) nonReentrant whenNotPaused {
         _updateIndex(); // Accrue interest first
         // Set the user's last index
         s_userLastIndex[msg.sender] = s_cumulativeIndex;
@@ -360,7 +385,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
      * @param amount The amount of AUSD to burn
      * @notice This burns a given amount of AUSD
      */
-    function burnAUSD(uint256 amount) public moreThanZero(amount) {
+    function burnAUSD(uint256 amount) public moreThanZero(amount) whenNotPaused {
         _burnAUSD(amount, msg.sender, msg.sender);
     }
 
@@ -379,6 +404,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
         moreThanZero(debtToCover)
         isAllowedToken(collateralToken)
         nonReentrant
+        whenNotPaused
     {
         _updateIndex();
         // Check health factor of user
@@ -706,6 +732,14 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible {
             totalCollateralValueInUsd += _usdValue(token, amount);
         }
         return totalCollateralValueInUsd;
+    }
+
+    function _getTotalDebt() internal view returns (uint256) {
+        uint256 totalNorm; 
+        for (uint256 i = 0; i < s_collateralList.length; i++) {
+            totalNorm += s_collateralInfo[s_collateralList[i]].totalNormalizedDebt;
+        }
+        return (totalNorm * s_cumulativeIndex) / PRECISION;
     }
 
     /**************************************************************************/
