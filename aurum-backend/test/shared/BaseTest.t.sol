@@ -133,4 +133,21 @@ contract BaseTest is Test {
         vm.mockCall(goldUsdPriceFeed, abi.encodeWithSignature("latestRoundData()"), goldMock);
         vm.mockCall(ethUsdPriceFeed, abi.encodeWithSignature("latestRoundData()"), ethMock);
     }
+
+    // Helper to set up a user account with specified collateral and AUSD amounts
+    function _setUpUserAccount(uint256 amountOfAur, uint256 amountOfWeth, uint256 mintAmount) internal {
+        vm.startPrank(user);
+        if (amountOfAur > 0) {
+            ERC20Mock(aurumGold).mint(user, amountOfAur);
+            ERC20Mock(aurumGold).approve(address(aue), amountOfAur);
+            aue.depositCollateral(aurumGold, amountOfAur);
+        }
+        if (amountOfWeth > 0) {
+            ERC20Mock(weth).mint(user, amountOfWeth);
+            ERC20Mock(weth).approve(address(aue), amountOfWeth);
+            aue.depositCollateral(weth, amountOfWeth);
+        }
+        if (amountOfAur > 0 || amountOfWeth > 0) aue.mintAUSD(mintAmount);
+        vm.stopPrank();
+    }
 }

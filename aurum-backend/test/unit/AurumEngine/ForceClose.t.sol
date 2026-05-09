@@ -20,28 +20,11 @@ contract ForceCloseTests is BaseTest {
         ausd.mint(address(treasury), 1_000_000e18); // 1M AUSD
     }
 
-    // ----------------
-    // Helper Functions
-    // ----------------
+    /*----------Helper Functions----------*/
     function _collateralSlot(address account, address token) internal pure returns (bytes32) {
         return keccak256(abi.encode(token, keccak256(abi.encode(account, COLLATERAL_MAPPING_SLOT))));
     }
-
-    function _setUpUserAccount(uint256 aurAmount, uint256 wethAmount, uint256 mintAmount) private {
-        vm.startPrank(user);
-        if (aurAmount > 0) {
-            ERC20Mock(aurumGold).approve(address(aue), aurAmount);
-            aue.depositCollateral(aurumGold, aurAmount);
-        }   
-        if (wethAmount > 0) {
-            ERC20Mock(weth).approve(address(aue), wethAmount);
-            aue.depositCollateral(weth, wethAmount);
-            
-        }
-        if (aurAmount > 0 || wethAmount > 0) aue.mintAUSD(mintAmount);
-        vm.stopPrank();
-    }
-    // ----------------
+    /*-----------------------------------*/
 
     // Test force closure success on: collateral = 0, debt > 0
     function testForceCloseSucceedsOnZeroCollateralNonZeroDebt() public {
