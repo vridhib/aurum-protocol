@@ -51,7 +51,7 @@ contract InvariantsTest is StdInvariant, Test {
 
     // Invariant 1: The protocol must always be overcollateralized
     function invariant_protocolMustBeOvercollateralized() external view {
-        uint256 totalCollateralValue = aue.getTotalProtocolCollateralValue();
+        (uint256 totalCollateralValue, ) = aue.getGlobalMetrics();
         uint256 totalActualDebt = 0;
         for (uint256 i = 0; i < collateralTokens.length; i++) {
             address token = collateralTokens[i];

@@ -133,7 +133,7 @@ contract ForceCloseTests is BaseTest {
 
     // Test revert on healthy no-debt position (user HF = type(uint256).max)
     function testForceCloseRevertsOnMaxHfPosition() public depositedCollateral {
-        vm.expectRevert(AurumEngine.AurumEngine__NoDebtToAbsorb.selector);
+        vm.expectRevert(AurumEngine.AurumEngine__UserHasNoDebt.selector);
         aue.forceClose(user);
     }
 
