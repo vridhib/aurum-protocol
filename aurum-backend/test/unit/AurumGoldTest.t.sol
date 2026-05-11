@@ -1,105 +1,234 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.34;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console2} from "forge-std/Test.sol";
 import {AurumGold} from "../../src/AurumGold.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
+import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 contract AurumGoldTest is Test {
     AurumGold public token;
-    address owner = makeAddr("owner");
+
+    address deployer = makeAddr("deployer"); 
+    address custodian = makeAddr("custodian");
+    address pauser = makeAddr("pauser");
     address user = makeAddr("user");
     address attacker = makeAddr("attacker");
 
-    uint256 mintAmount = 10 ether;
-    uint256 burnAmount = 5 ether;
+    uint256 mintOunces = 10e18;   // 10 ounces (1 AUR = 1 ounce)
+    uint256 burnOunces = 5e18;    // 5 ounces
 
+    bytes32 CUSTODIAN_ROLE;
+    bytes32 PAUSER_ROLE;
 
     function setUp() public {
-        vm.prank(owner);
+        vm.prank(deployer);
         token = new AurumGold();
+
+        CUSTODIAN_ROLE = token.CUSTODIAN_ROLE();
+        PAUSER_ROLE = token.PAUSER_ROLE();
+
+        vm.startPrank(deployer);
+        token.grantRole(CUSTODIAN_ROLE, custodian);
+        token.grantRole(PAUSER_ROLE, pauser);
+        vm.stopPrank();
     }
 
-
-    // Test constructor
+    /********************************************************/
+    /***********************Constructor**********************/
+    /********************************************************/
     function testConstructor() public view {
         assertEq(token.name(), "Aurum Gold");
         assertEq(token.symbol(), "AUR");
         assertEq(token.totalSupply(), 0);
-        assertEq(token.owner(), owner);
+        // Deployer holds all 3 roles initially
+        assertTrue(token.hasRole(token.DEFAULT_ADMIN_ROLE(), deployer));
+        assertTrue(token.hasRole(CUSTODIAN_ROLE, deployer));
+        assertTrue(token.hasRole(PAUSER_ROLE, deployer));
     }
 
-    // Test that owner can mint
-    function testMintAsOwner() public {
-        vm.prank(owner);
-        token.mint(user, mintAmount);
 
-        assertEq(token.balanceOf(user), mintAmount);
-        assertEq(token.totalSupply(), mintAmount);
+    /********************************************************/
+    /*************************Minting************************/
+    /********************************************************/
+    function testMintFromGoldDepositSucceeds() public {
+        uint256 initialOunces = token.getTotalGoldOunces();
+
+        vm.prank(custodian);
+        vm.expectEmit(address(token));
+        emit AurumGold.GoldDeposited(user, mintOunces, mintOunces);
+        token.mintFromGoldDeposit(user, mintOunces);
+
+        assertEq(token.balanceOf(user), mintOunces);
+        assertEq(token.totalSupply(), mintOunces);
+        assertEq(token.getTotalGoldOunces(), initialOunces + mintOunces);
     }
 
-    // Test that non-owner cannot mint and reverts with OwnableUnauthorizedAccount
-    function testRevertsWhenNonOwnerMints() public {
+    function testMintRevertsIfNotCustodian() public {
         vm.prank(attacker);
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, attacker));
-        token.mint(user, mintAmount);
-    }
-
-    // Test that a user can burn their own tokens
-    function testUserCanBurnTheirTokens() public {
-        vm.prank(owner);
-        token.mint(user, mintAmount);
-
-        vm.prank(user);
-        token.burn(burnAmount);
-
-        assertEq(token.balanceOf(user), mintAmount - burnAmount);
-        assertEq(token.totalSupply(), mintAmount - burnAmount);
-    }
-
-    // Test that a user cannot burn more than their current balance and reverts with ERC20InsufficientBalance
-    function testRevertsWhenBurnExceedsBalance() public {
-        vm.prank(owner);
-        token.mint(user, mintAmount);
-
-        vm.prank(user);
-        bytes4 selector = bytes4(keccak256("ERC20InsufficientBalance(address,uint256,uint256)"));
         vm.expectRevert(
-            abi.encodeWithSelector(selector, user, mintAmount, mintAmount + 1)
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                attacker,
+                CUSTODIAN_ROLE
+            )
         );
-        token.burn(mintAmount + 1);
+        token.mintFromGoldDeposit(user, mintOunces);
     }
 
-    // Test transfer
-    function testTransferSucceeds() public {
-        vm.prank(owner);
-        token.mint(user, mintAmount);
+    function testMintRevertsIfZeroOunces() public {
+        vm.prank(custodian);
+        vm.expectRevert(AurumGold.AurumGold__NeedsMoreThanZero.selector);
+        token.mintFromGoldDeposit(user, 0);
+    }
+
+    /********************************************************/
+    /*************************Burning************************/
+    /********************************************************/
+    function testBurnForGoldWithdrawalSucceeds() public {
+        vm.prank(custodian);
+        token.mintFromGoldDeposit(custodian, mintOunces);
+        uint256 initialOunces = token.getTotalGoldOunces();
+
+        vm.prank(custodian);
+        vm.expectEmit(address(token));
+        emit AurumGold.GoldWithdrawn(custodian, burnOunces, burnOunces);
+        token.burnForGoldWithdrawal(burnOunces);
+
+        assertEq(token.balanceOf(custodian), mintOunces - burnOunces);
+        assertEq(token.totalSupply(), mintOunces - burnOunces);
+        assertEq(token.getTotalGoldOunces(), initialOunces - burnOunces);
+    }
+
+    function testBurnRevertsIfNotCustodian() public {
+        vm.prank(custodian);
+        token.mintFromGoldDeposit(attacker, mintOunces);
+
+        vm.prank(attacker);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                attacker,
+                CUSTODIAN_ROLE
+            )
+        );
+        token.burnForGoldWithdrawal(burnOunces);
+    }
+
+    function testBurnRevertsIfInsufficientBalance() public {
+        vm.prank(custodian);
+        token.mintFromGoldDeposit(custodian, mintOunces);
+
+        vm.prank(custodian);
+        vm.expectRevert(AurumGold.AurumGold__InsufficientBalance.selector);
+        token.burnForGoldWithdrawal(mintOunces + 1);
+    }
+
+    function testBurnRevertsIfZero() public {
+        vm.prank(custodian);
+        vm.expectRevert(AurumGold.AurumGold__NeedsMoreThanZero.selector);
+        token.burnForGoldWithdrawal(0);
+    }
+
+
+    /********************************************************/
+    /*********************Pause & Unpause********************/
+    /********************************************************/
+    function testPauseAndUnpause() public {
+        vm.prank(pauser);
+        token.pause();
+        assertTrue(token.paused());
+
+        vm.prank(pauser);
+        token.unpause();
+        assertFalse(token.paused());
+    }
+
+    function testOnlyPauserCanPause() public {
+        vm.prank(attacker);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                attacker,
+                PAUSER_ROLE
+            )
+        );
+        token.pause();
+    }
+
+    function testMintRevertsWhenPaused() public {
+        vm.prank(pauser);
+        token.pause();
+
+        vm.prank(custodian);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        token.mintFromGoldDeposit(user, mintOunces);
+    }
+
+    function testBurnRevertsWhenPaused() public {
+        vm.prank(custodian);
+        token.mintFromGoldDeposit(custodian, mintOunces);
+
+        vm.prank(pauser);
+        token.pause();
+
+        vm.prank(custodian);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        token.burnForGoldWithdrawal(burnOunces);
+    }
+
+    function testTransferRevertsWhenPaused() public {
+        vm.prank(custodian);
+        token.mintFromGoldDeposit(user, mintOunces);
+
+        vm.prank(pauser);
+        token.pause();
 
         vm.prank(user);
-        uint256 transferAmount = 5 ether;
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        token.transfer(attacker, 1e18);
+    }
+
+    /********************************************************/
+    /***********************Transfers************************/
+    /********************************************************/
+    function testTransferSucceeds() public {
+        vm.prank(custodian);
+        token.mintFromGoldDeposit(user, mintOunces);
+
+        uint256 transferAmount = 5e18;
+        vm.prank(user);
         token.transfer(attacker, transferAmount);
 
-        assertEq(token.balanceOf(user), mintAmount - transferAmount);
+        assertEq(token.balanceOf(user), mintOunces - transferAmount);
         assertEq(token.balanceOf(attacker), transferAmount);
     }
 
-    // Test approve and transferFrom
     function testApproveAndTransferFrom() public {
-        vm.prank(owner);
-        token.mint(user, mintAmount);
+        vm.prank(custodian);
+        token.mintFromGoldDeposit(user, mintOunces);
 
+        uint256 approveAmount = 5e18;
         vm.prank(user);
-        uint256 approveAmount = 5 ether;
         token.approve(attacker, approveAmount);
 
+        uint256 transferAmount = 3e18;
         vm.prank(attacker);
-        uint256 transferAmount = 3 ether;
         token.transferFrom(user, attacker, transferAmount);
 
-        assertEq(token.balanceOf(user), mintAmount - transferAmount);
+        assertEq(token.balanceOf(user), mintOunces - transferAmount);
         assertEq(token.balanceOf(attacker), transferAmount);
         assertEq(token.allowance(user, attacker), approveAmount - transferAmount);
+    }
+
+    /********************************************************/
+    /********************Reserve Tracking********************/
+    /********************************************************/
+    function testReserveBalanced() public {
+        vm.startPrank(custodian);
+        token.mintFromGoldDeposit(user, mintOunces);
+        token.mintFromGoldDeposit(user, 5e18);
+        vm.stopPrank();
+        assertTrue(token.isReserveBalanced());
     }
 }
