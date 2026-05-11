@@ -4,6 +4,8 @@ pragma solidity 0.8.34;
 import {Test, console2} from "forge-std/Test.sol";
 import {BaseTest} from "../../shared/BaseTest.t.sol";
 import {AurumEngine} from "../../../src/AurumEngine.sol";
+import {MockV3Aggregator} from "../../mocks/MockV3Aggregator.sol";
+import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 
 contract RedeemTests is BaseTest {
@@ -71,5 +73,83 @@ contract RedeemTests is BaseTest {
         vm.prank(user);
         vm.expectRevert(AurumEngine.AurumEngine__TransferFailed.selector);
         aue.redeemCollateral(aurumGold, aurAmount);
+    }
+
+
+    /********************************************************/
+    /******************Redeem With Slippage******************/
+    /********************************************************/
+    // Base numbers (using depositedCollateralAndMintedAUSD(getMaxSafeMint()) modifier):
+    // AUR: 60 AUR @ $5000/AUR, LTV 85% --> adjusted 255,000 USD
+    // WETH: 40 WETH @ $2000/WETH, LTV 65% --> adjusted 52,000 USD
+    // Total max mint = 307,000 AUSD (minted exactly)
+
+    // Test redeemCollateralWithSlippage() for requiredBurn > maxBurn
+    function testRedeemCollateralWithSlippageRevertsIfRequiredBurnExceedsMax() public depositedCollateralAndMintedAUSD(getMaxSafeMint()) {
+        // User wants to redeem 10% of WETH (4e18 WETH)
+        // Lower WETH price to $1900 -> new max mint = 255000 + (36 * 1900 * 0.65) = 255000 + 44460 = 299460
+        // Required burn = 307000 - 299460 = 7540 AUSD
+        MockV3Aggregator(ethUsdPriceFeed).updateAnswer(1900e8);
+
+        uint256 expectedRequiredBurn = 7540e18;
+        uint256 maxToBurn = 5300e18; // 5300 AUSD (2000/WETH + 100 extra)
+
+        vm.prank(user);
+        vm.expectRevert(abi.encodeWithSelector(AurumEngine.AurumEngine__SlippageExceeded.selector, expectedRequiredBurn));
+        aue.redeemCollateralWithSlippage(weth, 4e18, maxToBurn);
+    }
+
+    // Test redeemCollateralWithSlippage() for requiredBurn < maxBurn
+    function testRedeemCollateralWithSlippageSucceedsWhenRequiredBurnBelowMax() public depositedCollateralAndMintedAUSD(getMaxSafeMint()) {
+        // WETH drops to $1900 and redeem amount is 4e18: required burn = 7540 AUSD
+        MockV3Aggregator(ethUsdPriceFeed).updateAnswer(1900e8);
+
+        uint256 expectedRequiredBurn = 7540e18;
+        uint256 maxToBurn = expectedRequiredBurn + 1e18; // slightly above required
+        uint256 debtBefore = aue.getUserAccountData(user).totalDebt;
+        uint256 collateralBefore = aue.getUserAccountData(user).collateralAmounts[1]; // WETH amount
+
+        vm.prank(user);
+        uint256 actualRequiredBurn = aue.redeemCollateralWithSlippage(weth, 4e18, maxToBurn);
+
+        assertEq(actualRequiredBurn, expectedRequiredBurn);
+        assertApproxEqAbs(aue.getUserAccountData(user).totalDebt,debtBefore - expectedRequiredBurn, 1e18);
+        assertEq(aue.getUserAccountData(user).collateralAmounts[1], collateralBefore - 4e18);
+    }
+
+    // Test redeemCollateralWithSlippage() for requiredBurn == maxBurn
+    function testRedeemCollateralWithSlippageSucceedsWhenRequiredBurnEqualsMax() public depositedCollateralAndMintedAUSD(getMaxSafeMint()) {
+        // WETH drops to $1900 and redeem amount is 4e18: required burn = 7540 AUSD
+        MockV3Aggregator(ethUsdPriceFeed).updateAnswer(1900e8);
+
+        uint256 expectedRequiredBurn = 7540e18;
+        uint256 maxToBurn = expectedRequiredBurn;
+        uint256 debtBefore = aue.getUserAccountData(user).totalDebt;
+        uint256 collateralBefore = aue.getUserAccountData(user).collateralAmounts[1]; // WETH amount
+
+        vm.prank(user);
+        uint256 actualRequiredBurn = aue.redeemCollateralWithSlippage(weth, 4e18, maxToBurn);
+
+        assertEq(actualRequiredBurn, expectedRequiredBurn);
+        assertApproxEqAbs(aue.getUserAccountData(user).totalDebt,debtBefore - expectedRequiredBurn, 1e18);
+        assertEq(aue.getUserAccountData(user).collateralAmounts[1], collateralBefore - 4e18);
+    }
+
+    // Test redeemCollateralWithSlippage() for requiredBurn == 0
+    function testRedeemCollateralWithSlippageBurnsNothingIfRequiredBurnIsZero() public depositedCollateralAndMintedAUSD(getMaxSafeMint()) {
+        // WETH price rises to $2250 and redeem amount is 4e18: required burn = 0 AUSD
+        MockV3Aggregator(ethUsdPriceFeed).updateAnswer(2250e8);
+
+        uint256 expectedRequiredBurn = 0;
+        uint256 maxToBurn = 5300e18; // 5300 AUSD (2000/WETH + 100 extra)
+        uint256 debtBefore = aue.getUserAccountData(user).totalDebt;
+        uint256 collateralBefore = aue.getUserAccountData(user).collateralAmounts[1]; // WETH amount
+
+        vm.prank(user);
+        uint256 actualRequiredBurn = aue.redeemCollateralWithSlippage(weth, 4e18, maxToBurn);
+
+        assertEq(actualRequiredBurn, expectedRequiredBurn);
+        assertEq(aue.getUserAccountData(user).totalDebt, debtBefore);
+        assertEq(aue.getUserAccountData(user).collateralAmounts[1], collateralBefore - 4e18);
     }
 }
