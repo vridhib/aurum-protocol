@@ -32,6 +32,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     error AurumEngine__LiquidationNotProfitable();
     error AurumEngine__IneligibleForForceClose();
     error AurumEngine__PauseConditionNotMet();
+    error AurumEngine__SlippageExceeded(uint256 requiredBurn);
 
     using OracleLib for AggregatorV3Interface;
 
@@ -256,8 +257,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
 
     /// @notice Deposit `amountCollateral` of `collateralToken` and mint `amountAUSDToMint` AUSD in one transaction.
     /// @dev Must maintain a health factor >= 1 after execution and must not exceed debt ceilings for any collateral type.
-    function depositCollateralAndMintAUSD(address collateralToken, uint256 amountCollateral, uint256 amountAUSDToMint)        external 
-    {
+    function depositCollateralAndMintAUSD(address collateralToken, uint256 amountCollateral, uint256 amountAUSDToMint) external {
         depositCollateral(collateralToken, amountCollateral);
         mintAUSD(amountAUSDToMint);
     }
@@ -265,15 +265,49 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
 
     /// @notice Burn `amountAUSDToBurn` AUSD and redeem `amountCollateral` of `collateralToken` in one transaction. 
     /// @dev Must maintain a health factor >= 1 after execution.
-    function redeemCollateralAndBurnAUSD(address collateralToken, uint256 amountCollateral, uint256 amountAUSDToBurn)        external
-    {
+    function redeemCollateralAndBurnAUSD(address collateralToken, uint256 amountCollateral, uint256 amountAUSDToBurn) external {
         burnAUSD(amountAUSDToBurn);
         redeemCollateral(collateralToken, amountCollateral);
     }
 
+    /**
+     * @notice Redeem a fixed amount of collateral, burning only as much AUSD as necessary (up to `maxAUSDToBurn`) to stay healthy.
+     * @dev In volatile markets, this protects the user from burning more AUSD than they expected. If no burn is needed, zero AUSD is burned.
+     * @param collateralToken The token to withdraw.
+     * @param amountCollateral The amount of collateral to redeem.
+     * @param maxAUSDToBurn The maximum amount of AUSD the user is willing to burn. Reverts if the minimum required burn exceeds this.
+     * @return The actual amount of AUSD burned in the process.
+     */
+    function redeemCollateralWithSlippage(
+        address collateralToken, 
+        uint256 amountCollateral, 
+        uint256 maxAUSDToBurn
+    ) 
+        external
+        moreThanZero(amountCollateral)
+        isAllowedToken(collateralToken)
+        nonReentrant
+        whenNotPaused
+        returns (uint256)
+    {
+        uint256 currentAdjusted = _getUserAdjustedCollateral(msg.sender);
+        uint256 collateralValue = _usdValue(collateralToken, amountCollateral);
+        uint256 adjustedLoss = (collateralValue * s_collateralInfo[collateralToken].ltv) / LIQUIDATION_AND_FEE_PRECISION;
+        uint256 newAdjusted = currentAdjusted - adjustedLoss;
+        uint256 debt = _getUserActualDebt(msg.sender);
+        uint256 minBurnAmount = debt > newAdjusted ? debt - newAdjusted : 0;
+
+        if (minBurnAmount > 0) {
+            if (minBurnAmount > maxAUSDToBurn) revert AurumEngine__SlippageExceeded(minBurnAmount);
+            _burnAUSD(minBurnAmount, msg.sender, msg.sender);
+        }
+        _redeemCollateral(collateralToken, amountCollateral, msg.sender, msg.sender);
+        return minBurnAmount;
+    }
+
 
     /// @notice Deposit `amountCollateral` of `collateralToken` into the protocol.
-    function depositCollateral(address collateralToken, uint256 amountCollateral) public moreThanZero(amountCollateral)        isAllowedToken(collateralToken) nonReentrant whenNotPaused
+    function depositCollateral(address collateralToken, uint256 amountCollateral) public moreThanZero(amountCollateral) isAllowedToken(collateralToken) nonReentrant whenNotPaused
     {
         s_collateralDeposited[msg.sender][collateralToken] += amountCollateral;
         emit CollateralDeposited(msg.sender, collateralToken, amountCollateral);
@@ -572,19 +606,9 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     function _healthFactor(address user) private view returns (uint256) {
         uint256 totalActualDebt = _getUserActualDebt(user);
         if (totalActualDebt == 0) return type(uint256).max;
-
-        uint256 totalAdjustedCollateral = 0;
-        for (uint256 i = 0; i < s_collateralList.length; i++) {
-            address token = s_collateralList[i];
-            uint256 amount = s_collateralDeposited[user][token];
-            if (amount == 0) continue;
-            uint256 usdValue = _usdValue(token, amount);
-            uint256 ltv = s_collateralInfo[token].ltv;
-            totalAdjustedCollateral += (usdValue * ltv) / LIQUIDATION_AND_FEE_PRECISION;
-        }
+        uint256 totalAdjustedCollateral = _getUserAdjustedCollateral(user);
         return (totalAdjustedCollateral * PRECISION) / totalActualDebt;
     }
-
 
     /// @dev This is only called within liquidate() (which already checks and reverts if user's HF >= 1e18) to calculate the dynamic close factor
     function _closeFactor(address user, address collateralToken) private view returns (uint256) {
@@ -623,6 +647,19 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
             totalCollateralValueInUsd += _usdValue(token, amount);
         }
         return totalCollateralValueInUsd;
+    }
+
+    function _getUserAdjustedCollateral(address user) private view returns (uint256) {
+        uint256 totalAdjustedCollateral;
+        for (uint256 i = 0; i < s_collateralList.length; i++) {
+            address token = s_collateralList[i];
+            uint256 amount = s_collateralDeposited[user][token];
+            if (amount == 0) continue;
+            uint256 usdValue = _usdValue(token, amount);
+            uint256 ltv = s_collateralInfo[token].ltv;
+            totalAdjustedCollateral += (usdValue * ltv) / LIQUIDATION_AND_FEE_PRECISION;
+        }
+        return totalAdjustedCollateral;
     }
 
     function _getGlobalMetrics() private view returns (uint256 totalCollateralValueInUsd, uint256 totalActualDebt) {
