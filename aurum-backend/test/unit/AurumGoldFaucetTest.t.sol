@@ -11,25 +11,21 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 
 contract AurumGoldFaucetTest is Test {
-    DeployAUSD protocolDeployer;
-    DeployAurumGoldFaucet faucetDeployer;
+    DeployAUSD deployer;
     HelperConfig config;
     address aurumGold;
-    AurumGoldFaucet public faucet;
+    AurumGoldFaucet faucet;
     
-    uint256 fundAmount = 100_000 ether;     //100,000 AUR
-    uint256 claimAmount = 10 ether;         // 10 AUR
-    address public owner = makeAddr("owner");
-    address public user = makeAddr("user");
-
+    uint256 fundAmount = 100_000e18;   // 100,000 AUR
+    uint256 claimAmount = 10e18;       // 10 AUR
+    address owner = makeAddr("owner");
+    address user = makeAddr("user");
 
     function setUp() public {
-        protocolDeployer = new DeployAUSD();
-        (,, config) = protocolDeployer.run();
-        // (,, aurumGold,,) = config.activeNetworkConfig(); 
+        deployer = new DeployAUSD();
+        (,, config) = deployer.run();
         HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
         aurumGold = networkConfig.collaterals[0].token;
-
 
         faucet = new AurumGoldFaucet(aurumGold);
         faucet.transferOwnership(owner); 
@@ -41,99 +37,94 @@ contract AurumGoldFaucetTest is Test {
         vm.stopPrank();
     }
 
-    // Test that users can claim AUR from the faucet for the first time
+
+    /********************************************************/
+    /*******************One-time Claim Logic*****************/
+    /********************************************************/
     function testClaim() public {
         vm.prank(user);
         faucet.claim();
         assertEq(ERC20Mock(aurumGold).balanceOf(user), claimAmount);
+        assertTrue(faucet.s_hasClaimed(user));
     }
 
-    // Test that users cannot claim AUR tokens from the faucet in succession before the cooldown period has passed 
-    function testCannotClaimTwiceBeforeCooldown() public {
+    function testRevertIfAlreadyClaimed() public {
         vm.prank(user);
         faucet.claim();
+
         vm.prank(user);
-        vm.expectRevert(AurumGoldFaucet.AurumGoldFaucet__CooldownPeriodHasNotPassed.selector);
+        vm.expectRevert(AurumGoldFaucet.AurumGoldFaucet__AlreadyClaimed.selector);
         faucet.claim();
     }
 
-    // Test that users can claim AUR tokens after the cooldown period
-    function testCanClaimAfterCooldown() public {
+    function testResetClaimAndClaimAgain() public {
         vm.prank(user);
         faucet.claim();
-        vm.warp(block.timestamp + 1 days);
+
+        vm.prank(owner);
+        vm.expectEmit(address(faucet));
+        emit AurumGoldFaucet.ClaimReset(user);
+        faucet.resetClaimStatus(user);
+
         vm.prank(user);
         faucet.claim();
         assertEq(ERC20Mock(aurumGold).balanceOf(user), claimAmount * 2);
     }
 
-    // Test that only the owner can set the faucet's claim amount
-    function testOnlyOwnerCanSetClaimAmount() public {
+    function testOnlyOwnerCanResetClaimStatus() public {
         vm.prank(user);
-        vm.expectRevert();
-        faucet.setClaimAmount(200 ether);
-        vm.prank(owner);
-        faucet.setClaimAmount(200 ether);
-        assertEq(faucet.claimAmount(), 200 ether);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
+        faucet.resetClaimStatus(user);
     }
 
-    // Test that the owner cannot set the claim amount to 0
+
+    /********************************************************/
+    /********************Set Claim Amount********************/
+    /********************************************************/
     function testOwnerCannotSetClaimAmountToZero() public {
         vm.prank(owner);
         vm.expectRevert(AurumGoldFaucet.AurumGoldFaucet__NeedsMoreThanZero.selector);
         faucet.setClaimAmount(0 ether);
     }
 
-    // Test that only the owner can set the faucet's cooldown period
-    function testOnlyOwnerCanSetCooldown() public {
-        vm.prank(user);
-        vm.expectRevert();
-        faucet.setCooldown(2 days);
 
-        vm.prank(owner);
-        faucet.setCooldown(2 days);
-        assertEq(faucet.cooldown(), 2 days);
-    }
-
-    // Test that the owner cannot set the cooldown period to 0
-    function testOwnerCannotSetCooldownToZero() public {
-        vm.prank(owner);
-        vm.expectRevert(AurumGoldFaucet.AurumGoldFaucet__NeedsMoreThanZero.selector);
-        faucet.setCooldown(0 days);
-    }
-
-    // Test that only the owner can withdraw AUR tokens from the faucet
+    /********************************************************/
+    /***********************Withdrawals**********************/
+    /********************************************************/
     function testOnlyOwnerCanWithdraw() public {
         vm.prank(user);
-        vm.expectRevert();
-        faucet.withdraw(100 ether);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
+        faucet.withdraw(100e18);
 
         vm.prank(owner);
-        faucet.withdraw(100 ether);
+        faucet.withdraw(100e18);
     }
 
-    // Test that the owner cannot withdraw 0 AUR
-    function testOwnerCannotWithdrawZeroAUR() public {
+    function testOwnerCannotWithdrawZero() public {
         vm.prank(owner);
         vm.expectRevert(AurumGoldFaucet.AurumGoldFaucet__NeedsMoreThanZero.selector);
-        faucet.withdraw(0 ether);
+        faucet.withdraw(0);
     }
 
-    // Test that only the owner can fund 
+
+    /********************************************************/
+    /************************Funding************************/
+    /********************************************************/
     function testOnlyOwnerCanFund() public {
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
         faucet.fund(claimAmount);
     }
 
-    // Test that the owner cannot fund with 0 AUR
-    function testOwnerCannotFundWithZeroAUR() public {
+    function testOwnerCannotFundWithZero() public {
         vm.prank(owner);
         vm.expectRevert(AurumGoldFaucet.AurumGoldFaucet__NeedsMoreThanZero.selector);
-        faucet.fund(0 ether);
+        faucet.fund(0);
     }
 
-    // Test that the faucet reverts if the faucet is out of AUR
+    /********************************************************/
+    /*********************Balance/Supply*********************/
+    /********************************************************/
     function testFaucetRevertsIfNotEnoughTokens() public {
         vm.prank(owner);
         faucet.withdraw(fundAmount);
@@ -146,7 +137,6 @@ contract AurumGoldFaucetTest is Test {
         faucet.claim();
     }
 
-    // Test that the faucet has enough AUR tokens
     function testFaucetHasEnoughTokens() public view {
         assertGe(ERC20Mock(aurumGold).balanceOf(address(faucet)), fundAmount);
     }
@@ -156,10 +146,9 @@ contract AurumGoldFaucetTest is Test {
         times = bound(times, 1, 900); // 900 claims * 100 = 90,000 < 100,000
         for (uint256 i = 0; i < times; i++) {
             address randUser = address(uint160(i + 1000));
-            vm.warp(block.timestamp + 1 days * i);
             vm.prank(randUser);
             faucet.claim();
         }
-        assertLe(ERC20Mock(aurumGold).balanceOf(address(faucet)), ERC20Mock(aurumGold).totalSupply());
+        assertLe(ERC20Mock(aurumGold).balanceOf(address(faucet)), fundAmount - times * claimAmount);
     }
 }
