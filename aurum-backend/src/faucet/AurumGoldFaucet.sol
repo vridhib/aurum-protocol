@@ -7,72 +7,57 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title AurumGoldFaucet
- * @author Vridhi Brahmbhatt
- * @notice This provides a testnet faucet for AUR tokens, allowing users to claim a fixed amount once per day.
- * @dev Users can call `claim()` to receive `claimAmount` AUR tokens, subject to a cooldown period.
- *      The contract owner can adjust the claim amount and cooldown, and can fund the faucet with AUR tokens.
- *      This faucet is intended for Ethereum Sepolia testnet use only.
+ * @notice Testnet faucet that allows each address to claim `s_claimAmount` AUR tokens once.
+ * @dev The owner can reset a user's claim status if needed, and can adjust the claim amount.
  */
 contract AurumGoldFaucet is Ownable {
-    error AurumGoldFaucet__CooldownPeriodHasNotPassed();
+    error AurumGoldFaucet__AlreadyClaimed();
     error AurumGoldFaucet__NeedsMoreThanZero();
 
-    IERC20 public token;
-    uint256 public claimAmount = 10 ether;              // Tokens per claim
-    uint256 public cooldown = 1 days;                   // Wait time between claims
+    IERC20 public immutable i_token;
+    uint256 public s_claimAmount = 10e18;
 
-    mapping(address => uint256) public lastClaimTime;
+    mapping(address => bool) public s_hasClaimed;
 
     event Claimed(address indexed user, uint256 amount);
-
+    event ClaimReset(address indexed user);
 
     modifier moreThanZero(uint256 amount) {
         if (amount == 0) revert AurumGoldFaucet__NeedsMoreThanZero();
         _;
     }
 
-
-    /// @param _token The address of the AUR token contract
-    constructor(address _token) Ownable(msg.sender) {
-        token = IERC20(_token);
+    constructor(address token) Ownable(msg.sender) {
+        i_token = IERC20(token);
     }
 
-
-    /**
-     * @notice Allows a user to claim AUR tokens once per cooldown period
-     * @dev Reverts if the user has already claimed within the cooldown period
-     */
+    /// @notice Users can claim AUR tokens. Each address can only claim once.
     function claim() external {
-        if ((lastClaimTime[msg.sender] != 0) && (block.timestamp < lastClaimTime[msg.sender] + cooldown)) {
-            revert AurumGoldFaucet__CooldownPeriodHasNotPassed();
-        }
-
-        lastClaimTime[msg.sender] = block.timestamp;
-        token.transfer(msg.sender, claimAmount);
-        emit Claimed(msg.sender, claimAmount);
+        if ((s_hasClaimed[msg.sender])) revert AurumGoldFaucet__AlreadyClaimed();
+        
+        s_hasClaimed[msg.sender] = true;
+        emit Claimed(msg.sender, s_claimAmount);
+        i_token.transfer(msg.sender, s_claimAmount);
     }
 
-
-    /// @notice The owner can adjust the claim amount if needed
-    function setClaimAmount(uint256 _claimAmount) external onlyOwner moreThanZero(_claimAmount) {
-        claimAmount = _claimAmount;
+    /// @notice The owner can reset a user's claim status, allowing them to claim again if needed.
+    function resetClaimStatus(address user) external onlyOwner {
+        s_hasClaimed[user] = false;
+        emit ClaimReset(user);
     }
 
-
-    /// @notice The owner can adjust the cooldown period between claims
-    function setCooldown(uint256 _cooldown) external onlyOwner moreThanZero(_cooldown){
-        cooldown = _cooldown;
+    /// @notice The owner can adjust the amount of AUR given per claim. Must be greater than zero.
+    function setClaimAmount(uint256 claimAmount) external onlyOwner moreThanZero(claimAmount) {
+        s_claimAmount = claimAmount;
     }
 
-
-    /// @notice If needed, the owner can withdraw any remaining AUR tokens
-    function withdraw(uint256 amount) external onlyOwner moreThanZero(amount) {
-        token.transfer(owner(), amount);
-    }
-
-
-    /// @notice The owner funds the faucet with AUR tokens. The owner must first approve this contract to spend tokens.
+    /// @notice The owner can initially fund and replenish the faucet with AUR tokens.
     function fund(uint256 amount) external onlyOwner moreThanZero(amount) {
-        token.transferFrom(owner(), address(this), amount);
+        i_token.transferFrom(owner(), address(this), amount);
+    }
+
+    /// @notice If needed, the owner can withdraw any remaining AUR tokens.
+    function withdraw(uint256 amount) external onlyOwner moreThanZero(amount) {
+        i_token.transfer(owner(), amount);
     }
 }
