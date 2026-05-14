@@ -5,6 +5,8 @@ import {Script} from "forge-std/Script.sol";
 import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
 import {MockVolatilityOracle} from "../src/oracles/MockVolatilityOracle.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {ChainlinkVolatilityOracle} from "../src/oracles/ChainlinkVolatilityOracle.sol";
+import {AurumGold} from "../src/AurumGold.sol";
 
 
 contract HelperConfig is Script {
@@ -47,13 +49,16 @@ contract HelperConfig is Script {
     function getSepoliaEthConfig() public returns (NetworkConfig memory) {
         address sepoliaDeployerAccount = vm.envAddress("SEPOLIA_DEPLOYER_ACCOUNT");
 
+        // Deploy gold volatility feed, weth volatility feed wrapper, and AUR token
         vm.startBroadcast(sepoliaDeployerAccount);
         MockVolatilityOracle goldVolatilityFeed = new MockVolatilityOracle(INITIAL_GOLD_VOLATILITY);
+        ChainlinkVolatilityOracle wethVolatilityFeed = new ChainlinkVolatilityOracle(0x31D04174D0e1643963b38d87f26b0675Bb7dC96e);
+        AurumGold aurumGold = new AurumGold();
         vm.stopBroadcast();
 
         CollateralConfig[] memory collaterals = new CollateralConfig[](2);
         collaterals[0] = CollateralConfig({                               // Gold collateral config
-            token: 0x7769F56edC2a1882a51cec1d3c96F31482b5A241,            // Deployed AurumGold token address
+            token: address(aurumGold),                                    // Deployed AUR token Sepolia address
             priceFeed: 0xC5981F461d74c46eB4b0CF3f4Ec79f025573B0Ea,        // Chainlink XAU/USD price feed
             volatilityFeed: address(goldVolatilityFeed),                  // Mock volatility feed deployed above
             baselineVolatility: 0.15e18,
@@ -66,7 +71,7 @@ contract HelperConfig is Script {
         collaterals[1] = CollateralConfig({                               // WETH collateral config
             token: 0xdd13E55209Fd76AfE204dBda4007C227904f0a81,            // Sepolia WETH address
             priceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325306,        // Chainlink ETH/USD price feed
-            volatilityFeed: 0x31D04174D0e1643963b38d87f26b0675Bb7dC96e,   // ETH-USD 24hr Realized Volatility
+            volatilityFeed: address(wethVolatilityFeed),                  // ETH-USD 24hr Realized Volatility
             baselineVolatility: 0.60e18,
             baseLtv: 65, 
             minLtv: 40,
@@ -77,7 +82,7 @@ contract HelperConfig is Script {
 
         return NetworkConfig({
             collaterals: collaterals,
-            deployerAccount: sepoliaDeployerAccount  // Keystore deploying account address                
+            deployerAccount: sepoliaDeployerAccount  // Keystore deployer account address                
         });
     }
 

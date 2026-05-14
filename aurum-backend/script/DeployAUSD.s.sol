@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.8.34;
 
 import {Script} from "forge-std/Script.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AurumEngine} from "../src/AurumEngine.sol";
 import {AurumUSD} from "../src/AurumUSD.sol";
-import {InterestRateModel} from "../src/interest/InterestRateModel.sol";
+import {AurumInterestRateModel} from "../src/interest/AurumInterestRateModel.sol";
 import {AurumTreasury} from "../src/treasury/AurumTreasury.sol";
 import {AurumSavings} from "../src/treasury/AurumSavings.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
+import {AurumGold} from "../src/AurumGold.sol";
+import {AurumGoldFaucet} from "../src/faucet/AurumGoldFaucet.sol";
 
 
 contract DeployAUSD is Script {
@@ -41,12 +43,13 @@ contract DeployAUSD is Script {
         }
 
         vm.startBroadcast(networkConfig.deployerAccount);
-        AurumUSD ausd = new AurumUSD();
 
+        // 1. Deploy core protocol
+        AurumUSD ausd = new AurumUSD();
         AurumTreasury treasury = new AurumTreasury(address(ausd));
         AurumSavings savings = new AurumSavings(address(ausd), address(treasury));
 
-        InterestRateModel interestRateModel = new InterestRateModel();
+        AurumInterestRateModel interestRateModel = new AurumInterestRateModel();
         AurumEngine engine = new AurumEngine(
             tokens, 
             priceFeeds,
@@ -63,8 +66,23 @@ contract DeployAUSD is Script {
         );
 
         treasury.initializeAddresses(address(savings), address(engine));
-
         ausd.transferOwnership(address(engine));
+
+        // 2. Deploy the faucet (on Sepolia)
+        if (block.chainid == 11155111) {
+            // Mint 100,000 AUR to the deployer
+            uint256 initialFaucetFunding = 100_000e18;
+            address goldToken = networkConfig.collaterals[0].token;
+            AurumGold(goldToken).mintFromGoldDeposit(networkConfig.deployerAccount, initialFaucetFunding);
+
+            // Deploy the faucet
+            AurumGoldFaucet faucet = new AurumGoldFaucet(goldToken);
+
+            // Approve and fund the faucet
+            IERC20(goldToken).approve(address(faucet), initialFaucetFunding);
+            faucet.fund(initialFaucetFunding);
+        }
+
         vm.stopBroadcast();
 
         return (ausd, engine, config);
