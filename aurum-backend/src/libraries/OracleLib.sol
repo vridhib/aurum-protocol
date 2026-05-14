@@ -5,12 +5,10 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
 
 /**
  * @title OracleLib
- * @author Vridhi Brahmbhatt
- * @notice This library is used to check the Chainlink Oracle for stale data.
- *         If a price is stale, the function will revert, and render the AurumEngine unusable--this is by design.
- *         We want the AurumEngine to freeze if prices become stale.
- * 
- *         So, if the Chainlink network explodes and you have a lot of money locked in the protocol...too bad.    
+ * @notice This library validates that the Chainlink price data is updated before usage.
+ * @dev The AurumEngine relies on accurate, timely prices. If a price feed is stale, the 
+ *      protocol freezes. This is an intentional design to prevent the mispricing of 
+ *      collateral and to protect the system during extreme oracle network failures. 
  */
 library OracleLib {
     error OracleLib__StalePrice();
@@ -18,14 +16,13 @@ library OracleLib {
     uint256 private constant TIMEOUT = 3 hours;
 
     /**
-     * @notice Checks the latest round data from the Chainlink Price Feed
-     * @dev Reverts if the price is stale (older than TIMEOUT) or if the data is invalid
-     * @param priceFeed The address of the Chainlink AggregatorV3Interface contract
-     * @return roundId The round ID
-     * @return answer The price (int256)
-     * @return startedAt Timestamp of when the round started
-     * @return updatedAt Timestamp of when the round was updated
-     * @return answeredInRound The round ID in which the answer was computed
+     * @notice Fetches the latest round data and reverts if the price is stale or invalid.
+     * @param priceFeed The Chainlink AggregatorV3Interface to query.
+     * @return roundId The round ID of the returned data.
+     * @return answer The price in the feed's native decimals.
+     * @return startedAt The timestamp when the round started.
+     * @return updatedAt The timestamp when the round was last updated.
+     * @return answeredInRound The round ID in which the answer was computed.
      */
     function staleCheckLatestRoundData(AggregatorV3Interface priceFeed) public view returns (uint80, int256, uint256, uint256, uint80) {
         (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = priceFeed.latestRoundData();
@@ -38,11 +35,7 @@ library OracleLib {
         return (roundId, answer, startedAt, updatedAt, answeredInRound);
     }
 
-
-    /**
-     * @notice Returns the configured staleness threshold for the price feed
-     * @return The timeout in seconds
-     */
+    /// @notice Returns the staleness threshold used by the library.
     function getTimeout(AggregatorV3Interface /* chainlinkFeed */) public pure returns (uint256) {
         return TIMEOUT;
     }

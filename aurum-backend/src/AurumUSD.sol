@@ -7,29 +7,19 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title AurumUSD
- * @author Vridhi Brahmbhatt
- * Collateral: Exogenous (Gold)
- * Minting: Algorithmic
- * Relative Stability: Pegged to USD
- * 
- * This is the contract meant to be governed by AurumEngine. This contract is just the ERC20 implementation of the Aurum Stablecoin System.
+ * @notice ERC20 stablecoin for the Aurum Protocol, pegged to the USD.
+ * @dev Minting and burning are restricted to the contract owner (the AurumEngine contract),
+ *      which enforces overcollateralization and all other economic stability mechanisms.
  */
 contract AurumUSD is ERC20Burnable, Ownable {
     error AurumUSD__MustBeMoreThanZero();
     error AurumUSD__BurnAmountExceedsBalance();
     error AurumUSD__NotZeroAddress();
 
-
-    /**
-     * @dev Sets the deployer as the initial owner. Ownership is expected to be transferred to the AurumEngine upon deployment.
-     */
+    /// @dev The deployer becomes the initial owner. The ownership is transferred to the AurumEngine contract after deployment.
     constructor() ERC20("Aurum USD", "AUSD") Ownable(msg.sender) {}
 
-
-    /**
-     * @notice Burns AUSD tokens from the caller's balance.
-     * @param _amount The amount of AUSD to burn.
-     */
+    /// @notice Burns AUSD tokens from the caller's balance.
     function burn(uint256 _amount) public override onlyOwner {
         uint256 balance = balanceOf(msg.sender);
         if (_amount <= 0) {
@@ -41,13 +31,8 @@ contract AurumUSD is ERC20Burnable, Ownable {
         super.burn(_amount);
     }
 
-
-    /**
-     * @notice Mints new AUSD tokens to a specified address
-     * @param _to The address to receive the minted AUSD
-     * @param _amount The amount of AUSD to mint
-     * @return A boolean indicating success
-     */
+    /// @notice Mints new AUSD tokens to a specified address.
+    /// @return success boolean indicating whether the operation was a success.
     function mint(address _to, uint256 _amount) external onlyOwner returns(bool) {
         if (_to == address(0)) {
             revert AurumUSD__NotZeroAddress();

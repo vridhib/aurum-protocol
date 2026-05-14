@@ -10,7 +10,8 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 /**
  * @title AurumGold
  * @notice ERC20 token representing one troy ounce of physical gold held in a custodian vault.
- * @dev The custodian mints tokens when gold is deposited and burns them when gold is withdraw. Transfers can be paused by the pauser role in case of an emergency. 
+ * @dev The custodian mints tokens when gold is deposited and burns them when gold is withdraw. 
+ *      Transfers can be paused by the pauser role in case of an emergency. 
  */
 contract AurumGold is ERC20, ERC20Burnable, AccessControl, Pausable {
     error AurumGold__NeedsMoreThanZero();
@@ -19,7 +20,7 @@ contract AurumGold is ERC20, ERC20Burnable, AccessControl, Pausable {
     bytes32 public constant CUSTODIAN_ROLE = keccak256("CUSTODIAN_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
-    /// @notice Total troy ounces of gold backing the token supply (1 AUR = 1 troy ounce)
+    /// @notice Total troy ounces of gold backing the token supply (1 AUR = 1 troy ounce).
     uint256 private s_totalGoldOunces;
 
     event GoldDeposited(address indexed to, uint256 ouncesDeposited, uint256 tokensMinted);
@@ -32,7 +33,6 @@ contract AurumGold is ERC20, ERC20Burnable, AccessControl, Pausable {
         _grantRole(PAUSER_ROLE, msg.sender);
     }
 
-
     /**
      * @notice Mint AUR tokens when physical gold is deposited into the vault.
      * @param to Recipient of the newly minted AUR tokens.
@@ -41,8 +41,8 @@ contract AurumGold is ERC20, ERC20Burnable, AccessControl, Pausable {
     function mintFromGoldDeposit(address to, uint256 ounces) external onlyRole(CUSTODIAN_ROLE) {
         if (ounces == 0) revert AurumGold__NeedsMoreThanZero();
         s_totalGoldOunces += ounces;
-        _mint(to, ounces);
         emit GoldDeposited(to, ounces, ounces);
+        _mint(to, ounces);
     }
 
     /**
@@ -53,8 +53,8 @@ contract AurumGold is ERC20, ERC20Burnable, AccessControl, Pausable {
         if (ounces == 0) revert AurumGold__NeedsMoreThanZero();
         if (balanceOf(msg.sender) < ounces) revert AurumGold__InsufficientBalance();
         s_totalGoldOunces -= ounces;
-        _burn(msg.sender, ounces);
         emit GoldWithdrawn(msg.sender, ounces, ounces);
+        _burn(msg.sender, ounces);
     }
 
     /// @notice Pause all token transfers.
@@ -72,7 +72,7 @@ contract AurumGold is ERC20, ERC20Burnable, AccessControl, Pausable {
         return s_totalGoldOunces;
     }
 
-    /// @notice Check that the token supply exactly matches the total gold ounces recorded.
+    /// @notice Check that the token supply matches the total gold ounces recorded exactly.
     function isReserveBalanced() external view returns (bool) {
         return totalSupply() == s_totalGoldOunces;
     }

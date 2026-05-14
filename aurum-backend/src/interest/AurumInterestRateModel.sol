@@ -2,11 +2,11 @@
 pragma solidity 0.8.34;
 
 /**
- * @title InterestRateModel
+ * @title AurumInterestRateModel
  * @notice Kinked utilization curve with a low base rate due to gold's stability
- * @dev Optimized for gold's low volatility (~15-21% vs ETH ~60-80%)
+ * @dev Optimized for gold's low volatility (gold's ~15-21% vs ETH's ~60-80%)
  */
- contract InterestRateModel {
+ contract AurumInterestRateModel {
     uint256 private constant PRECISION = 1e18;
     uint256 private constant SECONDS_PER_YEAR = 31536000;
 
@@ -26,7 +26,7 @@ pragma solidity 0.8.34;
 
     /**
      * @param utilization is totalDebt / totalCollateralValue (in 1e18)
-     * @return The borrowRate per second in 1e18
+     * @return borrowRate per second in 1e18
      */
     function getBorrowRate(uint256 utilization) external view returns (uint256) {
         uint256 ratePerYear;
@@ -41,7 +41,7 @@ pragma solidity 0.8.34;
             uint256 normalRate = s_baseRate + ((s_optimalUtilization * s_multiplier) / PRECISION);
             // Calculute excess utilization
             uint256 excess = utilization - s_optimalUtilization;
-            // Add steep slope: (excess * 0.50e18) / (1 - 0.75e18)
+            // Add steep slope: (excess * 0.50e18) / (1e18 - 0.75e18)
             uint256 surplus = (excess * s_jumpMultiplier) / (PRECISION - s_optimalUtilization);
             ratePerYear = normalRate + surplus;
         }
