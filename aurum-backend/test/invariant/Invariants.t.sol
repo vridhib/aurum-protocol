@@ -45,6 +45,16 @@ contract InvariantsTest is StdInvariant, Test {
         collateralTokens = tokens;
         
         handler = new Handler(aue, ausd, tokens, feeds);
+        bytes4[] memory selectors = new bytes4[](7);
+        selectors[0] = handler.depositCollateral.selector;
+        selectors[1] = handler.mintAUSD.selector;
+        selectors[2] = handler.redeemCollateral.selector;
+        selectors[3] = handler.burnAUSD.selector;
+        selectors[4] = handler.liquidate.selector;
+        selectors[5] = handler.updateCollateralPrices.selector;
+        selectors[6] = handler.triggerInterestAccrual.selector;
+        
+        targetSelector(FuzzSelector({addr: address(handler), selectors: selectors}));
         targetContract(address(handler));
     }
 
@@ -74,17 +84,23 @@ contract InvariantsTest is StdInvariant, Test {
 
     // Invariant 3: User actual debt = Σ normalized * index / 1e18
     function invariant_userActualDebtMatchesNormalized() external view {
-        address[] memory users;
+        uint256 userCount = handler.getUserCount();
         uint256 currentIndex = aue.s_cumulativeIndex();
-        for (uint256 i = 0; i < users.length; i++) {
+
+        for (uint256 i = 0; i < userCount; i++) {
             address user = handler.usersWithCollateralDeposited(i);
-            uint256 expectedDebt = 0;
+            uint256 expectedDebt;
+            AurumEngine.UserAccountData memory userData = aue.getUserAccountData(user);
             for (uint256 j = 0; j < collateralTokens.length; j++) {
-                uint256 norm = aue.getUserAccountData(user).debtAllocations[j];
-                expectedDebt += (norm * currentIndex) / 1e18;
+                // Find the token the the user's active list to get its debt allocation
+                address token = collateralTokens[j];
+                for (uint256 k = 0; k < userData.activeCollateralTokens.length; k++) {
+                    if (token == userData.activeCollateralTokens[k]) {
+                        expectedDebt += (userData.debtAllocations[k] * currentIndex) / 1e18;
+                    }
+                }
             }
-            uint256 actualDebt = aue.getUserAccountData(user).totalDebt;
-            assertEq(expectedDebt, actualDebt);
+            assertEq(expectedDebt, userData.totalDebt);
         }
     }
 

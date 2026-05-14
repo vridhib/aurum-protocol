@@ -3,19 +3,15 @@ pragma solidity 0.8.34;
 
 import {BaseTest} from "../../shared/BaseTest.t.sol";
 import {AurumEngine} from "../../../src/AurumEngine.sol";
-import {InterestRateModel} from "../../../src/interest/InterestRateModel.sol";
+import {AurumInterestRateModel} from "../../../src/interest/AurumInterestRateModel.sol";
 import {console2} from "forge-std/Test.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 
 contract MintBurnTests is BaseTest {
-    event DebtCeilingHit(address indexed token, uint256 totalDebt, uint256 allocatedDebt);
-    event DebtAllocated(address user, address token, uint256 allocatedDebt);
-    event DebtDeallocated(address user, address token, uint256 debtReduction);
-
-    /***************************************************************************/
-    /*******************************Mint AUSD Tests******************************/
-    /***************************************************************************/
+    /********************************************************/
+    /***********************Mint Tests***********************/
+    /********************************************************/
     // Test that mintAUSD() reverts if the underlying token mint fails
     function testMintRevertsIfTokenContractFails() public depositedCollateral {
         // Prepare the data
@@ -51,17 +47,24 @@ contract MintBurnTests is BaseTest {
     }
 
 
-    /***************************************************************************/
-    /*******************************Burn AUSD Tests*****************************/
-    /***************************************************************************/
+    /********************************************************/
+    /***********************Burn Tests***********************/
+    /********************************************************/
     // Test that burnAUSD() allows users to burn AUSD
     function testUserCanBurnAUSD() public depositedCollateralAndMintedAUSD(amountAUSD) {
-        uint256 amountToBurn = 1 ether;
+        uint256 amountToBurn = 1e18;
         vm.prank(user);
         aue.burnAUSD(amountToBurn);
         uint256 expectedAUSDAmount = amountAUSD - amountToBurn;
         uint256 actualAUSDAmount = aue.getUserAccountData(user).totalDebt;
         assertEq(expectedAUSDAmount, actualAUSDAmount);
+    }
+
+    function testBurnAUSDRevertsIfUserHasNoDebt() public depositedCollateral {
+        uint256 amountToBurn = 1e18;
+        vm.prank(user);
+        vm.expectRevert(AurumEngine.AurumEngine__UserHasNoDebt.selector);
+        aue.burnAUSD(amountToBurn);
     }
 
     // Test that burnAUSD() reverts if users try to burn 0 AUSD
@@ -83,9 +86,9 @@ contract MintBurnTests is BaseTest {
     }
 
 
-    /***************************************************************************/
-    /*******************Debt Allocation & Deallocation Tests********************/
-    /***************************************************************************/
+    /********************************************************/
+    /***********Debt Allocation/Deallocation Tests***********/
+    /********************************************************/
     // Test proportional allocation when both gold and WETH are deposited with no debt ceilings hit
     function testMintAUSDProportionalDebtAllocation() public depositedCollateral {
         // Deposit both collaterals: depositedCollateral (60 AUR + 40 WETH)
@@ -136,7 +139,7 @@ contract MintBurnTests is BaseTest {
 
         // Expect DebtCeilingHit event for WETH
         vm.expectEmit(address(aue));
-        emit DebtCeilingHit(weth, 0, attemptedWethAllocation);
+        emit AurumEngine.DebtCeilingHit(weth, 0, attemptedWethAllocation);
 
         // Mint AUSD
         vm.prank(user);
@@ -215,7 +218,7 @@ contract MintBurnTests is BaseTest {
         assertEq(aue.getCollateralInfo(aurumGold).totalNormalizedDebt, mintAmount);
     }
 
-       // Deallocation on burn – after burning part of the debt, check that each collateral’s totalDebt and user’s allocation decrease proportionally.
+    // Deallocation on burn – after burning part of the debt, check that each collateral’s totalDebt and user’s allocation decrease proportionally.
     function testDeallocationOnBurnResultsInProportionalReduction() public depositedCollateral {
         // Mint a specific amount of AUSD that will give dust
         uint256 mintAmount = 1000e18;
@@ -253,9 +256,10 @@ contract MintBurnTests is BaseTest {
         assertEq(aue.getCollateralInfo(aurumGold).totalNormalizedDebt, goldAllocationAfterBurn);
         assertEq(aue.getCollateralInfo(weth).totalNormalizedDebt, wethAllocationAfterBurn);
     }
-    /***************************************************************************/
-    /*******************Interest Accrual Tests********************/
-    /***************************************************************************/
+
+    /********************************************************/
+    /*****************Interest Accrual Tests*****************/
+    /********************************************************/
     // Test that the cumulative index increases after time passes
     function testCumulativeIndexAndUserDebtIncreaseOverTime() public depositedCollateralAndMintedAUSD(largeAUSDAmount) {
         // Deposited 100 collateral and minted 10000e18 (10,000 AUSD)
@@ -464,7 +468,7 @@ contract MintBurnTests is BaseTest {
         uint256 highRatePerSec = 1e15; // 0.1% per second
         vm.mockCall(
             address(interestRateModel),
-            abi.encodeWithSelector(InterestRateModel.getBorrowRate.selector),
+            abi.encodeWithSelector(AurumInterestRateModel.getBorrowRate.selector),
             abi.encode(highRatePerSec)
         );
 
@@ -557,5 +561,13 @@ contract MintBurnTests is BaseTest {
         // Debt should be zero, and user should only lose `debt` amount not `overAmount`
         assertEq(aue.getUserAccountData(user).totalDebt, 0);
         assertEq(ausd.balanceOf(user), userBalanceBefore - debt);
+    }
+
+    // Test setCollateralInfo updates debt ceiling when non-zero value given
+    function testSetCollateralInfoUpdatesDebtCeiling() public {
+        uint256 newDebtCeiling = 100_000_000e18;
+        vm.prank(aue.owner());
+        aue.setCollateralInfo(aurumGold, address(0), 0, newDebtCeiling, true);
+        assertEq(aue.getCollateralInfo(aurumGold).debtCeiling, newDebtCeiling);
     }
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.34;
 
+import {console2} from "forge-std/Test.sol";
 import {BaseTest} from "../../shared/BaseTest.t.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {MockV3Aggregator} from "../../mocks/MockV3Aggregator.sol";
@@ -58,5 +59,17 @@ contract DepositTests is BaseTest {
 
         assertEq(aurBalance, aurAmount);
         assertEq(wethBalance, wethAmount);
+    }
+
+    // Test that depositCollateral() using inactive token reverts
+    function testDepositInactiveTokenReverts() public {
+        vm.prank(aue.owner());
+        aue.setCollateralInfo(weth, address(0), 0, 0, false);
+
+        vm.startPrank(user);
+        ERC20Mock(weth).approve(address(aue), amountCollateral);
+        vm.expectRevert(abi.encodeWithSelector(AurumEngine.AurumEngine__TokenNotAllowed.selector, weth));
+        aue.depositCollateral(weth, amountCollateral);
+        vm.stopPrank();
     }
 }

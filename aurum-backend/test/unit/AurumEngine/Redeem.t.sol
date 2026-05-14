@@ -9,7 +9,10 @@ import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 
 contract RedeemTests is BaseTest {
-    // Test that redeemCollater() allows a user to redeeem partial collateral
+    /********************************************************/
+    /**********************Redeem Tests**********************/
+    /********************************************************/
+    // Test that redeemCollateral() allows a user to redeeem partial collateral
     function testUserCollateralAmountGetsUpdatedWhenRedeemed() public depositedCollateral {
         uint256 startingCollateralAmount = aue.getUserAccountData(user).collateralAmounts[0]; 
         vm.prank(user);
@@ -18,8 +21,7 @@ contract RedeemTests is BaseTest {
         assertGt(startingCollateralAmount, endingCollateralAmount);
     }
 
-
-    // Test that mintAUSD() reverts if a user tries to redeem their entire collateral without burning all their AUSD prior
+    // Test that redeemCollateral() reverts if a user tries to redeem their entire collateral without burning all their AUSD prior
     function testRevertsIfUserRedeemsEntireCollateralWithRemainingAUSD() public depositedCollateral {
         // User deposits collateral (depositedCollateral) and mints AUSD
         vm.startPrank(user);
@@ -31,14 +33,12 @@ contract RedeemTests is BaseTest {
         vm.stopPrank();
     }
 
-
     // Test that redeemCollateral() reverts if a user tries to redeem 0 collateral
     function testRevertsIfUserRedeemsZeroCollateral() public depositedCollateral {
         vm.prank(user);
         vm.expectRevert(AurumEngine.AurumEngine__NeedsMoreThanZero.selector);
         aue.redeemCollateral(aurumGold, 0);
     }
-
 
     // Test that users can empty their account (i.e. they can burn all their AUSD and redeem all their collateral)
     function testUsersCanEmptyAccount() public depositedCollateralAndMintedAUSD(amountAUSD) {
@@ -62,7 +62,6 @@ contract RedeemTests is BaseTest {
         assertEq(expectedCollateralAmount, collateralAmounts.length);
     }
 
-
     // Test that redeemCollateral() reverts if the underlying transferFrom returns false
     function testRedeemCollateralRevertsIfTransferFails() public depositedCollateral {
         // // Mock the external call and force the return value to be false
@@ -73,6 +72,16 @@ contract RedeemTests is BaseTest {
         vm.prank(user);
         vm.expectRevert(AurumEngine.AurumEngine__TransferFailed.selector);
         aue.redeemCollateral(aurumGold, aurAmount);
+    }
+
+    // Test redeemCollateral() reverts if using inactive token
+    function testRedeemCollateralRevertsIfInactiveToken() public depositedCollateralAndMintedAUSD(getMaxSafeMint()) {
+        vm.prank(aue.owner());
+        aue.setCollateralInfo(weth, address(0), 0, 0, false);
+
+        vm.prank(user);
+        vm.expectRevert(abi.encodeWithSelector(AurumEngine.AurumEngine__TokenNotAllowed.selector, weth));
+        aue.redeemCollateral(weth, 1e18);
     }
 
 
@@ -151,5 +160,15 @@ contract RedeemTests is BaseTest {
         assertEq(actualRequiredBurn, expectedRequiredBurn);
         assertEq(aue.getUserAccountData(user).totalDebt, debtBefore);
         assertEq(aue.getUserAccountData(user).collateralAmounts[1], collateralBefore - 4e18);
+    }
+
+    // Test redeemCollateralWithSlippage() reverts if using inactive token
+    function testRedeemCollateralWithSlippageRevertsIfInactiveToken() public depositedCollateralAndMintedAUSD(getMaxSafeMint()) {
+        vm.prank(aue.owner());
+        aue.setCollateralInfo(weth, address(0), 0, 0, false);
+
+        vm.prank(user);
+        vm.expectRevert(abi.encodeWithSelector(AurumEngine.AurumEngine__TokenNotAllowed.selector, weth));
+        aue.redeemCollateralWithSlippage(weth, 1e18, 10e18);
     }
 }

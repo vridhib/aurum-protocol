@@ -5,7 +5,7 @@ import {Test, console2} from "forge-std/Test.sol";
 import {DeployAUSD} from "../../script/DeployAUSD.s.sol";
 import {AurumUSD} from "../../src/AurumUSD.sol";
 import {AurumEngine} from "../../src/AurumEngine.sol";
-import {InterestRateModel} from "../../src/interest/InterestRateModel.sol";
+import {AurumInterestRateModel} from "../../src/interest/AurumInterestRateModel.sol";
 import {AurumTreasury} from "../../src/treasury/AurumTreasury.sol";
 import {AurumSavings} from "../../src/treasury/AurumSavings.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
@@ -16,7 +16,7 @@ contract BaseTest is Test {
     DeployAUSD internal deployer;
     AurumUSD internal ausd;
     AurumEngine internal aue;
-    InterestRateModel internal interestRateModel;
+    AurumInterestRateModel internal interestRateModel;
     AurumTreasury internal treasury;
     HelperConfig internal config;
     address internal goldUsdPriceFeed;
@@ -53,7 +53,7 @@ contract BaseTest is Test {
     function setUp() public virtual {
         deployer = new DeployAUSD();
         (ausd, aue, config) = deployer.run();
-        interestRateModel = InterestRateModel(aue.i_interestRateModel());
+        interestRateModel = AurumInterestRateModel(aue.i_interestRateModel());
         treasury = AurumTreasury(aue.i_treasury());
 
         HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();

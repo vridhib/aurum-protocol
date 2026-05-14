@@ -466,4 +466,18 @@ contract LiquidationTests is BaseTest {
         vm.expectRevert(); // underflow in _redeemCollateral
         aue.liquidate(aurumGold, user, liquidatorAusd);
     }
+
+    // Test liquidate() reverts if using inactive token
+    function testLiquidateRevertsIfInactiveToken() public depositedCollateralAndMintedAUSD(getMaxSafeMint()) {
+        _setUpLiquidator();
+
+        MockV3Aggregator(ethUsdPriceFeed).updateAnswer(1000e8);
+
+        vm.prank(aue.owner());
+        aue.setCollateralInfo(weth, address(0), 0, 0, false);
+
+        vm.prank(liquidator);
+        vm.expectRevert(abi.encodeWithSelector(AurumEngine.AurumEngine__TokenNotAllowed.selector, weth));
+        aue.liquidate(weth, user, liquidatorAusd);
+    }
 }

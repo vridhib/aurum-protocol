@@ -15,7 +15,6 @@ contract DynamicLtvTest is BaseTest {
         // LTV should remain the same as before
         uint256 ltvBefore = aue.getCollateralInfo(aurumGold).ltv;
         vm.prank(aue.owner());
-        //aue.updateLTVBasedOnVolatility(aurumGold);
         aue.performUpkeep(abi.encode(false, true)); // only update LTV
         uint256 ltvAfter = aue.getCollateralInfo(aurumGold).ltv;
         
@@ -80,5 +79,21 @@ contract DynamicLtvTest is BaseTest {
         uint256 wethLtv = aue.getCollateralInfo(weth).ltv;   
         assertEq(goldLtv, 75); // 85 - ((20/10)*5) = 75
         assertEq(wethLtv, 65); // unchanged (still 65)
-    }    
+    }   
+
+    // Test setCollateralInfo updates volatility feed when non-zero address given
+    function testSetCollateralInfoUpdatesVolatilityFeed() public {
+        address newFeed = makeAddr("newVolFeed");
+        vm.prank(aue.owner());
+        aue.setCollateralInfo(aurumGold, newFeed, 0, 0, true);
+        assertEq(aue.getCollateralInfo(aurumGold).volatilityFeed, newFeed);
+    }
+
+    // Test setCollateralInfo updates LTV when non-zero value given
+    function testSetCollateralInfoUpdatesLTV() public {
+        uint256 newLTV = 80;
+        vm.prank(aue.owner());
+        aue.setCollateralInfo(aurumGold, address(0), newLTV, 0, true);
+        assertEq(aue.getCollateralInfo(aurumGold).ltv, newLTV);
+    }
 }

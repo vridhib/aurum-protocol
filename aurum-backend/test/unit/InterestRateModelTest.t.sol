@@ -2,10 +2,10 @@
 pragma solidity 0.8.34;
 
 import {Test} from "forge-std/Test.sol";
-import {InterestRateModel} from "../../src/interest/InterestRateModel.sol";
+import {AurumInterestRateModel} from "../../src/interest/AurumInterestRateModel.sol";
 import {BaseTest} from "../shared/BaseTest.t.sol";
 
-contract InterestRateModelTest is BaseTest {
+contract AurumInterestRateModelTest is BaseTest {
     uint256 constant SECONDS_PER_YEAR = 31536000;
 
     function testGetBorrowRateLowUtilization() public view {

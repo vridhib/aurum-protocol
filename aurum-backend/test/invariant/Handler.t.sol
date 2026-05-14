@@ -15,7 +15,7 @@ contract Handler is Test {
     address public goldPriceFeed;
 
     address[] public collateralTokens;
-    mapping(address => address) public tokenPriceFeeds;
+    mapping(address => address) public tokenPriceFeeds; 
 
     address[] public usersWithCollateralDeposited;
     
@@ -40,19 +40,27 @@ contract Handler is Test {
     }
 
     // Helpers:
-        function _getUserTotalBorrowingPower(address user) internal view returns (uint256) {
+    function _getUserTotalBorrowingPower(address user) internal view returns (uint256) {
         uint256 totalPower;
-        for (uint256 i = 0; i < collateralTokens.length; i++) {
-            address token = collateralTokens[i];
-            // aue.getUserAccountData(msg.sender).collateralAmounts[tokenSeed % collateralTokens.length];
-            uint256 deposited = aue.getUserAccountData(user).collateralAmounts[i]; //getUserCollateralAmount(token, user);
+        AurumEngine.UserAccountData memory userData = aue.getUserAccountData(user);
+        
+        for (uint256 i = 0; i < userData.activeCollateralTokens.length; i++) {
+            uint256 deposited = userData.collateralAmounts[i];
             if (deposited == 0) continue;
+
+            address token = userData.activeCollateralTokens[i];
             uint256 usdValue = aue.getUsdValue(token, deposited);
             uint256 ltv = aue.getCollateralInfo(token).ltv;
             totalPower += (usdValue * ltv) / 100;
         }
         return totalPower;
     }
+
+    function getUserCount() external view returns (uint256) {
+        return usersWithCollateralDeposited.length;
+    }
+
+
 
     function depositCollateral(uint256 tokenSeed, uint256 amountCollateral) public {
         address token = collateralTokens[tokenSeed % collateralTokens.length];
@@ -98,19 +106,31 @@ contract Handler is Test {
         if (amountAUSDToMint == 0) return;
 
         vm.startPrank(sender);
-        aue.mintAUSD(amountAUSDToMint);
+        try aue.mintAUSD(amountAUSDToMint) {} catch {}
         vm.stopPrank();
     }
 
 
     function redeemCollateral(uint256 tokenSeed, uint256 amountCollateral) public {
         address token = collateralTokens[tokenSeed % collateralTokens.length];
-        uint256 maxCollateral = aue.getUserAccountData(msg.sender).collateralAmounts[tokenSeed % collateralTokens.length];
+
+        AurumEngine.UserAccountData memory userData = aue.getUserAccountData(msg.sender);
+
+        uint256 index = type(uint256).max;
+        for (uint256 i = 0; i < userData.activeCollateralTokens.length; i++) {
+            if (userData.activeCollateralTokens[i] == token) {
+                index = i;
+                break;
+            }
+        }
+        if (index == type(uint256).max) return;
+
+        uint256 maxCollateral = userData.collateralAmounts[index];
         amountCollateral = bound(amountCollateral, 0, maxCollateral);
         if (amountCollateral == 0) return;
 
         vm.prank(msg.sender);
-        aue.redeemCollateral(token, amountCollateral);
+        try aue.redeemCollateral(token, amountCollateral) {} catch {}
     }
 
 
@@ -121,13 +141,13 @@ contract Handler is Test {
 
         vm.startPrank(msg.sender);
         ausd.approve(address(aue), amountAUSDToBurn);
-        aue.burnAUSD(amountAUSDToBurn);
+        try aue.burnAUSD(amountAUSDToBurn) {} catch {}
         vm.stopPrank();
     }
 
 
     function liquidate(uint256 tokenSeed, uint256 userSeed, uint256 debtToCover) public {
-        address token = collateralTokens[tokenSeed % collateralTokens.length];
+        address token = collateralTokens[tokenSeed % collateralTokens.length]; // collateralTokens[0] or collateralTokens[1]
         if (usersWithCollateralDeposited.length == 0) return;
 
         address userToLiquidate = usersWithCollateralDeposited[userSeed % usersWithCollateralDeposited.length];
@@ -139,13 +159,13 @@ contract Handler is Test {
 
             if (borrowingPower > 0) {
                 vm.prank(msg.sender);
-                aue.mintAUSD(borrowingPower / 2);
+                try aue.mintAUSD(borrowingPower / 2) {} catch {}
             }
         }
 
         debtToCover = bound(debtToCover, 0, type(uint256).max); 
         vm.prank(msg.sender);
-        aue.liquidate(token, userToLiquidate, debtToCover);
+        try aue.liquidate(token, userToLiquidate, debtToCover) {} catch {}
     }
 
 

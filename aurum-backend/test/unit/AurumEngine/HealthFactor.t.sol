@@ -62,5 +62,5 @@ contract HealthFactorTests is BaseTest {
 
 
     // Test case 5: health factor breaks, should expect revert
-    // Tested above in testRevertsIfUserRedeemsEntireCollateralWithRemainingAUSD()
+    // Tested in Redeem.t.sol: testRevertsIfUserRedeemsEntireCollateralWithRemainingAUSD()
 }
