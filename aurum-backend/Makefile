@@ -10,26 +10,18 @@ clean  :; forge clean
 # Remove modules
 remove :; rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && git add . && git commit -m "modules"
 
-install :; forge install cyfrin/foundry-devops@0.1.0 && forge install smartcontractkit/chainlink-brownie-contracts@0.6.1 && forge install foundry-rs/forge-std@v1.5.3 && forge install openzeppelin/openzeppelin-contracts@v4.8.3 
+install :; forge install smartcontractkit/chainlink-brownie-contracts@0.6.1 && forge install foundry-rs/forge-std@v1.5.3 && forge install openzeppelin/openzeppelin-contracts@v4.8.3 
 
 # Update Dependencies
 update:; forge update
 
-build:; forge build
+build:; forge build --via-ir
 
-test :; forge test 
-
-coverage :; forge coverage --report debug > coverage-report.txt
+test :; forge test --via-ir
 
 snapshot :; forge snapshot
 
 format :; forge fmt
 
-deploy-gold-token:
-	@forge script script/DeployAurumGold.s.sol:DeployAurumGold --rpc-url $(SEPOLIA_RPC_URL) --account sepolia-deployer --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
-
 deploy-ausd:
-	@forge script script/DeployAUSD.s.sol:DeployAUSD --rpc-url $(SEPOLIA_RPC_URL) --account sepolia-deployer --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
-
-deploy-aur-faucet:
-	@forge script script/DeployAurumGoldFaucet.s.sol:DeployAurumGoldFaucet --rpc-url $(SEPOLIA_RPC_URL) --account sepolia-deployer --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv 
+	@forge script script/DeployAUSD.s.sol:DeployAUSD --via-ir --rpc-url $(SEPOLIA_RPC_URL) --account sepolia-deployer --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
