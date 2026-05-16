@@ -1,9 +1,10 @@
 import { getAddress } from "viem";
 
-export const AURUM_ENGINE_ADDRESS = getAddress("0x471c1d6f2c8d9883d051f296429bcadb4eb4dc11");
-export const AUR_GOLD_ADDRESS = getAddress("0x7769F56edC2a1882a51cec1d3c96F31482b5A241");
-export const AURUM_AUSD_ADDRESS = getAddress("0x3828120d97913be56ded3522a9d0926cd79d9fb2");
-export const AUR_FAUCET_ADDRESS = getAddress("0x25067322310e834498b1638423383b3e5603dd30");
+export const AURUM_ENGINE_ADDRESS = getAddress("0xEfd201CB0A2C380F039d947d023A31CB183F5AfF");
+export const AUR_GOLD_ADDRESS = getAddress("0x71D1b43E1Da3F341194F43f7A3785f98b436e8f3");
+export const AURUM_AUSD_ADDRESS = getAddress("0x852412CB7b7f251EaB49b8f561551F87697e2Ff9");
+export const AUR_FAUCET_ADDRESS = getAddress("0x924c4F255F7Db3639d07fbF447e1E46f29A6565b");
+export const AURUM_SAVINGS_ADDRESS = getAddress("0x0e05cc67bea7fbcde6f2e459d24a661d88f39ca5");
 
 export const ONE = 10n ** 18n;              // 1e18
 export const THRESHOLD = 80n;               // LIQUIDATION_THRESHOLD
