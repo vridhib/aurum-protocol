@@ -8,6 +8,7 @@ import { config } from "../lib/wagmi";
 import { ApolloProvider } from "@apollo/client/react";
 import client from "@/lib/apollo-client";
 import { NavBar } from "@/components/NavBar";
+import { TransactionProvider } from "@/context/TransactionProvider";
 
 
 const queryClient = new QueryClient();
@@ -17,16 +18,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={darkTheme()}>
-          <html lang="en">
-            <body className="bg-gray-900 text-white">
-              <ApolloProvider client={client}>
-                <NavBar />
-                <main className="min-h-screen flex flex-col">
-                  {children}
-                </main>
-              </ApolloProvider>
-            </body>
-          </html>
+          <TransactionProvider>
+            <html lang="en">
+              <body className="bg-gray-900 text-white">
+                <ApolloProvider client={client}>
+                  <NavBar />
+                  <main className="min-h-screen flex flex-col">
+                    {children}
+                  </main>
+                </ApolloProvider>
+              </body>
+            </html>
+          </TransactionProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

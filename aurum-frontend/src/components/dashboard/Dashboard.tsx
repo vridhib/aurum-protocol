@@ -19,6 +19,7 @@ import { BurnCard } from "./BurnCard";
 import { Header } from "./Header";
 import { StatsGrid } from "./StatsGrid";
 import { AURUM_ENGINE_ADDRESS, AURUM_AUSD_ADDRESS, AUR_GOLD_ADDRESS, AUR_FAUCET_ADDRESS, ONE } from "@/config/constants";
+import { useTransactionContext } from "@/context/useTransactionContext";
 
 
 /**
@@ -38,7 +39,8 @@ export default function Dashboard() {
   const [redeemAmount, setRedeemAmount] = useState("");
   const [mintAmount, setMintAmount] = useState("");
   const [burnAmount, setBurnAmount] = useState("");
-  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  // const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const { setPendingAction } = useTransactionContext();
   const [depositError, setDepositError] = useState<string | null>(null);
   const [redeemError, setRedeemError] = useState<string | null>(null);
   const [mintError, setMintError] = useState<string | null>(null);
@@ -276,9 +278,9 @@ export default function Dashboard() {
   const isBurnButtonDisabled =
     !isBurnAmountValid || doesBurnExceedMinted || !!burnError || isBurnPendingHook;
 
-  const isAnyTxPending = 
-    isDepositPendingHook || isRedeemPending || isRedeemConfirming || isMintPending || 
-    isMintConfirming || isBurnPendingHook || isClaimPending || isClaimConfirming;
+  // const isAnyTxPending = 
+  //   isDepositPendingHook || isRedeemPending || isRedeemConfirming || isMintPending || 
+  //   isMintConfirming || isBurnPendingHook || isClaimPending || isClaimConfirming;
 
 
   // ---------- Render UI ----------
@@ -295,8 +297,6 @@ export default function Dashboard() {
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Header*/}
       <Header
-        isAnyTxPending={isAnyTxPending}
-        pendingAction={pendingAction}
         onRefresh={refetchUserData}
         onClaim={handleClaim}
         canClaim={canClaim}

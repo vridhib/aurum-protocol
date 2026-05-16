@@ -1,10 +1,8 @@
 import { LoadingSpinner } from "./LoadingSpinner";
-
+import { useTransactionContext } from "@/context/useTransactionContext";
 
 /**
  * Header section for the dashboard of the Aurum Protocol frontend. 
- * @param isAnyTxPending Indicates whether any transaction is pending.
- * @param pendingAction Stores the current pending action as a string.
  * @param onRefresh Function that refreshes data.
  * @param onClaim Function that handles a claim test AUR action.
  * @param canClaim Indicates whether a user can claim test AUR.
@@ -14,22 +12,20 @@ import { LoadingSpinner } from "./LoadingSpinner";
  * @returns A header section for the main dashboard.
  */
 export function Header({
-    isAnyTxPending,
-    pendingAction,
     onRefresh,
     onClaim,
     canClaim,
     isClaimPending,
     isClaimConfirming
 }: {
-    isAnyTxPending: boolean;
-    pendingAction: string | null;
     onRefresh: () => void;
     onClaim: () => void;
     canClaim: boolean;
     isClaimPending: boolean;
     isClaimConfirming: boolean;
 }) {
+    const { isAnyTxPending, pendingAction } = useTransactionContext();
+
     return (
         <div className="flex justify-between items-center border-b border-gray-800 pb-6">
             <div>
