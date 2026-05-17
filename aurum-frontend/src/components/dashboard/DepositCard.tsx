@@ -1,38 +1,104 @@
-/**
- * Deposit section for the Aurum Protocol frontend.
- * @param depositAmount Stores user's deposit amount.
- * @param setDepositAmount State setter associated with `depositAmount`.
- * @param onDeposit Function that handles the deposit action.
- * @param isPending Indicates whether the deposit action is pending.
- * @param error Stores any errors (user input or write errors) for the deposit action.
- * @param isDisabled Indicates whether the 'Deposit' button is enabled or disabled.
- * @param isValid Indicates whether `depositAmount` falls within a valid range (>0).
- * @param exceeds Indicates whether 'depositAmount` exceeds the user's valid range (<= wallet AUR balance).
- * @component
- * @returns The deposit card UI containing an input field and a button.
- */
-export function DepositCard({
-    depositAmount,
-    setDepositAmount,
-    onDeposit,
-    isPending,
-    error,
-    isDisabled,
-    isValid,
-    exceeds
-}: {
-    depositAmount: string;
-    setDepositAmount: (v: string) => void;
-    onDeposit: (e: React.FormEvent<HTMLFormElement>) => void;
-    isPending: boolean;
-    error: string | null;
-    isDisabled: boolean;
-    isValid: boolean | "";
-    exceeds: boolean
-}) {
+"use client";
+
+import { useTransactionContext } from "@/context/useTransactionContext";
+import { useAmountValidation } from "@/hooks/useAmountValidation";
+import { useApproveAndExecute } from "@/hooks/useApproveAndExecute";
+import { useState, useCallback } from "react";
+import { AURUM_ENGINE_ADDRESS } from "@/config/constants";
+import aurumEngineJson from "@/abis/AurumEngine.json";
+import erc20Json from "@/abis/ERC20.json";
+import { parseEther, type Abi } from "viem";
+import { useAccount, useReadContract } from "wagmi";
+import { useUserData } from "@/hooks/useUserData";
+
+interface DepositCardProps {
+    selectedToken: {
+        address: `0x${string}`;
+        symbol: string;
+    };
+}
+
+export function DepositCard({ selectedToken }: DepositCardProps) {
+    const { address: userAddress } = useAccount();
+    const { refetch: refetchUserData } = useUserData();
+    const { setPendingAction } = useTransactionContext();
+
+    // Local state
+    const [depositAmount, setDepositAmount] = useState("");
+    const [depositError, setDepositError] = useState<string | null>(null); 
+
+    // Read user's allowance of the selected token
+    const { data: tokenAllowance } = useReadContract({
+        address: selectedToken.address,
+        abi: erc20Json.abi,
+        functionName: "allowance",
+        args: userAddress ? [userAddress, AURUM_ENGINE_ADDRESS] : undefined,
+        query: { enabled: !!userAddress },
+    }) as { data: bigint | undefined };
+
+    // Read user’s balance of the selected token 
+    const { data: tokenBalance, refetch: refetchBalance } = useReadContract({
+        address: selectedToken.address,
+        abi: erc20Json.abi,
+        functionName: "balanceOf",
+        args: [userAddress],
+        query: {enabled: !!userAddress }
+    }) as {
+        data: bigint | undefined;
+        refetch: () => void;
+    };
+
+    // Validation
+    const { isValid, exceeds } = useAmountValidation(depositAmount, tokenBalance);
+
+    // Deposit (approve + execute)
+    const onSuccess = useCallback(() => {
+        refetchBalance();
+        refetchUserData();
+        setDepositAmount("");
+        setPendingAction(null);
+    }, [refetchBalance, setPendingAction, refetchUserData])
+
+    const { 
+        start: startDeposit, 
+        isPending, 
+        currentAction, 
+        approveWriteError, 
+        executeWriteError 
+    } = useApproveAndExecute({
+        approveContract: selectedToken.address,
+        approveAbi: erc20Json.abi as Abi,
+        approveFunction: "approve",
+        targetContract: AURUM_ENGINE_ADDRESS,
+        targetAbi: aurumEngineJson.abi as Abi,
+        targetFunction: "depositCollateral",
+        allowance: tokenAllowance,
+        executeArgs: [selectedToken.address],
+        onSuccess
+    });
+
+    // Surface write errors
+    const writeError = approveWriteError || executeWriteError;
+    if (writeError && !depositError) setDepositError(writeError.message);
+
+    // Submit handler
+    const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!isValid || exceeds) return;
+        // Set the appropriate pending message
+        const msg = currentAction == "approving" 
+            ? `Approving ${selectedToken.symbol} deposit...`
+            : `Depositing ${selectedToken.symbol}...`;
+        setPendingAction(msg);
+        startDeposit(parseEther(depositAmount));
+    };
+
+    // Disabled state
+    const isDisabled = !isValid || exceeds || !!depositError || isPending;
+
     return (
-        <form onSubmit={onDeposit} className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm space-y-4">
-            <h3 className="text-xl font-bold text-white">Deposit AUR</h3>
+        <form onSubmit={handleDeposit} className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm space-y-4">
+            <h3 className="text-xl font-bold text-white">Deposit {selectedToken.symbol}</h3>
             <input
                 type="number"
                 placeholder="0.00"
@@ -49,8 +115,8 @@ export function DepositCard({
                 {isPending ? "Processing..." : "Deposit"}
             </button>
             {!!depositAmount && !isValid && (<p className="text-red-500 text-sm">Please enter a valid amount greater than 0.</p>)}
-            {isValid && exceeds && (<p className="text-red-500 text-sm">Insufficient AUR balance.</p>)}
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {isValid && exceeds && (<p className="text-red-500 text-sm">Insufficient {selectedToken.symbol} balance.</p>)}
+            {depositError && <p className="text-red-500 text-sm">{depositError}</p>}
         </form>
     )
 }

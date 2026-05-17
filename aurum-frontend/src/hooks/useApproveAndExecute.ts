@@ -49,6 +49,7 @@ export function useApproveAndExecute({
     targetFunction,
     onSuccess,
     allowance,
+    executeArgs,
 }: {
     approveContract: `0x${string}`;
     approveAbi: Abi;
@@ -58,6 +59,7 @@ export function useApproveAndExecute({
     targetFunction: string;
     onSuccess?: () => void;
     allowance?: bigint;
+    executeArgs?: unknown[]
 }) {
     const [step, setStep] = useState<"idle" | "approving" | "executing">("idle");
     const [amount, setAmount] = useState<bigint | null>(null);
@@ -92,6 +94,7 @@ export function useApproveAndExecute({
 
     const start = (newAmount: bigint) => {
         setAmount(newAmount);
+        const fullArgs = executeArgs ? [...executeArgs, newAmount] : [newAmount];
         // If allowance is enough, go directly to execution
         if (allowance !== undefined && allowance >= newAmount) {
             setStep("executing");
@@ -99,7 +102,7 @@ export function useApproveAndExecute({
                 address: targetContract,
                 abi: targetAbi,
                 functionName: targetFunction,
-                args: [newAmount],
+                args: fullArgs,
             });
         } else {
             setStep("approving");

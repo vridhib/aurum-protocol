@@ -40,6 +40,10 @@ export function useUserData(): {
     amountCollateral: bigint | undefined
     mintedAmount: bigint | undefined
     healthFactor: bigint | undefined
+    lastIndex: bigint | undefined
+    activeCollateralTokens: string[] | undefined
+    collateralAmounts: bigint[] | undefined
+    debtAllocations: bigint[] | undefined
     lastClaimTime: bigint | undefined
     canClaim: boolean
     aurAllowance: bigint | undefined
@@ -49,44 +53,73 @@ export function useUserData(): {
     const { address } = useAccount();
 
     // -------- Reads --------
-    // Read: Collateral deposited
-    const { data: amountCollateral, isLoading: isCollateralLoading, refetch: refetchCollateral } = useReadContract({
+    const { data: accountData, isLoading: isAccountDataLoading, refetch: refetchAccountData } = useReadContract({
         address: AURUM_ENGINE_ADDRESS,
         abi: aurumEngineJson.abi,
-        functionName: "getAmountCollateral",
+        functionName: "getUserAccountData",
         args: [address],
         query: { enabled: !!address },
     }) as {
-         data: bigint | undefined; 
-         isLoading: boolean; 
-         refetch: () => void 
+        data: {
+            totalCollateralValueInUsd: bigint;
+            totalDebt: bigint;
+            healthFactor: bigint;
+            lastIndex: bigint;
+            activeCollateralTokens: string[];
+            collateralAmounts: bigint[];
+            debtAllocations: bigint[];
+        } | undefined;
+        isLoading: boolean;
+        refetch: () => void;
     };
 
-    // Read: Minted AUSD
-    const { data: mintedAmount, isLoading: isDebtLoading, refetch: refetchMinted } = useReadContract({
-        address: AURUM_ENGINE_ADDRESS,
-        abi: aurumEngineJson.abi,
-        functionName: "getAUSDMinted",
-        args: [address],
-        query: { enabled: !!address },
-    }) as { 
-        data: bigint | undefined; 
-        isLoading: boolean; 
-        refetch: () => void 
-    };
+    const amountCollateral = accountData?.totalCollateralValueInUsd;
+    const mintedAmount = accountData?.totalDebt;
+    const healthFactor = accountData?.healthFactor;
+    const lastIndex = accountData?.lastIndex;
+    const activeCollateralTokens = accountData?.activeCollateralTokens;
+    const collateralAmounts = accountData?.collateralAmounts;
+    const debtAllocations = accountData?.debtAllocations;
 
-    // Read: Health Factor
-    const { data: healthFactor, isLoading: isHealthFactorLoading, refetch: refetchHealthFactor } = useReadContract({
-        address: AURUM_ENGINE_ADDRESS,
-        abi: aurumEngineJson.abi,
-        functionName: "getHealthFactor",
-        args: [address],
-        query: { enabled: !!address },
-    }) as { 
-        data: bigint | undefined; 
-        isLoading: boolean; 
-        refetch: () => void 
-    };
+
+    // // Read: Collateral deposited
+    // const { data: amountCollateral, isLoading: isCollateralLoading, refetch: refetchCollateral } = useReadContract({
+    //     address: AURUM_ENGINE_ADDRESS,
+    //     abi: aurumEngineJson.abi,
+    //     functionName: "getAmountCollateral",
+    //     args: [address],
+    //     query: { enabled: !!address },
+    // }) as {
+    //      data: bigint | undefined; 
+    //      isLoading: boolean; 
+    //      refetch: () => void 
+    // };
+
+    // // Read: Minted AUSD
+    // const { data: mintedAmount, isLoading: isDebtLoading, refetch: refetchMinted } = useReadContract({
+    //     address: AURUM_ENGINE_ADDRESS,
+    //     abi: aurumEngineJson.abi,
+    //     functionName: "getAUSDMinted",
+    //     args: [address],
+    //     query: { enabled: !!address },
+    // }) as { 
+    //     data: bigint | undefined; 
+    //     isLoading: boolean; 
+    //     refetch: () => void 
+    // };
+
+    // // Read: Health Factor
+    // const { data: healthFactor, isLoading: isHealthFactorLoading, refetch: refetchHealthFactor } = useReadContract({
+    //     address: AURUM_ENGINE_ADDRESS,
+    //     abi: aurumEngineJson.abi,
+    //     functionName: "getHealthFactor",
+    //     args: [address],
+    //     query: { enabled: !!address },
+    // }) as { 
+    //     data: bigint | undefined; 
+    //     isLoading: boolean; 
+    //     refetch: () => void 
+    // };
 
     // Read: AUR Faucet lastClaimTime
     const { data: lastClaimTime, isLoading: isLastClaimTimeLoading, refetch: refetchLastClaimTime } = useReadContract({
@@ -141,18 +174,16 @@ export function useUserData(): {
     };
 
     // Combined loading state that is true if any of the 6 reads are still fetching
-    const isLoading = isCollateralLoading || isDebtLoading || isHealthFactorLoading || isLastClaimTimeLoading || isAurAllowanceLoading || isAurBalanceLoading || isAusdAllowanceLoading;
+    const isLoading = isAccountDataLoading ||  isLastClaimTimeLoading || isAurAllowanceLoading || isAurBalanceLoading || isAusdAllowanceLoading;
 
     // Combined refetch that refreshes all 6 contract calls
     const refetch = useCallback(() => {
-        refetchCollateral();
-        refetchMinted();
-        refetchHealthFactor();
+        refetchAccountData();
         refetchLastClaimTime();
         refetchAURAllowance();
         refetchAurBalance();
         refetchAUSDAllowance();
-    }, [refetchCollateral, refetchMinted, refetchHealthFactor, refetchLastClaimTime, refetchAURAllowance, refetchAurBalance, refetchAUSDAllowance]);
+    }, [refetchAccountData, refetchLastClaimTime, refetchAURAllowance, refetchAurBalance, refetchAUSDAllowance]);
 
 
     // Return everything, including loading flag and possibly undefined data
@@ -162,6 +193,10 @@ export function useUserData(): {
         amountCollateral,
         mintedAmount,
         healthFactor,
+        lastIndex,
+        activeCollateralTokens,
+        collateralAmounts,
+        debtAllocations,
         lastClaimTime,
         canClaim: lastClaimTime ? Date.now() / 1000 > Number(lastClaimTime) + 86400 : true,
         aurAllowance,

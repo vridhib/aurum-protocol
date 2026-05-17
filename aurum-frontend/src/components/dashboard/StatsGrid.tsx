@@ -15,8 +15,8 @@ export function StatsGrid({ collateral, minted, healthFactor, isLoading }: { col
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard
-                title="Collateral Deposited"
-                value={isLoading ? "Loading..." : `${formatEther(collateral || 0n)} AUR`}
+                title="Deposited Collateral Value"
+                value={isLoading ? "Loading..." : `$${formatEther(collateral || 0n)}`}
             />
             <StatCard
                 title="AUSD Minted"

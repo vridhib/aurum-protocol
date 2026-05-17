@@ -18,8 +18,9 @@ import { DepositCard } from "./DepositCard";
 import { BurnCard } from "./BurnCard";
 import { Header } from "./Header";
 import { StatsGrid } from "./StatsGrid";
-import { AURUM_ENGINE_ADDRESS, AURUM_AUSD_ADDRESS, AUR_GOLD_ADDRESS, AUR_FAUCET_ADDRESS, ONE } from "@/config/constants";
+import { AURUM_ENGINE_ADDRESS, AURUM_AUSD_ADDRESS, AUR_GOLD_ADDRESS, WETH_ADDRESS, AUR_FAUCET_ADDRESS, ONE } from "@/config/constants";
 import { useTransactionContext } from "@/context/useTransactionContext";
+import { CollateralSelector } from "./CollateralSelector";
 
 
 /**
@@ -35,13 +36,20 @@ import { useTransactionContext } from "@/context/useTransactionContext";
  */
 export default function Dashboard() {
   // ---------- State for Amounts & UI ----------
-  const [depositAmount, setDepositAmount] = useState("");
+  const [selectedTokenIndex, setSelectedTokenIndex] = useState(0);
+  const collateralTokens = useMemo(() => [
+    { address: AUR_GOLD_ADDRESS, symbol: "AUR", ltv: 85},
+    { address: WETH_ADDRESS, symbol: "WETH", ltv: 65}
+  ], []);
+  const selectedToken = collateralTokens[selectedTokenIndex];
+
+  // const [depositAmount, setDepositAmount] = useState("");
   const [redeemAmount, setRedeemAmount] = useState("");
   const [mintAmount, setMintAmount] = useState("");
   const [burnAmount, setBurnAmount] = useState("");
   // const [pendingAction, setPendingAction] = useState<string | null>(null);
   const { setPendingAction } = useTransactionContext();
-  const [depositError, setDepositError] = useState<string | null>(null);
+  // const [depositError, setDepositError] = useState<string | null>(null);
   const [redeemError, setRedeemError] = useState<string | null>(null);
   const [mintError, setMintError] = useState<string | null>(null);
   const [burnError, setBurnError] = useState<string | null>(null);
@@ -71,21 +79,21 @@ export default function Dashboard() {
 
   // ---------- Custom Hooks For Deposit and Burn (Approval & Execution) ----------
   // Write: Deposit AUR (approve and then deposit)
-  const { start: startDeposit, isPending: isDepositPendingHook, currentAction: depositAction, approveWriteError: approveDepositWriteError, executeWriteError: executeDepositWriteError } = useApproveAndExecute({
-    approveContract: AUR_GOLD_ADDRESS,
-    approveAbi: aurumGoldJson.abi as Abi,
-    approveFunction: "approve",
-    targetContract: AURUM_ENGINE_ADDRESS,
-    targetAbi: aurumEngineJson.abi as Abi,
-    targetFunction: "depositCollateral",
-    allowance: aurAllowance,
-    onSuccess: () => {
-      // Refetch data, clear input, clear global pending action
-      refetchUserData();  
-      setDepositAmount("");
-      setPendingAction(null);
-    }
-  });
+  // const { start: startDeposit, isPending: isDepositPendingHook, currentAction: depositAction, approveWriteError: approveDepositWriteError, executeWriteError: executeDepositWriteError } = useApproveAndExecute({
+  //   approveContract: AUR_GOLD_ADDRESS,
+  //   approveAbi: aurumGoldJson.abi as Abi,
+  //   approveFunction: "approve",
+  //   targetContract: AURUM_ENGINE_ADDRESS,
+  //   targetAbi: aurumEngineJson.abi as Abi,
+  //   targetFunction: "depositCollateral",
+  //   allowance: aurAllowance,
+  //   onSuccess: () => {
+  //     // Refetch data, clear input, clear global pending action
+  //     refetchUserData();  
+  //     setDepositAmount("");
+  //     setPendingAction(null);
+  //   }
+  // });
 
   // Write: Burn AUSD (approve and then burn)
   const { start: startBurn, isPending: isBurnPendingHook, currentAction: burnAction, approveWriteError: approveBurnWriteError, executeWriteError: executeBurnWriteError } = useApproveAndExecute({
@@ -131,7 +139,7 @@ export default function Dashboard() {
 
 
   // ---------- Input Validation Hooks ----------
-  const { isValid: isDepositAmountValid, exceeds: doesDepositExceedBalance } = useAmountValidation(depositAmount, aurBalance);
+  // const { isValid: isDepositAmountValid, exceeds: doesDepositExceedBalance } = useAmountValidation(depositAmount, aurBalance);
   const { isValid: isRedeemAmountValid, exceeds: doesRedeemExceedCollateral } = useAmountValidation(redeemAmount, amountCollateral);
   const { isValid: isMintAmountValid } = useAmountValidation(mintAmount);
   const { isValid: isBurnAmountValid, exceeds: doesBurnExceedMinted } = useAmountValidation(burnAmount, mintedAmount);
@@ -139,14 +147,14 @@ export default function Dashboard() {
 
   // ---------- Error Handling For Writes ----------
   // If the user removed the bad/invalid number remove the error
-  useClearErrorOnInputChange(setDepositError, depositAmount);
+  // useClearErrorOnInputChange(setDepositError, depositAmount);
   useClearErrorOnInputChange(setRedeemError, redeemAmount);
   useClearErrorOnInputChange(setMintError, mintAmount);
   useClearErrorOnInputChange(setBurnError, burnAmount);
 
   // Handle post transaction write errors
-  useWriteErrorHandler(approveDepositWriteError, setDepositError);
-  useWriteErrorHandler(executeDepositWriteError, setDepositError);
+  // useWriteErrorHandler(approveDepositWriteError, setDepositError);
+  // useWriteErrorHandler(executeDepositWriteError, setDepositError);
   useWriteErrorHandler(redeemWriteError, setRedeemError);
   useWriteErrorHandler(mintWriteError, setMintError);
   useWriteErrorHandler(approveBurnWriteError, setBurnError);
@@ -156,10 +164,10 @@ export default function Dashboard() {
   // ---------- Effects ----------
   // Effects for updating the global pending action message
   useEffect(() => {
-    if (isDepositPendingHook) {
-      setPendingAction(depositAction === "approving" ? "Approving AUR deposit..." : "Depositing AUR...");
-    }
-    else if (isBurnPendingHook) {
+    // if (isDepositPendingHook) {
+    //   setPendingAction(depositAction === "approving" ? "Approving AUR deposit..." : "Depositing AUR...");
+    // }
+    if (isBurnPendingHook) {
       setPendingAction(burnAction === "approving" ? "Approving AUSD for burn..." : "Burning AUSD...");
     }
     else if (isRedeemPending || isRedeemConfirming) {
@@ -175,7 +183,7 @@ export default function Dashboard() {
       setPendingAction(null);
     }
   }, [
-    isDepositPendingHook, depositAction,
+    //isDepositPendingHook, depositAction,
     isBurnPendingHook, burnAction,
     isRedeemPending, isRedeemConfirming,
     isMintPending, isMintConfirming,
@@ -209,12 +217,12 @@ export default function Dashboard() {
 
   // ---------- Handlers ----------
   // Deposit handler
-  const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!isDepositAmountValid || doesDepositExceedBalance) return;
-    const amountWei = parseEther(depositAmount);
-    startDeposit(amountWei);
-  };
+  // const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (!isDepositAmountValid || doesDepositExceedBalance) return;
+  //   const amountWei = parseEther(depositAmount);
+  //   startDeposit(amountWei);
+  // };
 
   // Redeem handler
   const handleRedeem = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -262,8 +270,8 @@ export default function Dashboard() {
 
   // ---------- Button Disabled States ----------
   // Determine deposit button state
-  const isDepositButtonDisabled = 
-    !isDepositAmountValid || doesDepositExceedBalance || !!depositError || isDepositPendingHook;
+  // const isDepositButtonDisabled = 
+  //   !isDepositAmountValid || doesDepositExceedBalance || !!depositError || isDepositPendingHook;
 
   // Determine redeem button state
   const isRedeemButtonDisabled =
@@ -312,9 +320,16 @@ export default function Dashboard() {
         isLoading={isUserDataLoading}
       />
 
+      {/* Collateral Selector */}
+      <CollateralSelector
+        tokens={collateralTokens}
+        selectedIndex={selectedTokenIndex}
+        onChange={setSelectedTokenIndex}
+      />
+
       {/* Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Deposit Card */}
+        {/* 
         <DepositCard
           depositAmount={depositAmount}
           setDepositAmount={setDepositAmount}
@@ -324,7 +339,10 @@ export default function Dashboard() {
           isDisabled={isDepositButtonDisabled}
           isValid={isDepositAmountValid}
           exceeds={doesDepositExceedBalance}
-        />
+        />*/}
+        {/* Deposit Card */}
+        <DepositCard selectedToken={selectedToken}/>
+
         {/* Redeem Card */}
         <RedeemCard
           redeemAmount={redeemAmount}

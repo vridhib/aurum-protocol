@@ -42,7 +42,8 @@ export function calculateProjectedHealthFactor(collateralWei: bigint, mintedWei:
     // If debt is 0, return max uint256 value
     if (mintedWei === 0n) return MAX_UINT256;
     // Otherwise, calculate health factor in wei
-    const usdValue = (collateralWei * pricePerAurWei) / ONE;
+    //const usdValue = (collateralWei * pricePerAurWei) / ONE;
+    const usdValue = collateralWei;
     const adjusted = (usdValue * THRESHOLD) / PRECISION;
     const projectedHealthFactor = (adjusted * ONE) / mintedWei;
     return projectedHealthFactor;
