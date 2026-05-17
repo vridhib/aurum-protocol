@@ -63,6 +63,7 @@ export function useApproveAndExecute({
 }) {
     const [step, setStep] = useState<"idle" | "approving" | "executing">("idle");
     const [amount, setAmount] = useState<bigint | null>(null);
+    const [pendingArgs, setPendingArgs] = useState<unknown[] | undefined>(undefined);
 
     const { data: approveHash, isPending: isApproving, writeContract: approve, error: approveWriteError } = useWriteContract();
     const { isLoading: isApproveConfirmed, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash });
@@ -78,23 +79,34 @@ export function useApproveAndExecute({
                 address: targetContract,
                 abi: targetAbi,
                 functionName: targetFunction,
-                args: [amount]
+                args: pendingArgs
             });
         }
-    }, [step, isApproveSuccess, execute, targetContract, targetAbi, targetFunction, amount]);
+    }, [step, isApproveSuccess, execute, targetContract, targetAbi, targetFunction, amount, pendingArgs]);
 
     // When the execution succeeds, reset and call onSuccess
     useEffect(() => {
         if (step === "executing" && isExecuteSuccess) {
             setStep("idle");
             setAmount(null);
+            setPendingArgs(undefined)
             onSuccess?.();
         }
     }, [step, isExecuteSuccess, onSuccess]);
 
+    // Reset on write error
+    useEffect(() => {
+        if (approveWriteError || executeWriteError) {
+            setStep("idle");
+            setAmount(null);
+            setPendingArgs(undefined);
+        }
+    }, [approveWriteError, executeWriteError]);
+
     const start = (newAmount: bigint) => {
         setAmount(newAmount);
         const fullArgs = executeArgs ? [...executeArgs, newAmount] : [newAmount];
+        setPendingArgs(fullArgs);
         // If allowance is enough, go directly to execution
         if (allowance !== undefined && allowance >= newAmount) {
             setStep("executing");

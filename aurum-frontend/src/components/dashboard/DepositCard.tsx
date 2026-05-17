@@ -3,13 +3,14 @@
 import { useTransactionContext } from "@/context/useTransactionContext";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { useApproveAndExecute } from "@/hooks/useApproveAndExecute";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AURUM_ENGINE_ADDRESS } from "@/config/constants";
 import aurumEngineJson from "@/abis/AurumEngine.json";
 import erc20Json from "@/abis/ERC20.json";
 import { parseEther, type Abi } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { useUserData } from "@/hooks/useUserData";
+import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
 
 interface DepositCardProps {
     selectedToken: {
@@ -78,18 +79,32 @@ export function DepositCard({ selectedToken }: DepositCardProps) {
     });
 
     // Surface write errors
-    const writeError = approveWriteError || executeWriteError;
-    if (writeError && !depositError) setDepositError(writeError.message);
+    useEffect(() => {
+        const writeError = approveWriteError || executeWriteError;
+        if (writeError) {
+            setDepositError(getUserFriendlyErrorMessage(writeError));
+        }
+    }, [approveWriteError, executeWriteError]);
+
+    // Reset error when depositAmount changes (user starts typing again)
+    useEffect(() => {
+        setDepositError(null);
+    }, [depositAmount]);
+
+    useEffect(() => {
+        if (approveWriteError || executeWriteError) {
+            setPendingAction(null);
+        }
+    }, [approveWriteError, executeWriteError, setPendingAction]);
+
+
 
     // Submit handler
     const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!isValid || exceeds) return;
-        // Set the appropriate pending message
-        const msg = currentAction == "approving" 
-            ? `Approving ${selectedToken.symbol} deposit...`
-            : `Depositing ${selectedToken.symbol}...`;
-        setPendingAction(msg);
+
+        setPendingAction(`Depositing ${selectedToken.symbol}...`);
         startDeposit(parseEther(depositAmount));
     };
 

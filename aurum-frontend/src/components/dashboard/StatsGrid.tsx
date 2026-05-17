@@ -11,25 +11,44 @@ import { formatHealthFactorForDisplay } from "@/utils/helperFunctions";
  * @param isLoading Indicates whether the user's data is loading. 
  * @returns A stats grid UI displaying a user's collateral amount, minted amount, and health factor.
  */
-export function StatsGrid({ collateral, minted, healthFactor, isLoading }: { collateral: bigint, minted: bigint, healthFactor: bigint, isLoading: boolean }) {
+export function StatsGrid({ 
+    collateral, 
+    minted, 
+    healthFactor, 
+    isLoading,
+    isRefetching 
+}: { 
+    collateral: bigint,
+    minted: bigint, 
+    healthFactor: bigint, 
+    isLoading: boolean, 
+    isRefetching: boolean 
+}) {
+    // Only show loading skeleton when data is never loaded
+    const showLoading = isLoading && !isRefetching;
+
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Optional: tiny "Updating" indicator */}
+            {isRefetching && (
+                <span className="absolute -top-5 right-0 text-xs text-gray-400 animate-pulse">
+                    Updating…
+                </span>
+            )}
+
             <StatCard
                 title="Deposited Collateral Value"
-                value={isLoading ? "Loading..." : `$${formatEther(collateral || 0n)}`}
+                value={showLoading ? "Loading..." : `$${formatEther(collateral || 0n)}`}
             />
             <StatCard
                 title="AUSD Minted"
-                value={isLoading ? "Loading..." : `${formatEther(minted || 0n)} AUSD`}
+                value={showLoading ? "Loading..." : `${formatEther(minted || 0n)} AUSD`}
             />
             <StatCard
                 title="Health Factor"
-                value={isLoading ? "Loading..." : formatHealthFactorForDisplay(healthFactor)}
+                value={showLoading ? "Loading..." : formatHealthFactorForDisplay(healthFactor)}
             />
         </div>
     );
 }
-
-
-
-

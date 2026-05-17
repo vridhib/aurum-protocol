@@ -56,7 +56,7 @@ export default function Dashboard() {
 
 
   // ---------- Reads ----------
-  const {amountCollateral, mintedAmount, healthFactor, aurAllowance, aurBalance, ausdAllowance, canClaim, refetch: refetchUserData, isLoading: isUserDataLoading} = useUserData();
+  const {amountCollateral, mintedAmount, healthFactor, ausdAllowance, canClaim, refetch: refetchUserData, isLoading: isUserDataLoading, isRefetching} = useUserData();
   const { pricePerAur } = useProtocolData();
   const { isConnected } = useAccount();
 
@@ -318,6 +318,7 @@ export default function Dashboard() {
         minted={mintedAmount ?? 0n}
         healthFactor={healthFactor ?? 0n}
         isLoading={isUserDataLoading}
+        isRefetching={isRefetching}
       />
 
       {/* Collateral Selector */}
