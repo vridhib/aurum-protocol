@@ -45,13 +45,13 @@ export default function Dashboard() {
 
   // const [depositAmount, setDepositAmount] = useState("");
   // const [redeemAmount, setRedeemAmount] = useState("");
-  const [mintAmount, setMintAmount] = useState("");
+  // const [mintAmount, setMintAmount] = useState("");
   const [burnAmount, setBurnAmount] = useState("");
   // const [pendingAction, setPendingAction] = useState<string | null>(null);
   const { setPendingAction } = useTransactionContext();
   // const [depositError, setDepositError] = useState<string | null>(null);
   // const [redeemError, setRedeemError] = useState<string | null>(null);
-  const [mintError, setMintError] = useState<string | null>(null);
+  // const [mintError, setMintError] = useState<string | null>(null);
   const [burnError, setBurnError] = useState<string | null>(null);
 
 
@@ -68,9 +68,9 @@ export default function Dashboard() {
   //   useWaitForTransactionReceipt({ hash: redeemHash });
 
   // Write: Mint AUSD
-  const { data: mintHash, isPending: isMintPending, writeContract: mint, error: mintWriteError } = useWriteContract();
-  const { isLoading: isMintConfirming, isSuccess: isMintSuccess } =
-    useWaitForTransactionReceipt({ hash: mintHash });
+  // const { data: mintHash, isPending: isMintPending, writeContract: mint, error: mintWriteError } = useWriteContract();
+  // const { isLoading: isMintConfirming, isSuccess: isMintSuccess } =
+  //   useWaitForTransactionReceipt({ hash: mintHash });
 
   // Write: Claim AUR faucet funds
   const { data: claimHash, isPending: isClaimPending, writeContract: claim } = useWriteContract();
@@ -115,15 +115,15 @@ export default function Dashboard() {
 
   // ---------- Derived state: Projected Health Factor ----------
   // Check if mintAmount keeps the user's health factor healthy
-  const mintWouldBeHealthy = useMemo(() => {
-    if (!mintAmount || parseFloat(mintAmount) <= 0) return true;
-    if (amountCollateral === undefined || mintedAmount === undefined || pricePerAur === undefined) return false;
+  // const mintWouldBeHealthy = useMemo(() => {
+  //   if (!mintAmount || parseFloat(mintAmount) <= 0) return true;
+  //   if (amountCollateral === undefined || mintedAmount === undefined || pricePerAur === undefined) return false;
 
-    const mintWei = parseEther(mintAmount);
-    const newMinted = mintedAmount + mintWei;
-    const projectedHealthFactor = calculateProjectedHealthFactor(amountCollateral, newMinted, pricePerAur);
-    return projectedHealthFactor >= PRECISION;
-  }, [mintAmount, amountCollateral, mintedAmount, pricePerAur]);
+  //   const mintWei = parseEther(mintAmount);
+  //   const newMinted = mintedAmount + mintWei;
+  //   const projectedHealthFactor = calculateProjectedHealthFactor(amountCollateral, newMinted, pricePerAur);
+  //   return projectedHealthFactor >= PRECISION;
+  // }, [mintAmount, amountCollateral, mintedAmount, pricePerAur]);
 
   // Check if redeemAmount keeps the user's health factor healthy
   // const redeemWouldBeHealthy = useMemo(() => {
@@ -141,7 +141,7 @@ export default function Dashboard() {
   // ---------- Input Validation Hooks ----------
   // const { isValid: isDepositAmountValid, exceeds: doesDepositExceedBalance } = useAmountValidation(depositAmount, aurBalance);
   // const { isValid: isRedeemAmountValid, exceeds: doesRedeemExceedCollateral } = useAmountValidation(redeemAmount, amountCollateral);
-  const { isValid: isMintAmountValid } = useAmountValidation(mintAmount);
+  // const { isValid: isMintAmountValid } = useAmountValidation(mintAmount);
   const { isValid: isBurnAmountValid, exceeds: doesBurnExceedMinted } = useAmountValidation(burnAmount, mintedAmount);
 
 
@@ -149,14 +149,14 @@ export default function Dashboard() {
   // If the user removed the bad/invalid number remove the error
   // useClearErrorOnInputChange(setDepositError, depositAmount);
   // useClearErrorOnInputChange(setRedeemError, redeemAmount);
-  useClearErrorOnInputChange(setMintError, mintAmount);
+  // useClearErrorOnInputChange(setMintError, mintAmount);
   useClearErrorOnInputChange(setBurnError, burnAmount);
 
   // Handle post transaction write errors
   // useWriteErrorHandler(approveDepositWriteError, setDepositError);
   // useWriteErrorHandler(executeDepositWriteError, setDepositError);
   // useWriteErrorHandler(redeemWriteError, setRedeemError);
-  useWriteErrorHandler(mintWriteError, setMintError);
+  // useWriteErrorHandler(mintWriteError, setMintError);
   useWriteErrorHandler(approveBurnWriteError, setBurnError);
   useWriteErrorHandler(executeBurnWriteError, setBurnError);
 
@@ -173,9 +173,9 @@ export default function Dashboard() {
     // else if (isRedeemPending || isRedeemConfirming) {
     //   setPendingAction("Redeeming AUR...");
     // }
-    else if (isMintPending || isMintConfirming) {
-      setPendingAction("Minting AUSD...");
-    }
+    // else if (isMintPending || isMintConfirming) {
+    //   setPendingAction("Minting AUSD...");
+    // }
     else if (isClaimPending || isClaimConfirming) {
       setPendingAction("Claiming AUR from faucet...");
     }
@@ -186,7 +186,7 @@ export default function Dashboard() {
     //isDepositPendingHook, depositAction,
     isBurnPendingHook, burnAction,
     //isRedeemPending, isRedeemConfirming,
-    isMintPending, isMintConfirming,
+    // isMintPending, isMintConfirming,
     isClaimPending, isClaimConfirming
   ]);
 
@@ -201,13 +201,13 @@ export default function Dashboard() {
   // }, [isRedeemSuccess, refetchUserData]);
 
   // Refetch data after successful mint
-  useEffect(() => {
-    if (isMintSuccess) {
-      setPendingAction(null);
-      refetchUserData(); 
-      setMintAmount("");
-    }
-  }, [isMintSuccess, refetchUserData]);
+  // useEffect(() => {
+  //   if (isMintSuccess) {
+  //     setPendingAction(null);
+  //     refetchUserData(); 
+  //     setMintAmount("");
+  //   }
+  // }, [isMintSuccess, refetchUserData]);
 
   // Claim success effect
   useEffect(() => {
@@ -238,17 +238,17 @@ export default function Dashboard() {
   // };
 
   // Mint handler
-  const handleMint = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!isMintAmountValid) return;
-    const amountWei = parseEther(mintAmount);
-    mint({
-      address: AURUM_ENGINE_ADDRESS,
-      abi: aurumEngineJson.abi,
-      functionName: "mintAUSD",
-      args: [amountWei],
-    });
-  };
+  // const handleMint = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (!isMintAmountValid) return;
+  //   const amountWei = parseEther(mintAmount);
+  //   mint({
+  //     address: AURUM_ENGINE_ADDRESS,
+  //     abi: aurumEngineJson.abi,
+  //     functionName: "mintAUSD",
+  //     args: [amountWei],
+  //   });
+  // };
 
   // Burn handler
   const handleBurn = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -279,8 +279,8 @@ export default function Dashboard() {
   //   isRedeemPending || isRedeemConfirming || !redeemWouldBeHealthy;
 
   // Determine mint button state
-  const isMintButtonDisabled =
-    !isMintAmountValid || !!mintError || isMintPending || isMintConfirming || !mintWouldBeHealthy;
+  // const isMintButtonDisabled =
+  //   !isMintAmountValid || !!mintError || isMintPending || isMintConfirming || !mintWouldBeHealthy;
 
   // Determine burn button state
   const isBurnButtonDisabled =
@@ -358,7 +358,8 @@ export default function Dashboard() {
           exceeds={doesRedeemExceedCollateral}
         />*/}
         {/* Mint Card */}
-        <MintCard
+        <MintCard />
+        {/*<MintCard
           mintAmount={mintAmount}
           setMintAmount={setMintAmount}
           onMint={handleMint}
@@ -367,7 +368,7 @@ export default function Dashboard() {
           isDisabled={isMintButtonDisabled}
           willBeHealthy={mintWouldBeHealthy}
           isValid={isMintAmountValid}
-        />
+        />*/}
         {/* Burn Card */}
         <BurnCard
           burnAmount={burnAmount}
