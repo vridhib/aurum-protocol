@@ -8,12 +8,10 @@ import { useUserData } from "@/hooks/useUserData";
 import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
 import aurumEngineJson from "@/abis/AurumEngine.json";
 import { AUR_GOLD_ADDRESS, AURUM_ENGINE_ADDRESS, PERCENTAGE_PRECISION, PRECISION, PRICE_FEED_PRECISION, WETH_ADDRESS } from "@/config/constants";
+import { TokenConfig } from "@/types/collateral";
 
 interface RedeemCardProps {
-    selectedToken: {
-        address: `0x${string}`;
-        symbol: string;
-    };
+    selectedToken: TokenConfig
 }
 
 

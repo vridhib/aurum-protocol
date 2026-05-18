@@ -11,12 +11,10 @@ import { parseEther, type Abi } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { useUserData } from "@/hooks/useUserData";
 import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
+import { TokenConfig } from "@/types/collateral";
 
 interface DepositCardProps {
-    selectedToken: {
-        address: `0x${string}`;
-        symbol: string;
-    };
+    selectedToken: TokenConfig;
 }
 
 export function DepositCard({ selectedToken }: DepositCardProps) {
