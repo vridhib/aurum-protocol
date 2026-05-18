@@ -1,6 +1,6 @@
 import { Abi, decodeErrorResult, formatEther } from "viem";
 import aurumEngineJson from "@/abis/AurumEngine.json";
-import { ONE, THRESHOLD, PRECISION, MAX_UINT256 } from "@/config/constants";
+import { PRECISION, THRESHOLD, PERCENTAGE_PRECISION, MAX_UINT256 } from "@/config/constants";
 
 
 /**
@@ -35,17 +35,17 @@ export function getUserFriendlyErrorMessage(error: unknown): string {
 
 /**
  * Computes the health factor after a proposed change.
- * Formula: (collateral * price * THRESHOLD) / (minted * PRECISION * ONE)
- * @returns a value where >= ONE means healthy.
+ * Formula: (collateral * price * THRESHOLD) / (minted * PRECISION * PRECISION)
+ * @returns a value where >= PRECISION means healthy.
  */
 export function calculateProjectedHealthFactor(collateralWei: bigint, mintedWei: bigint, pricePerAurWei: bigint): bigint {
     // If debt is 0, return max uint256 value
     if (mintedWei === 0n) return MAX_UINT256;
     // Otherwise, calculate health factor in wei
-    //const usdValue = (collateralWei * pricePerAurWei) / ONE;
+    //const usdValue = (collateralWei * pricePerAurWei) / PRECISION;
     const usdValue = collateralWei;
-    const adjusted = (usdValue * THRESHOLD) / PRECISION;
-    const projectedHealthFactor = (adjusted * ONE) / mintedWei;
+    const adjusted = (usdValue * THRESHOLD) / PERCENTAGE_PRECISION;
+    const projectedHealthFactor = (adjusted * PRECISION) / mintedWei;
     return projectedHealthFactor;
 }
 
