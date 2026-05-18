@@ -42,7 +42,7 @@ export function useUserData(): {
     mintedAmount: bigint | undefined
     healthFactor: bigint | undefined
     lastIndex: bigint | undefined
-    activeCollateralTokens: string[] | undefined
+    activeCollateralTokens: `0x${string}`[] | undefined
     collateralAmounts: bigint[] | undefined
     debtAllocations: bigint[] | undefined
     lastClaimTime: bigint | undefined
@@ -69,7 +69,7 @@ export function useUserData(): {
             totalDebt: bigint;
             healthFactor: bigint;
             lastIndex: bigint;
-            activeCollateralTokens: string[];
+            activeCollateralTokens: `0x${string}`[];
             collateralAmounts: bigint[];
             debtAllocations: bigint[];
         } | undefined;
