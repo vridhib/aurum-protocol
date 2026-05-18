@@ -97,7 +97,7 @@ export function RedeemCard({ selectedToken }: RedeemCardProps) {
       const collateralData = collaterals.find(c => c.address === tokenAddress);
       if (!collateralData) continue;
 
-      const usdValue = (price * PRICE_FEED_PRECISION * amount) / PRECISION;
+      const usdValue = (price * amount) / PRECISION;
       newAdjusted += (usdValue * collateralData.ltv) / PERCENTAGE_PRECISION;
     }
     return debt === 0n ? true : (newAdjusted * PRECISION) / debt >= PRECISION;
