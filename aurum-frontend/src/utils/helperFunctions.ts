@@ -49,6 +49,7 @@ export function calculateProjectedHealthFactor(collateralWei: bigint, mintedWei:
     return projectedHealthFactor;
 }
 
+
 // Formats the health factor for display purposes
 export function formatHealthFactorForDisplay(healthFactorWei: bigint | undefined): string {
     // If undefined, return loading string
@@ -60,6 +61,19 @@ export function formatHealthFactorForDisplay(healthFactorWei: bigint | undefined
     // Otherwise return formatted number health string
     const healthFactorNumber = Number(formatEther(healthFactorWei));
     return healthFactorNumber.toFixed(2);
+}
+
+// Formats AUSD value (18-decimal bigint) to a fixed-precision string
+export function formatStablecoin(value: bigint, decimals = 4): string {
+  const divisor = 10n ** (18n - BigInt(decimals));
+  const rounded = (value + divisor / 2n) / divisor;  // round half up
+  const str = rounded.toString();
+  if (decimals === 0) return str;
+
+  const padded = str.padStart(decimals + 1, "0");
+  const intPart = padded.slice(0, padded.length - decimals);
+  const fracPart = padded.slice(padded.length - decimals);
+  return `${intPart}.${fracPart}`;
 }
 
 // Gets the health color class according to the health factor range

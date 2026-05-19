@@ -1,6 +1,6 @@
 import { formatEther } from "viem";
 import { StatCard } from "./StatCard";
-import { formatHealthFactorForDisplay } from "@/utils/helperFunctions";
+import { formatHealthFactorForDisplay, formatStablecoin } from "@/utils/helperFunctions";
 
 
 /**
@@ -43,7 +43,7 @@ export function StatsGrid({
             />
             <StatCard
                 title="AUSD Minted"
-                value={showLoading ? "Loading..." : `${formatEther(minted || 0n)} AUSD`}
+                value={showLoading ? "Loading..." : `${formatStablecoin(minted || 0n)} AUSD`}
             />
             <StatCard
                 title="Health Factor"
