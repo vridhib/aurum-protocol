@@ -14,13 +14,11 @@ import { useTransactionContext } from "@/context/useTransactionContext";
 export function Header({
     onRefresh,
     onClaim,
-    canClaim,
     isClaimPending,
     isClaimConfirming
 }: {
     onRefresh: () => void;
     onClaim: () => void;
-    canClaim: boolean;
     isClaimPending: boolean;
     isClaimConfirming: boolean;
 }) {
@@ -50,7 +48,7 @@ export function Header({
 
                 <button
                     onClick={onClaim}
-                    disabled={!canClaim || isClaimPending || isClaimConfirming}
+                    disabled={isClaimPending || isClaimConfirming}
                     className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm"
                 >
                     Get Test AUR

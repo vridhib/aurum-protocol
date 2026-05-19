@@ -36,7 +36,7 @@ export default function Dashboard() {
   const { setPendingAction } = useTransactionContext();
 
   // ---------- Reads ----------
-  const {amountCollateral, mintedAmount, healthFactor, canClaim, refetch: refetchUserData, isLoading: isUserDataLoading, isRefetching} = useUserData();
+  const {totalCollateralValueInUsd, totalDebt, healthFactor, refetch: refetchUserData, isLoading: isUserDataLoading, isRefetching} = useUserData();
   const { isConnected } = useAccount();
 
 
@@ -73,7 +73,7 @@ export default function Dashboard() {
     });
   };
 
-  
+
   // ---------- Render UI ----------
   // Determine whether to display dashboard components
   if (!isConnected) {
@@ -90,15 +90,14 @@ export default function Dashboard() {
       <Header
         onRefresh={refetchUserData}
         onClaim={handleClaim}
-        canClaim={canClaim}
         isClaimPending={isClaimPending}
         isClaimConfirming={isClaimConfirming}
       />
       
       {/* Stats Grid */}
       <StatsGrid
-        collateral={amountCollateral ?? 0n}
-        minted={mintedAmount ?? 0n}
+        collateral={totalCollateralValueInUsd ?? 0n}
+        minted={totalDebt ?? 0n}
         healthFactor={healthFactor ?? 0n}
         isLoading={isUserDataLoading}
         isRefetching={isRefetching}

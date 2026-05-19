@@ -33,7 +33,7 @@ interface RedeemCardProps {
  * @param selectedToken The collateral token to redeem (address, symbol).
  */
 export function RedeemCard({ selectedToken }: RedeemCardProps) {
-  const { activeCollateralTokens, collateralAmounts, mintedAmount, refetch: refetchUserData } = useUserData();
+  const { activeCollateralTokens, collateralAmounts, totalDebt, refetch: refetchUserData } = useUserData();
   const { collaterals, pricePerAur, pricePerWeth } = useProtocolData();
   const { setPendingAction } = useTransactionContext();
 
@@ -63,7 +63,7 @@ export function RedeemCard({ selectedToken }: RedeemCardProps) {
   // Calculate projected health factor after redemption 
   const activeTokens = activeCollateralTokens ?? [];
   const amounts = collateralAmounts ?? [];
-  const debt = mintedAmount ?? 0n;
+  const debt = totalDebt ?? 0n;
 
   const priceMap = useMemo(() => {
     const map = new Map<`0x${string}`, bigint>();

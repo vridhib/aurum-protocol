@@ -25,7 +25,7 @@ import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
  * 3. Health factor would drop below 1 after minting
  */
 export function MintCard() {
-    const { amountCollateral: totalCollateralValue = 0n, activeCollateralTokens, collateralAmounts, mintedAmount, refetch: refetchUserData } = useUserData();
+    const { totalCollateralValueInUsd = 0n, activeCollateralTokens, collateralAmounts, totalDebt, refetch: refetchUserData } = useUserData();
     const { collaterals, pricePerAur, pricePerWeth } = useProtocolData();
     const { setPendingAction } = useTransactionContext();
 
@@ -48,7 +48,7 @@ export function MintCard() {
     // Calculate projected HF after minting 
     const activeTokens = activeCollateralTokens ?? [];
     const amounts = collateralAmounts ?? [];
-    const debt = mintedAmount ?? 0n;
+    const debt = totalDebt ?? 0n;
 
     const priceMap = useMemo(() => {
     const map = new Map<`0x${string}`, bigint>();
@@ -59,7 +59,7 @@ export function MintCard() {
     
     const mintWouldBeHealthy = useMemo(() => {
         // Amount must be positive and protocol data must be defined
-        if (totalCollateralValue === 0n) return false;
+        if (totalCollateralValueInUsd === 0n) return false;
         if (!mintAmount || parseFloat(mintAmount) <= 0) return true;
         if (!collaterals || collaterals.length === 0) return false;
     
@@ -81,7 +81,7 @@ export function MintCard() {
           adjusted += (usdValue * collateralData.ltv) / PERCENTAGE_PRECISION;
         }
         return (adjusted * PRECISION) / newDebt >= PRECISION;
-      }, [mintAmount, activeTokens, amounts, collaterals, priceMap, totalCollateralValue, debt]);
+      }, [mintAmount, activeTokens, amounts, collaterals, priceMap, totalCollateralValueInUsd, debt]);
     
     
     // Clear error when user changes amount
@@ -129,8 +129,8 @@ export function MintCard() {
     !mintWouldBeHealthy;
 
     const showInvalidAmount = !!mintAmount && !isMintAmountValid;
-    const showMissingDeposit = isMintAmountValid && totalCollateralValue === 0n;
-    const showHealthFactorWarning = isMintAmountValid && (totalCollateralValue > 0n) && !mintWouldBeHealthy;
+    const showMissingDeposit = isMintAmountValid && totalCollateralValueInUsd === 0n;
+    const showHealthFactorWarning = isMintAmountValid && (totalCollateralValueInUsd > 0n) && !mintWouldBeHealthy;
       
     return (
         <form onSubmit={handleMint} className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm space-y-4">
