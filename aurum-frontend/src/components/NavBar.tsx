@@ -41,7 +41,13 @@ export function NavBar() {
                             href="/faucet"
                             className={`text-sm transition ${pathname === "/faucet" ? "text-white" : "text-gray-400 hover:text-white"}`}
                         >
-                            Claim One-Time AUR 
+                            Claim One-Time AUR
+                        </Link>
+                        <Link
+                            href="/savings"
+                            className={`text-sm transition ${pathname === "/savings" ? "text-white" : "text-gray-400 hover:text-white"}`}
+                        >
+                            Savings
                         </Link>
 
                     </div>
