@@ -1,9 +1,7 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import aurumGoldFaucetJson from "@/abis/AurumGoldFaucet.json";
-import { AUR_GOLD_ADDRESS, WETH_ADDRESS, AUR_FAUCET_ADDRESS } from "@/config/constants";
-import { useTransactionContext } from "@/context/useTransactionContext";
+import { useState, useMemo } from "react";
+import { useAccount } from "wagmi";
+import { AUR_GOLD_ADDRESS, WETH_ADDRESS } from "@/config/constants";
 import { useUserData } from "@/hooks/useUserData";
 import { MintCard } from "./MintCard";
 import { RedeemCard } from "./RedeemCard";
@@ -25,56 +23,20 @@ import { CollateralSelector } from "./CollateralSelector";
  * @returns The rendered dashboard UI.
  */
 export default function Dashboard() {
-  // ---------- State for Amounts & UI ----------
+  // State for Amounts & UI 
   const [selectedTokenIndex, setSelectedTokenIndex] = useState(0);
   const collateralTokens = useMemo(() => [
-    { address: AUR_GOLD_ADDRESS, symbol: "AUR", ltv: 85},
-    { address: WETH_ADDRESS, symbol: "WETH", ltv: 65}
+    { address: AUR_GOLD_ADDRESS, symbol: "AUR", ltv: 85 },
+    { address: WETH_ADDRESS, symbol: "WETH", ltv: 65 }
   ], []);
   const selectedToken = collateralTokens[selectedTokenIndex];
 
-  const { setPendingAction } = useTransactionContext();
-
-  // ---------- Reads ----------
-  const {totalCollateralValueInUsd, totalDebt, healthFactor, refetch: refetchUserData, isLoading: isUserDataLoading, isRefetching} = useUserData();
+  // Reads 
+  const { totalCollateralValueInUsd, totalDebt, healthFactor, refetch: refetchUserData, isLoading: isUserDataLoading, isRefetching } = useUserData();
   const { isConnected } = useAccount();
 
 
-  // ---------- Write Contracts For Actions That Don't Need Approval ----------
-  // Write: Claim AUR faucet funds
-  const { data: claimHash, isPending: isClaimPending, writeContract: claim } = useWriteContract();
-  const { isLoading: isClaimConfirming, isSuccess: isClaimSuccess } = useWaitForTransactionReceipt({ hash: claimHash });
-
-
-  // ---------- Effects ----------
-  // Effects for updating the global pending action message
-  useEffect(() => {
-    if (isClaimPending || isClaimConfirming) {
-      setPendingAction("Claiming AUR from faucet...");
-    }
-    else {
-      setPendingAction(null);
-    }
-  }, [ isClaimPending, isClaimConfirming]);
-
-  // Claim success effect
-  useEffect(() => {
-    if (isClaimSuccess) setPendingAction(null);
-  }, [isClaimSuccess]);
-
-
-  // ---------- Handlers ----------
-  // Claim AUR from faucet handler
-  const handleClaim = () => {
-    claim({
-      address: AUR_FAUCET_ADDRESS,
-      abi: aurumGoldFaucetJson.abi,
-      functionName: "claim"
-    });
-  };
-
-
-  // ---------- Render UI ----------
+  // Render UI 
   // Determine whether to display dashboard components
   if (!isConnected) {
     return (
@@ -87,13 +49,8 @@ export default function Dashboard() {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Header*/}
-      <Header
-        onRefresh={refetchUserData}
-        onClaim={handleClaim}
-        isClaimPending={isClaimPending}
-        isClaimConfirming={isClaimConfirming}
-      />
-      
+      <Header onRefresh={refetchUserData} />
+
       {/* Stats Grid */}
       <StatsGrid
         collateral={totalCollateralValueInUsd ?? 0n}
@@ -112,8 +69,8 @@ export default function Dashboard() {
 
       {/* Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <DepositCard selectedToken={selectedToken}/>
-        <RedeemCard selectedToken={selectedToken}/>
+        <DepositCard selectedToken={selectedToken} />
+        <RedeemCard selectedToken={selectedToken} />
         <MintCard />
         <BurnCard />
       </div>

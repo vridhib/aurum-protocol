@@ -7,7 +7,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 /**
  * Navigation bar for the Aurum Protocol frontend.
  *
- * Renders the logo, navigation links (dashboard and monitor), and the wallet
+ * Renders the logo, navigation links (dashboard, monitor, and faucet), and the wallet
  * connection button (via RainbowKit). The active link is highlighted based on
  * the current route.
  *
@@ -37,6 +37,13 @@ export function NavBar() {
                         >
                             Monitor
                         </Link>
+                        <Link
+                            href="/faucet"
+                            className={`text-sm transition ${pathname === "/faucet" ? "text-white" : "text-gray-400 hover:text-white"}`}
+                        >
+                            Claim One-Time AUR 
+                        </Link>
+
                     </div>
                 </div>
                 <ConnectButton />

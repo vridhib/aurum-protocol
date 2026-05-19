@@ -4,24 +4,10 @@ import { useTransactionContext } from "@/context/useTransactionContext";
 /**
  * Header section for the dashboard of the Aurum Protocol frontend. 
  * @param onRefresh Function that refreshes data.
- * @param onClaim Function that handles a claim test AUR action.
- * @param canClaim Indicates whether a user can claim test AUR.
- * @param isClaimPending Indicates whether a claim action is pending.
- * @param isClaimConfirming Indicates whether a claim action is confirming. 
  * @component
  * @returns A header section for the main dashboard.
  */
-export function Header({
-    onRefresh,
-    onClaim,
-    isClaimPending,
-    isClaimConfirming
-}: {
-    onRefresh: () => void;
-    onClaim: () => void;
-    isClaimPending: boolean;
-    isClaimConfirming: boolean;
-}) {
+export function Header({ onRefresh }: { onRefresh: () => void }) {
     const { isAnyTxPending, pendingAction } = useTransactionContext();
 
     return (
@@ -44,14 +30,6 @@ export function Header({
                     className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition"
                 >
                     Refresh Data
-                </button>
-
-                <button
-                    onClick={onClaim}
-                    disabled={isClaimPending || isClaimConfirming}
-                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm"
-                >
-                    Get Test AUR
                 </button>
             </div>
         </div>
