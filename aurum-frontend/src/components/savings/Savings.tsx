@@ -11,6 +11,7 @@ import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { formatStablecoin, getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
 import { StatCard } from "../StatCard";
 import { LoadingSpinner } from "../LoadingSpinner";
+import { PageHeader } from "../PageHeader";
 
 
 /**
@@ -18,7 +19,7 @@ import { LoadingSpinner } from "../LoadingSpinner";
  *
  * Allows the user to deposit AUSD into the AurumSavings contract to earn
  * yield, and to withdraw shares back to AUSD. Displays the current savings
- * rate (APY), the user’s share balance, and the underlying AUSD value.
+ * rate (APY), the user’s share balance, and deposited AUSD.
  */
 export default function Savings() {
     const { address: userAddress } = useAccount();
@@ -32,7 +33,7 @@ export default function Savings() {
     const [withdrawError, setWithdrawError] = useState<string | null>(null);
 
 
-    //  Read: user shares
+    // Read user shares
     const { data: userShares, refetch: refetchUserShares } = useReadContract({
         address: AURUM_SAVINGS_ADDRESS,
         abi: aurumSavingsJson.abi,
@@ -192,19 +193,10 @@ export default function Savings() {
 
     return (
         <div className="max-w-7xl mx-auto p-6 space-y-8">
-            {/* Global Pending Banner */}
-            {isAnyTxPending && (
-                <div className="flex items-center justify-center text-yellow-400 py-2">
-                    <LoadingSpinner />
-                    <span className="ml-2 text-sm">{pendingAction}</span>
-                </div>
-            )}
-            {/* Header */}
-            <div className="border-b border-gray-800 pb-6">
-                <h1 className="text-3xl font-bold tracking-tight text-white">Savings</h1>
-                <p className="text-gray-400 text-sm">Deposit AUSD and earn yield from protocol fees</p>
-            </div>
-
+            <PageHeader
+                heading="Savings"
+                subtitle="Deposit AUSD and earn yield from protocol fees"
+            />
             {/* Stats overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard

@@ -6,6 +6,7 @@ import { AUR_FAUCET_ADDRESS } from "@/config/constants";
 import { useTransactionContext } from "@/context/useTransactionContext";
 import { useUserData } from "@/hooks/useUserData";
 import { LoadingSpinner } from "../LoadingSpinner";
+import { PageHeader } from "../PageHeader";
 
 
 /**
@@ -96,21 +97,10 @@ export default function ClaimOneTimeAur() {
 
     return (
         <div className="max-w-7xl mx-auto p-6 space-y-8">
-            {/* Global Pending Banner */}
-            {isAnyTxPending && (
-                <div className="flex items-center justify-center text-yellow-400 py-2">
-                    <LoadingSpinner />
-                    <span className="ml-2 text-sm">{pendingAction}</span>
-                </div>
-            )}
-
-            {/* Header */}
-            <div className="flex justify-between items-center border-b border-gray-800 pb-6">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white">AUR Faucet</h1>
-                    <p className="text-gray-400 text-sm">Claim One-Time AUR</p>
-                </div>
-            </div>
+            <PageHeader
+                heading="AUR Faucet"
+                subtitle="Claim One-Time AUR"
+            />
 
             {/* Claim Card */}
             <div className="max-w-md mx-auto mt-16 bg-gray-800 border border-gray-700 p-8 rounded-xl shadow-lg text-center space-y-6">
