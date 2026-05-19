@@ -5,7 +5,7 @@ import { formatEther } from "viem";
 import { useProtocolData } from "@/hooks/useProtocolData";
 import { calculateProjectedHealthFactor, formatHealthFactorForDisplay, getHealthColor, shortenAddress } from "@/utils/helperFunctions";
 import { TypedDocumentNode } from "@apollo/client";
-import { StatCard } from "@/components/dashboard/StatCard";
+import { StatCard } from "@/components/StatCard";
 
 
 // Define the shape of the data returned by the subgraph

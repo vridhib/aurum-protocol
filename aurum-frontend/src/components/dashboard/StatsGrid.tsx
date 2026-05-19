@@ -1,5 +1,5 @@
 import { formatEther } from "viem";
-import { StatCard } from "./StatCard";
+import { StatCard } from "../StatCard";
 import { formatHealthFactorForDisplay, formatStablecoin } from "@/utils/helperFunctions";
 
 
