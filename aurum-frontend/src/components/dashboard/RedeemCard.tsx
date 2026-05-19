@@ -1,19 +1,20 @@
+"use client";
 import { useEffect, useMemo, useState } from "react";
 import { parseEther } from "viem";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import aurumEngineJson from "@/abis/AurumEngine.json";
+import { AUR_GOLD_ADDRESS, AURUM_ENGINE_ADDRESS, PERCENTAGE_PRECISION, PRECISION, WETH_ADDRESS } from "@/config/constants";
 import { useTransactionContext } from "@/context/useTransactionContext";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { useProtocolData } from "@/hooks/useProtocolData";
 import { useUserData } from "@/hooks/useUserData";
-import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
-import aurumEngineJson from "@/abis/AurumEngine.json";
-import { AUR_GOLD_ADDRESS, AURUM_ENGINE_ADDRESS, PERCENTAGE_PRECISION, PRECISION, PRICE_FEED_PRECISION, WETH_ADDRESS } from "@/config/constants";
 import { TokenConfig } from "@/types/collateral";
+import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
+
 
 interface RedeemCardProps {
     selectedToken: TokenConfig
 }
-
 
 /**
  * Self‑contained redemption form for a single collateral token.
@@ -21,15 +22,15 @@ interface RedeemCardProps {
  * Reads the user's deposited collateral amount of the selected token, 
  * validates the input against their balance, and calculates the projected
  * health factor using the engine's formula. Executes the redeem through
- * the AurumEngine contract and manages all transaction states internally.
- * Updates the global pending banner via TransactionContext.
+ * AurumEngine and manages all transaction states internally. Updates the 
+ * global pending banner via TransactionContext.
  *
  * Error messages are shown in priority order:
  * 1. Invalid amount (redeemAmount <= 0)
  * 2. Insufficient deposited balance
  * 3. Health factor would drop below 1 after redemption
  *
- * @param selectedToken - The collateral token to redeem (address, symbol).
+ * @param selectedToken The collateral token to redeem (address, symbol).
  */
 export function RedeemCard({ selectedToken }: RedeemCardProps) {
   const { activeCollateralTokens, collateralAmounts, mintedAmount, refetch: refetchUserData } = useUserData();
@@ -42,7 +43,7 @@ export function RedeemCard({ selectedToken }: RedeemCardProps) {
   const [redeemError, setRedeemError] = useState<string | null>(null);
 
 
-  // Input validation
+  // Input validation against deposited collateral amount
   const maxRedeemable = useMemo(() => {
     if (!activeCollateralTokens || !collateralAmounts) return undefined;
     const index = activeCollateralTokens.findIndex(a => a === selectedToken.address);
@@ -53,13 +54,13 @@ export function RedeemCard({ selectedToken }: RedeemCardProps) {
   const { isValid: isRedeemAmountValid, exceeds: doesRedeemExceedCollateral } = useAmountValidation(redeemAmount, maxRedeemable);
 
 
-  // Write: Redeem collateral
+  // Write: redeem collateral
   const { data: redeemHash, isPending: isRedeemPending, writeContract: redeem, error: redeemWriteError } = useWriteContract();
   const { isLoading: isRedeemConfirming, isSuccess: isRedeemSuccess } =
     useWaitForTransactionReceipt({ hash: redeemHash });
 
 
-  // Calculate projected HF after redemption 
+  // Calculate projected health factor after redemption 
   const activeTokens = activeCollateralTokens ?? [];
   const amounts = collateralAmounts ?? [];
   const debt = mintedAmount ?? 0n;
@@ -140,6 +141,7 @@ export function RedeemCard({ selectedToken }: RedeemCardProps) {
     });
   };
 
+  
   // Disabled button state
   const isDisabled = 
     !isRedeemAmountValid || 

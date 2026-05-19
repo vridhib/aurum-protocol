@@ -1,13 +1,15 @@
-import { AUR_GOLD_ADDRESS, AURUM_ENGINE_ADDRESS, PERCENTAGE_PRECISION, PRECISION, PRICE_FEED_PRECISION, WETH_ADDRESS } from "@/config/constants";
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import { parseEther } from "viem";
+import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import aurumEngineJson from "@/abis/AurumEngine.json";
+import { AUR_GOLD_ADDRESS, AURUM_ENGINE_ADDRESS, PERCENTAGE_PRECISION, PRECISION, WETH_ADDRESS } from "@/config/constants";
 import { useTransactionContext } from "@/context/useTransactionContext";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { useProtocolData } from "@/hooks/useProtocolData";
 import { useUserData } from "@/hooks/useUserData";
 import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
-import { useEffect, useMemo, useState } from "react";
-import { parseEther } from "viem";
-import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+
 
 /**
  * Self‑contained mint form.
@@ -37,7 +39,7 @@ export function MintCard() {
     const { isValid: isMintAmountValid } = useAmountValidation(mintAmount);
 
 
-    // Write: Mint AUSD
+    // Write: mint AUSD
     const { data: mintHash, isPending: isMintPending, writeContract: mint, error: mintWriteError } = useWriteContract();
     const { isLoading: isMintConfirming, isSuccess: isMintSuccess } =
     useWaitForTransactionReceipt({ hash: mintHash });

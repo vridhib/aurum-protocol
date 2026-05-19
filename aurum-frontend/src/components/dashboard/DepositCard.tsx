@@ -1,30 +1,47 @@
 "use client";
-
+import { useState, useCallback, useEffect } from "react";
+import { parseEther, type Abi } from "viem";
+import { useAccount, useReadContract } from "wagmi";
+import aurumEngineJson from "@/abis/AurumEngine.json";
+import erc20Json from "@/abis/ERC20.json";
+import { AURUM_ENGINE_ADDRESS } from "@/config/constants";
 import { useTransactionContext } from "@/context/useTransactionContext";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { useApproveAndExecute } from "@/hooks/useApproveAndExecute";
-import { useState, useCallback, useEffect } from "react";
-import { AURUM_ENGINE_ADDRESS } from "@/config/constants";
-import aurumEngineJson from "@/abis/AurumEngine.json";
-import erc20Json from "@/abis/ERC20.json";
-import { parseEther, type Abi } from "viem";
-import { useAccount, useReadContract } from "wagmi";
 import { useUserData } from "@/hooks/useUserData";
-import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
 import { TokenConfig } from "@/types/collateral";
+import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
+
 
 interface DepositCardProps {
     selectedToken: TokenConfig;
 }
 
+/**
+ * Self‑contained deposit form for a single collateral token.
+ *
+ * Reads the user's ERC20 balance and allowance for the selected token,
+ * validates the input, and executes the approve + deposit flow through
+ * AurumEngine. Handles all transaction lifecycle states (pending, 
+ * error, and success) internally and updates the global pending banner
+ * via TransactionContext.
+ * 
+ * Error messages are shown in priority order:
+ * 1. Invalid amount (depositAmount <= 0)
+ * 2. Insufficient AUR/WETH balance
+ * 
+ * @param selectedToken The collateral token to deposit (address, symbol).
+ */
 export function DepositCard({ selectedToken }: DepositCardProps) {
     const { address: userAddress } = useAccount();
     const { refetch: refetchUserData } = useUserData();
     const { setPendingAction } = useTransactionContext();
 
+
     // Local state
     const [depositAmount, setDepositAmount] = useState("");
     const [depositError, setDepositError] = useState<string | null>(null); 
+
 
     // Read user's allowance of the selected token
     const { data: tokenAllowance } = useReadContract({
@@ -47,10 +64,12 @@ export function DepositCard({ selectedToken }: DepositCardProps) {
         refetch: () => void;
     };
 
-    // Validation
-    const { isValid, exceeds } = useAmountValidation(depositAmount, tokenBalance);
 
-    // Deposit (approve + execute)
+    // Input validation against wallet balance
+    const { isValid: isDepositAmountValid, exceeds: doesDepositExceedBalance } = useAmountValidation(depositAmount, tokenBalance);
+
+
+    // Combined deposit flow (approve token + deposit token)
     const onSuccess = useCallback(() => {
         refetchBalance();
         refetchUserData();
@@ -61,7 +80,6 @@ export function DepositCard({ selectedToken }: DepositCardProps) {
     const { 
         start: startDeposit, 
         isPending, 
-        currentAction, 
         approveWriteError, 
         executeWriteError 
     } = useApproveAndExecute({
@@ -76,7 +94,8 @@ export function DepositCard({ selectedToken }: DepositCardProps) {
         onSuccess
     });
 
-    // Surface write errors
+
+    // Format write errors to friendly error message
     useEffect(() => {
         const writeError = approveWriteError || executeWriteError;
         if (writeError) {
@@ -84,11 +103,12 @@ export function DepositCard({ selectedToken }: DepositCardProps) {
         }
     }, [approveWriteError, executeWriteError]);
 
-    // Reset error when depositAmount changes (user starts typing again)
+    // Clear error on input change
     useEffect(() => {
         setDepositError(null);
     }, [depositAmount]);
 
+    // Clear global banner on write error
     useEffect(() => {
         if (approveWriteError || executeWriteError) {
             setPendingAction(null);
@@ -96,18 +116,20 @@ export function DepositCard({ selectedToken }: DepositCardProps) {
     }, [approveWriteError, executeWriteError, setPendingAction]);
 
 
-
-    // Submit handler
+    // Deposit handler
     const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!isValid || exceeds) return;
-
+        if (!isDepositAmountValid || doesDepositExceedBalance) return;
         setPendingAction(`Depositing ${selectedToken.symbol}...`);
         startDeposit(parseEther(depositAmount));
     };
 
+
     // Disabled state
-    const isDisabled = !isValid || exceeds || !!depositError || isPending;
+    const isDisabled = !isDepositAmountValid || doesDepositExceedBalance || !!depositError ||  isPending;
+
+    const showInvalidAmount = !!depositAmount && !isDepositAmountValid;
+    const showInsufficientBalance = isDepositAmountValid && doesDepositExceedBalance;
 
     return (
         <form onSubmit={handleDeposit} className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm space-y-4">
@@ -127,8 +149,13 @@ export function DepositCard({ selectedToken }: DepositCardProps) {
             >
                 {isPending ? "Processing..." : "Deposit"}
             </button>
-            {!!depositAmount && !isValid && (<p className="text-red-500 text-sm">Please enter a valid amount greater than 0.</p>)}
-            {isValid && exceeds && (<p className="text-red-500 text-sm">Insufficient {selectedToken.symbol} balance.</p>)}
+
+            {showInvalidAmount && (
+                <p className="text-red-500 text-sm">Please enter a valid amount greater than 0.</p>
+            )}
+            {showInsufficientBalance && (
+                <p className="text-red-500 text-sm">Insufficient {selectedToken.symbol} balance.</p>
+            )}
             {depositError && <p className="text-red-500 text-sm">{depositError}</p>}
         </form>
     )

@@ -1,24 +1,25 @@
 "use client";
-import { AURUM_AUSD_ADDRESS, AURUM_ENGINE_ADDRESS } from "@/config/constants";
+import { useCallback, useEffect, useState } from "react";
+import { parseEther, type Abi } from "viem";
+import { useAccount, useReadContract } from "wagmi";
 import aurumAUSDJson from "@/abis/AurumUSD.json";
 import aurumEngineJson from "@/abis/AurumEngine.json";
+import { AURUM_AUSD_ADDRESS, AURUM_ENGINE_ADDRESS } from "@/config/constants";
+import { useTransactionContext } from "@/context/useTransactionContext";
 import { useUserData } from "@/hooks/useUserData";
-import { useCallback, useEffect, useState } from "react";
-import { useAccount, useReadContract } from "wagmi";
-import { parseEther, type Abi } from "viem";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { useApproveAndExecute } from "@/hooks/useApproveAndExecute";
 import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
-import { useTransactionContext } from "@/context/useTransactionContext";
+
 
 /**
  * Self‑contained burn form.
  *
  * Reads the user's AUSD balance and allowance, validates the input
  * against the wallet balance, and executes the approve + burn flow
- * through the AurumEngine. The engine automatically caps the amount
- * at the user's total debt, so burning more than the debt does not cause
- * an error because it simply repays everything.
+ * through AurumEngine. The engine automatically caps the amount at 
+ * the user's total debt, so burning more than the debt does not
+ * cause an error because it simply repays everything.
  *
  * Error messages are shown in priority order:
  * 1. Invalid amount (burnAmount <= 0)
@@ -29,7 +30,7 @@ import { useTransactionContext } from "@/context/useTransactionContext";
  */
 export function BurnCard() {
     const { address: userAddress } = useAccount();
-    const { mintedAmount, refetch: refetchUserData } = useUserData();
+    const { refetch: refetchUserData } = useUserData();
     const { setPendingAction } = useTransactionContext();
 
 
@@ -38,7 +39,7 @@ export function BurnCard() {
     const [burnError, setBurnError] = useState<string | null>(null);
 
 
-    // Read AUSD allowance
+    // Read user's AUSD allowance
     const { data: ausdAllowance } = useReadContract({
         address: AURUM_AUSD_ADDRESS,
         abi: aurumAUSDJson.abi,
@@ -47,7 +48,7 @@ export function BurnCard() {
         query: { enabled: !!userAddress },
     }) as { data: bigint | undefined };
 
-    // Read AUSD balance
+    // Read user's AUSD balance
     const { data: ausdBalance, refetch: refetchBalance } = useReadContract({
         address: AURUM_AUSD_ADDRESS,
         abi: aurumAUSDJson.abi,
@@ -64,7 +65,7 @@ export function BurnCard() {
     const { isValid: isBurnAmountValid, exceeds: doesBurnExceedBalance } = useAmountValidation(burnAmount, ausdBalance);
 
 
-    // Burn (approve + execute)
+    // Combined burn flow (approve AUSD + burn AUSD)
     const onSuccess = useCallback(() => {
         refetchBalance();
         refetchUserData();
@@ -89,7 +90,7 @@ export function BurnCard() {
     });
 
 
-    // Surface write errors
+    // Format write errors to friendly error message
     useEffect(() => {
         const writeError = approveWriteError || executeWriteError;
         if (writeError) {
@@ -110,7 +111,7 @@ export function BurnCard() {
     }, [approveWriteError, executeWriteError, setPendingAction]);
 
 
-    // Submit handler
+    // Burn handler
     const handleBurn = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!isBurnAmountValid || doesBurnExceedBalance) return;
@@ -120,11 +121,7 @@ export function BurnCard() {
 
 
     // Disabled state
-    const isDisabled = 
-    !isBurnAmountValid || 
-    doesBurnExceedBalance || 
-    !!burnError || 
-    isPending;
+    const isDisabled = !isBurnAmountValid || doesBurnExceedBalance || !!burnError || isPending;
 
     const showInvalidAmount = !!burnAmount && !isBurnAmountValid;
     const showInsufficientBalance = isBurnAmountValid && doesBurnExceedBalance;
