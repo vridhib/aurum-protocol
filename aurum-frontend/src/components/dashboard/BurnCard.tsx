@@ -1,37 +1,136 @@
+"use client";
+import { AURUM_AUSD_ADDRESS, AURUM_ENGINE_ADDRESS } from "@/config/constants";
+import aurumAUSDJson from "@/abis/AurumUSD.json";
+import aurumEngineJson from "@/abis/AurumEngine.json";
+import { useUserData } from "@/hooks/useUserData";
+import { useCallback, useEffect, useState } from "react";
+import { useAccount, useReadContract } from "wagmi";
+import { parseEther, type Abi } from "viem";
+import { useAmountValidation } from "@/hooks/useAmountValidation";
+import { useApproveAndExecute } from "@/hooks/useApproveAndExecute";
+import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
+import { useTransactionContext } from "@/context/useTransactionContext";
+
 /**
- * Burn section for the Aurum Protocol frontend.
- * @param burnAmount Stores user's burn amount.
- * @param setBurnAmount State setter associated with `burnAmount`.
- * @param onBurn Function that handles the burn action.
- * @param isPending Indicates whether the burn action is pending.
- * @param error Stores any errors (user input or write errors) for the burn action.
- * @param isDisabled Indicates whether the 'Burn' button is enabled or disabled.
- * @param isValid Indicates whether `burnAmount` falls within a valid range (>0).
- * @param exceeds Indicates whether 'burnAmount` exceeds the user's valid range (<= minted AUSD).
- * @component
- * @returns The burn card UI containing an input field and a button.
+ * Self‑contained burn form.
+ *
+ * Reads the user's AUSD balance and allowance, validates the input
+ * against the wallet balance, and executes the approve + burn flow
+ * through the AurumEngine. The engine automatically caps the amount
+ * at the user's total debt, so burning more than the debt does not cause
+ * an error because it simply repays everything.
+ *
+ * Error messages are shown in priority order:
+ * 1. Invalid amount (burnAmount <= 0)
+ * 2. Insufficient AUSD balance
+ *
+ * Transaction states are managed internally and the global pending
+ * banner is updated via TransactionContext.
  */
-export function BurnCard({
-    burnAmount,
-    setBurnAmount,
-    onBurn,
-    isPending,
-    error,
-    isDisabled,
-    isValid,
-    exceeds
-}: {
-    burnAmount: string;
-    setBurnAmount: (v: string) => void;
-    onBurn: (e: React.FormEvent<HTMLFormElement>) => void;
-    isPending: boolean;
-    error: string | null;
-    isDisabled: boolean;
-    isValid: boolean | ""
-    exceeds: boolean
-}) {
+export function BurnCard() {
+    const { address: userAddress } = useAccount();
+    const { mintedAmount, refetch: refetchUserData } = useUserData();
+    const { setPendingAction } = useTransactionContext();
+
+
+    // Local state
+    const [burnAmount, setBurnAmount] = useState("");
+    const [burnError, setBurnError] = useState<string | null>(null);
+
+
+    // Read AUSD allowance
+    const { data: ausdAllowance } = useReadContract({
+        address: AURUM_AUSD_ADDRESS,
+        abi: aurumAUSDJson.abi,
+        functionName: "allowance",
+        args: [userAddress, AURUM_ENGINE_ADDRESS],
+        query: { enabled: !!userAddress },
+    }) as { data: bigint | undefined };
+
+    // Read AUSD balance
+    const { data: ausdBalance, refetch: refetchBalance } = useReadContract({
+        address: AURUM_AUSD_ADDRESS,
+        abi: aurumAUSDJson.abi,
+        functionName: "balanceOf",
+        args: [userAddress],
+        query: {enabled: !!userAddress }
+    }) as {
+        data: bigint | undefined;
+        refetch: () => void;
+    };
+
+
+    // Input validation against wallet balance
+    const { isValid: isBurnAmountValid, exceeds: doesBurnExceedBalance } = useAmountValidation(burnAmount, ausdBalance);
+
+
+    // Burn (approve + execute)
+    const onSuccess = useCallback(() => {
+        refetchBalance();
+        refetchUserData();
+        setBurnAmount("");
+        setPendingAction(null);
+    }, [refetchBalance, setPendingAction, refetchUserData])
+
+    const { 
+        start: startBurn, 
+        isPending, 
+        approveWriteError, 
+        executeWriteError 
+    } = useApproveAndExecute({
+        approveContract: AURUM_AUSD_ADDRESS,
+        approveAbi: aurumAUSDJson.abi as Abi,
+        approveFunction: "approve",
+        targetContract: AURUM_ENGINE_ADDRESS,
+        targetAbi: aurumEngineJson.abi as Abi,
+        targetFunction: "burnAUSD",
+        allowance: ausdAllowance,
+        onSuccess
+    });
+
+
+    // Surface write errors
+    useEffect(() => {
+        const writeError = approveWriteError || executeWriteError;
+        if (writeError) {
+            setBurnError(getUserFriendlyErrorMessage(writeError));
+        }
+    }, [approveWriteError, executeWriteError]);
+
+    // Clear error on input change
+    useEffect(() => {
+        setBurnError(null);
+    }, [burnAmount]);
+
+    // Clear global banner on write error
+    useEffect(() => {
+        if (approveWriteError || executeWriteError) {
+            setPendingAction(null);
+        }
+    }, [approveWriteError, executeWriteError, setPendingAction]);
+
+
+    // Submit handler
+    const handleBurn = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!isBurnAmountValid || doesBurnExceedBalance) return;
+        setPendingAction(`Burning AUSD...`);
+        startBurn(parseEther(burnAmount));
+    };
+
+
+    // Disabled state
+    const isDisabled = 
+    !isBurnAmountValid || 
+    doesBurnExceedBalance || 
+    !!burnError || 
+    isPending;
+
+    const showInvalidAmount = !!burnAmount && !isBurnAmountValid;
+    const showInsufficientBalance = isBurnAmountValid && doesBurnExceedBalance;
+
     return (
-        <form onSubmit={onBurn} className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm space-y-4">
+        <form onSubmit={handleBurn} className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm space-y-4">
             <h3 className="text-xl font-bold text-white">Burn AUSD</h3>
             <input
                 type="number"
@@ -48,9 +147,14 @@ export function BurnCard({
             >
                 {isPending ? "Processing..." : "Burn"}
             </button>
-            {!!burnAmount && !isValid && (<p className="text-red-500 text-sm">Please enter a valid amount greater than 0.</p>)}
-            {isValid && exceeds && (<p className="text-red-500 text-sm">Cannot burn more AUSD than your minted AUSD.</p>)}
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            {showInvalidAmount && (
+                <p className="text-red-500 text-sm">Please enter a valid amount greater than 0.</p>
+            )}
+            {showInsufficientBalance && (
+                <p className="text-red-500 text-sm">Insufficient AUSD balance.</p>
+            )}
+            {burnError && <p className="text-red-500 text-sm">{burnError}</p>}
         </form>
     );
 }

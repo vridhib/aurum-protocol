@@ -46,13 +46,13 @@ export default function Dashboard() {
   // const [depositAmount, setDepositAmount] = useState("");
   // const [redeemAmount, setRedeemAmount] = useState("");
   // const [mintAmount, setMintAmount] = useState("");
-  const [burnAmount, setBurnAmount] = useState("");
+  // const [burnAmount, setBurnAmount] = useState("");
   // const [pendingAction, setPendingAction] = useState<string | null>(null);
   const { setPendingAction } = useTransactionContext();
   // const [depositError, setDepositError] = useState<string | null>(null);
   // const [redeemError, setRedeemError] = useState<string | null>(null);
   // const [mintError, setMintError] = useState<string | null>(null);
-  const [burnError, setBurnError] = useState<string | null>(null);
+  // const [burnError, setBurnError] = useState<string | null>(null);
 
 
   // ---------- Reads ----------
@@ -96,21 +96,21 @@ export default function Dashboard() {
   // });
 
   // Write: Burn AUSD (approve and then burn)
-  const { start: startBurn, isPending: isBurnPendingHook, currentAction: burnAction, approveWriteError: approveBurnWriteError, executeWriteError: executeBurnWriteError } = useApproveAndExecute({
-    approveContract: AURUM_AUSD_ADDRESS,
-    approveAbi: aurumAUSDJson.abi as Abi,
-    approveFunction: "approve",
-    targetContract: AURUM_ENGINE_ADDRESS,
-    targetAbi: aurumEngineJson.abi as Abi,
-    targetFunction: "burnAUSD",
-    allowance: ausdAllowance,
-    onSuccess: () => {
-      // Refetch data, clear input, clear global pending action
-      refetchUserData(); 
-      setBurnAmount("");
-      setPendingAction(null);
-    }
-  });
+  // const { start: startBurn, isPending: isBurnPendingHook, currentAction: burnAction, approveWriteError: approveBurnWriteError, executeWriteError: executeBurnWriteError } = useApproveAndExecute({
+  //   approveContract: AURUM_AUSD_ADDRESS,
+  //   approveAbi: aurumAUSDJson.abi as Abi,
+  //   approveFunction: "approve",
+  //   targetContract: AURUM_ENGINE_ADDRESS,
+  //   targetAbi: aurumEngineJson.abi as Abi,
+  //   targetFunction: "burnAUSD",
+  //   allowance: ausdAllowance,
+  //   onSuccess: () => {
+  //     // Refetch data, clear input, clear global pending action
+  //     refetchUserData(); 
+  //     setBurnAmount("");
+  //     setPendingAction(null);
+  //   }
+  // });
 
 
   // ---------- Derived state: Projected Health Factor ----------
@@ -142,7 +142,7 @@ export default function Dashboard() {
   // const { isValid: isDepositAmountValid, exceeds: doesDepositExceedBalance } = useAmountValidation(depositAmount, aurBalance);
   // const { isValid: isRedeemAmountValid, exceeds: doesRedeemExceedCollateral } = useAmountValidation(redeemAmount, amountCollateral);
   // const { isValid: isMintAmountValid } = useAmountValidation(mintAmount);
-  const { isValid: isBurnAmountValid, exceeds: doesBurnExceedMinted } = useAmountValidation(burnAmount, mintedAmount);
+  // const { isValid: isBurnAmountValid, exceeds: doesBurnExceedMinted } = useAmountValidation(burnAmount, mintedAmount);
 
 
   // ---------- Error Handling For Writes ----------
@@ -150,15 +150,15 @@ export default function Dashboard() {
   // useClearErrorOnInputChange(setDepositError, depositAmount);
   // useClearErrorOnInputChange(setRedeemError, redeemAmount);
   // useClearErrorOnInputChange(setMintError, mintAmount);
-  useClearErrorOnInputChange(setBurnError, burnAmount);
+  // useClearErrorOnInputChange(setBurnError, burnAmount);
 
   // Handle post transaction write errors
   // useWriteErrorHandler(approveDepositWriteError, setDepositError);
   // useWriteErrorHandler(executeDepositWriteError, setDepositError);
   // useWriteErrorHandler(redeemWriteError, setRedeemError);
   // useWriteErrorHandler(mintWriteError, setMintError);
-  useWriteErrorHandler(approveBurnWriteError, setBurnError);
-  useWriteErrorHandler(executeBurnWriteError, setBurnError);
+  // useWriteErrorHandler(approveBurnWriteError, setBurnError);
+  // useWriteErrorHandler(executeBurnWriteError, setBurnError);
 
 
   // ---------- Effects ----------
@@ -167,16 +167,16 @@ export default function Dashboard() {
     // if (isDepositPendingHook) {
     //   setPendingAction(depositAction === "approving" ? "Approving AUR deposit..." : "Depositing AUR...");
     // }
-    if (isBurnPendingHook) {
-      setPendingAction(burnAction === "approving" ? "Approving AUSD for burn..." : "Burning AUSD...");
-    }
+    // if (isBurnPendingHook) {
+    //   setPendingAction(burnAction === "approving" ? "Approving AUSD for burn..." : "Burning AUSD...");
+    // }
     // else if (isRedeemPending || isRedeemConfirming) {
     //   setPendingAction("Redeeming AUR...");
     // }
     // else if (isMintPending || isMintConfirming) {
     //   setPendingAction("Minting AUSD...");
     // }
-    else if (isClaimPending || isClaimConfirming) {
+    if (isClaimPending || isClaimConfirming) {
       setPendingAction("Claiming AUR from faucet...");
     }
     else {
@@ -184,7 +184,7 @@ export default function Dashboard() {
     }
   }, [
     //isDepositPendingHook, depositAction,
-    isBurnPendingHook, burnAction,
+    //isBurnPendingHook, burnAction,
     //isRedeemPending, isRedeemConfirming,
     // isMintPending, isMintConfirming,
     isClaimPending, isClaimConfirming
@@ -251,12 +251,12 @@ export default function Dashboard() {
   // };
 
   // Burn handler
-  const handleBurn = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!isBurnAmountValid || doesBurnExceedMinted) return;
-    const amountWei = parseEther(burnAmount);
-    startBurn(amountWei);
-  };
+  // const handleBurn = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (!isBurnAmountValid || doesBurnExceedMinted) return;
+  //   const amountWei = parseEther(burnAmount);
+  //   startBurn(amountWei);
+  // };
 
   // Claim AUR from faucet handler
   const handleClaim = () => {
@@ -283,8 +283,8 @@ export default function Dashboard() {
   //   !isMintAmountValid || !!mintError || isMintPending || isMintConfirming || !mintWouldBeHealthy;
 
   // Determine burn button state
-  const isBurnButtonDisabled =
-    !isBurnAmountValid || doesBurnExceedMinted || !!burnError || isBurnPendingHook;
+  // const isBurnButtonDisabled =
+  //   !isBurnAmountValid || doesBurnExceedMinted || !!burnError || isBurnPendingHook;
 
   // const isAnyTxPending = 
   //   isDepositPendingHook || isRedeemPending || isRedeemConfirming || isMintPending || 
@@ -370,7 +370,8 @@ export default function Dashboard() {
           isValid={isMintAmountValid}
         />*/}
         {/* Burn Card */}
-        <BurnCard
+        <BurnCard />
+        {/*<BurnCard
           burnAmount={burnAmount}
           setBurnAmount={setBurnAmount}
           onBurn={handleBurn}
@@ -379,7 +380,7 @@ export default function Dashboard() {
           isDisabled={isBurnButtonDisabled}
           isValid={isBurnAmountValid}
           exceeds={doesBurnExceedMinted}
-        />
+        />*/}
       </div>
     </div>
   );
