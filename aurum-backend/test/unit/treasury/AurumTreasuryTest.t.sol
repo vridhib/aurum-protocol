@@ -2,10 +2,10 @@
 pragma solidity 0.8.34;
 
 import {Test} from "forge-std/Test.sol";
-import {AurumTreasury} from "../../src/treasury/AurumTreasury.sol";
-import {AurumSavings} from "../../src/treasury/AurumSavings.sol";
-import {AurumUSD} from "../../src/AurumUSD.sol";
-import {BaseTest} from "../shared/BaseTest.t.sol";
+import {AurumTreasury} from "../../../src/treasury/AurumTreasury.sol";
+import {AurumSavings} from "../../../src/treasury/AurumSavings.sol";
+import {AurumUSD} from "../../../src/AurumUSD.sol";
+import {BaseTest} from "../../shared/BaseTest.t.sol";
 
 contract AurumTreasuryTest is BaseTest {
     address owner = makeAddr("owner");

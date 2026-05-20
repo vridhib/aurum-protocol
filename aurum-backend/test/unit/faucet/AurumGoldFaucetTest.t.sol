@@ -2,9 +2,9 @@
 pragma solidity 0.8.34;
 
 import {Test, console} from "forge-std/Test.sol";
-import {AurumGoldFaucet} from "../../src/faucet/AurumGoldFaucet.sol";
-import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {DeployAUSD} from "../../script/DeployAUSD.s.sol";
+import {AurumGoldFaucet} from "../../../src/faucet/AurumGoldFaucet.sol";
+import {HelperConfig} from "../../../script/HelperConfig.s.sol";
+import {DeployAUSD} from "../../../script/DeployAUSD.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 

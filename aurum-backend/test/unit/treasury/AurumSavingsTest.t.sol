@@ -2,11 +2,11 @@
 pragma solidity 0.8.34;
 
 import {Test, console2} from "forge-std/Test.sol";
-import {AurumSavings} from "../../src/treasury/AurumSavings.sol";
-import {AurumUSD} from "../../src/AurumUSD.sol";
+import {AurumSavings} from "../../../src/treasury/AurumSavings.sol";
+import {AurumUSD} from "../../../src/AurumUSD.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {AurumTreasuryTest} from "./AurumTreasuryTest.t.sol";
-import {BaseTest} from "../shared/BaseTest.t.sol";
+import {BaseTest} from "../../shared/BaseTest.t.sol";
 
 
 contract AurumSavingsTest is AurumTreasuryTest {
