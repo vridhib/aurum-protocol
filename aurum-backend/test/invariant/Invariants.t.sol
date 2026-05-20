@@ -82,6 +82,7 @@ contract InvariantsTest is StdInvariant, Test {
         previousCumulativeIndex = currentIndex;
     }
 
+
     // Invariant 3: User actual debt = Σ normalized * index / 1e18
     function invariant_userActualDebtMatchesNormalized() external view {
         uint256 userCount = handler.getUserCount();
@@ -90,17 +91,13 @@ contract InvariantsTest is StdInvariant, Test {
         for (uint256 i = 0; i < userCount; i++) {
             address user = handler.usersWithCollateralDeposited(i);
             uint256 expectedDebt;
-            AurumEngine.UserAccountData memory userData = aue.getUserAccountData(user);
             for (uint256 j = 0; j < collateralTokens.length; j++) {
-                // Find the token the the user's active list to get its debt allocation
                 address token = collateralTokens[j];
-                for (uint256 k = 0; k < userData.activeCollateralTokens.length; k++) {
-                    if (token == userData.activeCollateralTokens[k]) {
-                        expectedDebt += (userData.debtAllocations[k] * currentIndex) / 1e18;
-                    }
-                }
+                uint256 normalizedDebt = aue.getUserDebtAllocation(user, token);
+                expectedDebt += (normalizedDebt * currentIndex) / 1e18;
             }
-            assertEq(expectedDebt, userData.totalDebt);
+            uint256 actualDebt = aue.getUserAccountData(user).totalDebt;
+            assertEq(expectedDebt, actualDebt);
         }
     }
 
@@ -114,5 +111,6 @@ contract InvariantsTest is StdInvariant, Test {
         aue.getTokenAmountFromUsd(token, 1e18);
         aue.getCollateralInfo(token);
         aue.getUserAccountData(user);
+        aue.getUserDebtAllocation(user, token);
     }
 }
