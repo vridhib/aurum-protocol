@@ -52,7 +52,7 @@ contract HelperConfig is Script {
         // Deploy gold volatility feed, weth volatility feed wrapper, and AUR token
         vm.startBroadcast(sepoliaDeployerAccount);
         MockVolatilityOracle goldVolatilityFeed = new MockVolatilityOracle(INITIAL_GOLD_VOLATILITY);
-        ChainlinkVolatilityOracle wethVolatilityFeed = new ChainlinkVolatilityOracle(0x31D04174D0e1643963b38d87f26b0675Bb7dC96e);
+        MockVolatilityOracle wethVolatilityFeed = new MockVolatilityOracle(INITIAL_ETH_VOLATILITY);
         AurumGold aurumGold = new AurumGold();
         vm.stopBroadcast();
 
