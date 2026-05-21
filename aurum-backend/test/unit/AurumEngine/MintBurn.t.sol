@@ -8,7 +8,7 @@ import {console2} from "forge-std/Test.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 
-contract MintBurnTests is BaseTest {
+contract MintBurnTest is BaseTest {
     /********************************************************/
     /***********************Mint Tests***********************/
     /********************************************************/
@@ -35,7 +35,7 @@ contract MintBurnTests is BaseTest {
 
 
     // Test that mintAUSD() reverts if users try to mint 0 AUSD
-    function testUsersCantMintZeroAUSD() public depositedCollateral {
+    function testUsersCannotMintZeroAUSD() public depositedCollateral {
         vm.expectRevert(AurumEngine.AurumEngine__NeedsMoreThanZero.selector);
         aue.mintAUSD(0);
     }
@@ -271,6 +271,7 @@ contract MintBurnTests is BaseTest {
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();
         // Update index without minting
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false));
         uint256 currentIndexAfter = aue.s_cumulativeIndex();
         uint256 normalizedDebtAfter = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
@@ -302,6 +303,7 @@ contract MintBurnTests is BaseTest {
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();  // prevent stale price revert
         // Trigger interest accrual
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false)); // only update index 
         uint256 debtWithInterest = aue.getUserAccountData(user).totalDebt;
         uint256 interest = debtWithInterest - initialDebt;
@@ -333,6 +335,7 @@ contract MintBurnTests is BaseTest {
         uint256 actualDebtBefore = aue.getUserAccountData(user).totalDebt;
         uint256 normalizedDebtBefore = aue.getUserAccountData(user).debtAllocations[0] + aue.getUserAccountData(user).debtAllocations[1];
 
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false)); // only update index 
         assertEq(aue.s_cumulativeIndex(), indexBefore);
         assertEq(aue.getUserAccountData(user).lastIndex, userLastIndexBefore);
@@ -348,6 +351,7 @@ contract MintBurnTests is BaseTest {
         
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks(); 
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false)); // only update index 
         
         assertEq(aue.s_cumulativeIndex(), indexBefore);
@@ -383,6 +387,7 @@ contract MintBurnTests is BaseTest {
         
         vm.warp(block.timestamp + 180 days);
         _bypassStalePriceChecks();
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false)); // only update index 
         
         uint256 actualDebtA = aue.getUserAccountData(userA).totalDebt;
@@ -426,6 +431,7 @@ contract MintBurnTests is BaseTest {
         // Now warp forward to accrue interest on the remaining debt
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false)); // only update index 
 
         uint256 currentIndex = aue.s_cumulativeIndex();
@@ -477,6 +483,7 @@ contract MintBurnTests is BaseTest {
         _bypassStalePriceChecks();
 
         uint256 indexBefore = aue.s_cumulativeIndex();
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false)); // only update index 
         uint256 indexAfter = aue.s_cumulativeIndex();
 
@@ -496,6 +503,7 @@ contract MintBurnTests is BaseTest {
         // Warp 1 year to accrue interest
         vm.warp(block.timestamp + ONE_YEAR);
         _bypassStalePriceChecks();
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false)); // only update index 
         uint256 totalDebt = aue.getUserAccountData(user).totalDebt;
         uint256 interest = totalDebt - initialDebt;

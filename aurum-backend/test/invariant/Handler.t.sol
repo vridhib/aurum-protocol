@@ -188,6 +188,7 @@ contract Handler is Test {
     }
 
     function triggerInterestAccrual() public {
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(true, false));
     }
 }

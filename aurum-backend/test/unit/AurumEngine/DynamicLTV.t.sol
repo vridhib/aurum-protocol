@@ -26,6 +26,7 @@ contract DynamicLtvTest is BaseTest {
         // Gold baseline 15%, set volatility to 25%
         vm.prank(MockVolatilityOracle(goldVolatilityFeed).owner());
         MockVolatilityOracle(goldVolatilityFeed).setVolatility(0.25e18);
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(false, true)); // only update LTV;
 
         // Calculate new LTV
@@ -44,6 +45,7 @@ contract DynamicLtvTest is BaseTest {
         // Set volatility extremely high: 200%
         vm.prank(MockVolatilityOracle(goldVolatilityFeed).owner());
         MockVolatilityOracle(goldVolatilityFeed).setVolatility(2.0e18);
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(false, true)); // only update LTV;
         uint256 actualNewLtv = aue.getCollateralInfo(aurumGold).ltv;
         uint256 expectedNewLtv = aue.getCollateralInfo(aurumGold).minLtv;
@@ -58,6 +60,7 @@ contract DynamicLtvTest is BaseTest {
         // Set volatility extremely low
         vm.prank(MockVolatilityOracle(goldVolatilityFeed).owner());
         MockVolatilityOracle(goldVolatilityFeed).setVolatility(0.01e18);
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(false, true)); // only update LTV;
 
         uint256 actualNewLtv = aue.getCollateralInfo(aurumGold).ltv;
@@ -72,6 +75,7 @@ contract DynamicLtvTest is BaseTest {
         // Set gold volatility high, weth volatility low
         vm.prank(MockVolatilityOracle(goldVolatilityFeed).owner());
         MockVolatilityOracle(goldVolatilityFeed).setVolatility(0.35e18);
+        vm.prank(aue.owner());
         aue.performUpkeep(abi.encode(false, true)); // only update LTV;
 
         // Should update collaterals independently

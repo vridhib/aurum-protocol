@@ -5,6 +5,7 @@ import {BaseTest} from "../../shared/BaseTest.t.sol";
 import {console2} from "forge-std/Test.sol";
 import {MockVolatilityOracle} from "../../../src/oracles/MockVolatilityOracle.sol";
 import {AurumEngine} from "../../../src/AurumEngine.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract UpkeepTest is BaseTest {
     function testCheckUpkeepReturnsFalseWhenNoDebt() public view {
@@ -45,6 +46,7 @@ contract UpkeepTest is BaseTest {
         vm.warp(block.timestamp + 1 hours);
         (bool needed, bytes memory performData) = aue.checkUpkeep("");
         assertTrue(needed);
+        vm.prank(aue.owner());
         aue.performUpkeep(performData);
         
         // Assert only the index was updated
@@ -74,6 +76,7 @@ contract UpkeepTest is BaseTest {
         _bypassStalePriceChecks();
         (bool needed, bytes memory performData) = aue.checkUpkeep("");
         assertTrue(needed);
+        vm.prank(aue.owner());
         aue.performUpkeep(performData);
         
         // Assert both the index and LTVs were updated
@@ -93,6 +96,7 @@ contract UpkeepTest is BaseTest {
         uint256 wethLtvBeforeUpkeep = aue.getCollateralInfo(weth).ltv;
         uint256 ltvLastUpdateBefore = aue.s_ltvLastUpdate();
         (, bytes memory performData) = aue.checkUpkeep("");
+        vm.prank(aue.owner());
         aue.performUpkeep(performData);
 
         assertEq(indexBeforeUpkeep, aue.s_cumulativeIndex());
@@ -100,6 +104,23 @@ contract UpkeepTest is BaseTest {
         assertEq(goldLtvBeforeUpkeep, aue.getCollateralInfo(aurumGold).ltv);
         assertEq(wethLtvBeforeUpkeep, aue.getCollateralInfo(weth).ltv);
         assertEq(ltvLastUpdateBefore, aue.s_ltvLastUpdate());
+    }
+
+    function testPerformUpkeepRevertsIfNotForwarderOrOwner() public {
+        vm.prank(user);
+        vm.expectRevert(AurumEngine.AurumEngine__OnlyForwarderOrOwner.selector);
+        aue.performUpkeep(abi.encode(true, true));
+    }
+
+    function testOnlyOwnerCanSetForwarder() public {
+        vm.prank(aue.owner());
+        aue.setForwarderAddress(address(0));
+    }
+
+    function testRevertIfNonOwnerSetsForwarder() public {
+        vm.prank(user);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
+        aue.setForwarderAddress(address(0));
     }
 }
 
