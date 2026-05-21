@@ -34,6 +34,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     error AurumEngine__IneligibleForForceClose();
     error AurumEngine__PauseConditionNotMet();
     error AurumEngine__SlippageExceeded(uint256 requiredBurn);
+    error AurumEngine__OnlyForwarderOrOwner();
 
     using OracleLib for AggregatorV3Interface;
 
@@ -53,8 +54,8 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     struct CollateralInfo {
         address priceFeed;
         address volatilityFeed;
-        uint256 baselineVolatility;
-        uint256 baseLtv;                 // 0.15e18 for gold, 0.60e18 for WETH
+        uint256 baselineVolatility;      // 0.15e18 for AUR, 0.60e18 for WETH
+        uint256 baseLtv;                 // Scaled by 100 (e.g., 85 = 85% LTV)
         uint256 minLtv;                  // Floor LTV when volatility spikes
         uint256 ltv;
         uint256 debtCeiling;
@@ -76,7 +77,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     uint256 public constant MIN_DUST_THRESHOLD = 100e18;               // If user debt < 100e18 allow 100% liquidation
     uint256 public constant MAX_FORCE_CLOSE_COLLATERAL_VALUE = 100e18; // $100
     uint256 public constant FORCE_CLOSE_HF_THRESHOLD = 0.5e18;         // HF <= 0.50e18
-    uint256 public constant MIN_LIQUIDATION_PROFIT = 5e18;             // Min $5 profit for a keeper; would be $50-$100 for mainnet
+    uint256 public constant MIN_LIQUIDATION_PROFIT = 5e18;             // Min $5 profit for a keeper; $50-$100 for mainnet
     uint256 public constant LIQUIDATION_BONUS = 5;                     // % liquidator bonus
     uint256 public constant PROTOCOL_LIQUIDATION_FEE = 5;              // % of liquidation bonus to treasury
     uint256 public constant PROTOCOL_RESERVE_PERCENT = 10;             // % of interest to treasury
@@ -87,7 +88,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     mapping(address => mapping(address => uint256)) private s_collateralDeposited;
     mapping(address => CollateralInfo) private s_collateralInfo;
     mapping(address => mapping(address => uint256)) private s_userDebtAllocation;
-    mapping(address => uint256) private s_userLastIndex;               // last cumulative index on mint/burn
+    mapping(address => uint256) private s_userLastIndex;               // Last cumulative index on mint/burn
     address[] private s_collateralList;                                // AUR + WETH
 
     uint256 public s_cumulativeIndex = 1e18;
@@ -97,10 +98,14 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     address public immutable i_treasury;
     AurumInterestRateModel public immutable i_interestRateModel;
     AurumUSD public immutable i_ausd;
+    address public s_forwarderAddress;                                // Official Chainlink Automation Forwarder for Sepolia
 
     /*----------Events----------*/
     event CollateralDeposited(address indexed user, address indexed token, uint256 indexed amount);
-    event CollateralRedeemed(address indexed redeemedFrom, address indexed redeemedTo, address indexed token, uint256 amount);
+    event CollateralRedeemed(
+        address indexed redeemedFrom, address indexed redeemedTo, address indexed token, uint256 amount
+    );
+    /// @notice Emitted when an underwater position is partially liquidated. The liquidator repays `debtToCover` AUSD and receives `totalCollateralToRedeem` collateral, minus `protocolShare` sent to the treasury.
     event Liquidated(
         address indexed user,
         address indexed liquidator,
@@ -114,8 +119,19 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     event DebtAllocated(address user, address token, uint256 allocatedDebt);
     event DebtDeallocated(address user, address token, uint256 debtReduction);
     event BurnAUSD(address indexed user, uint256 amount);
+    /// @notice Emitted when a deeply underwater position is force-closed, using treasury AUSD to burn the debt and seizing all collateral.
     event ForceClosed(address indexed user, uint256 debtAbsorbed, uint256 collateralValueSeized);
     event CollateralSeized(address indexed token, uint256 amount);
+    /// @notice Emitted when the cumulative interest index is updated.
+    event CumulativeIndexUpdated(uint256 newIndex, uint256 utilization);
+    /// @notice Emitted when the LTV of a collateral token is adjusted by the volatility oracle.
+    event LTVUpdated(address token, uint256 newLtv);
+    /// @notice Emitted when the owner updates a collateral token's configuration.
+    event CollateralInfoUpdated(
+        address token, address volatilityFeed, uint256 newLtv, uint256 newDebtCeiling, bool isActive
+    );
+    /// @notice Emitted when interest fees are minted to the treasury during a burn or liquidation.
+    event TreasuryFeeSent(address treasury, address token, uint256 tokenAmount);
 
     /*----------Modifiers----------*/
     modifier moreThanZero(uint256 amount) {
@@ -126,6 +142,13 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     modifier isAllowedToken(address token) {
         if (!s_collateralInfo[token].isActive) {
             revert AurumEngine__TokenNotAllowed(token);
+        }
+        _;
+    }
+
+    modifier onlyForwarderOrOwner() {
+        if (msg.sender != s_forwarderAddress && msg.sender != owner()) {
+            revert AurumEngine__OnlyForwarderOrOwner();
         }
         _;
     }
@@ -198,7 +221,9 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     }
 
     /// @notice Updates the cumulative index and/or LTVs if their respective update intervals have passed.
-    function performUpkeep(bytes calldata performData) external override whenNotPaused {
+    function performUpkeep(bytes calldata performData) external override 
+        whenNotPaused onlyForwarderOrOwner 
+    {
         (bool indexUpdateNeeded, bool ltvUpdateNeeded) = abi.decode(performData, (bool, bool));
         if (indexUpdateNeeded) _updateIndex();
         if (ltvUpdateNeeded) _updateLTVs();
@@ -207,6 +232,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     /// @notice Forcefully close an underwater position by seizing all remaining collateral and clearing the user's debt using treasury funds.
     /// @dev The position must either have collateral <= $100 or health factor <= 0.50 to be eligible.
     function forceClose(address user) external nonReentrant whenNotPaused {
+        _updateIndex();
         uint256 totalCollateralValue = _getUserCollateralValue(user);
         uint256 hf = _healthFactor(user);
         uint256 debt = _getUserActualDebt(user);
@@ -236,6 +262,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
             if (allocatedDebt > 0) {
                 s_userDebtAllocation[user][token] = 0;
                 s_collateralInfo[token].totalNormalizedDebt -= allocatedDebt;
+                emit DebtDeallocated(user, token, allocatedDebt);
             }
         }
         s_userLastIndex[user] = s_cumulativeIndex;
@@ -243,6 +270,11 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
         i_ausd.transferFrom(i_treasury, address(this), debt);
         i_ausd.burn(debt);
         emit ForceClosed(user, debt, totalCollateralValue);
+    }
+
+    /// @notice Set the Chainlink Automation Sepolia forwarder address.
+    function setForwarderAddress(address forwarderAddress) external onlyOwner {
+        s_forwarderAddress = forwarderAddress;
     }
 
     /// @notice Update volatility feed, LTV, debt ceiling, and active status for a collateral token. Pass 0 or address(0) to leave a value unchanged.
@@ -258,6 +290,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
         if (newLtv != 0) info.ltv = newLtv;
         if (newDebtCeiling != 0) info.debtCeiling = newDebtCeiling;
         info.isActive = isActive;
+        emit CollateralInfoUpdated(collateralToken, volatilityFeed, newLtv, newDebtCeiling, isActive);
     }
 
     /// @notice Deposit `amountCollateral` of `collateralToken` and mint `amountAUSDToMint` AUSD in one transaction.
@@ -403,6 +436,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
         _redeemCollateral(collateralToken, protocolShare, user, i_treasury);
         _burnAUSD(debtToCover, user, msg.sender);
         emit Liquidated(user, msg.sender, debtToCover, collateralToken, totalCollateralToRedeem, protocolShare);
+        emit TreasuryFeeSent(i_treasury, collateralToken, protocolShare);
     }
 
     /**************************************************************************/
@@ -421,13 +455,16 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
         uint256 borrowRatePerSecond = i_interestRateModel.getBorrowRate(utilization);
         uint256 timeElapsed = block.timestamp - s_indexLastUpdate;
         // newIndex = oldIndex * (1 + rate * time)
-        s_cumulativeIndex = s_cumulativeIndex * (PRECISION + borrowRatePerSecond * timeElapsed) / PRECISION;
+        uint256 newIndex = s_cumulativeIndex * (PRECISION + borrowRatePerSecond * timeElapsed) / PRECISION;
+        s_cumulativeIndex = newIndex;
         s_indexLastUpdate = block.timestamp;
+        emit CumulativeIndexUpdated(newIndex, utilization);
     }
 
     function _updateLTVs() private {
         for (uint256 i = 0; i < s_collateralList.length; i++) {
-            CollateralInfo storage info = s_collateralInfo[s_collateralList[i]];
+            address token = s_collateralList[i];
+            CollateralInfo storage info = s_collateralInfo[token];
 
             uint256 volatility = IVolatilityOracle(info.volatilityFeed).getAnnualizedVolatility(); // 18 decimals
             uint256 excess = volatility > info.baselineVolatility ? volatility - info.baselineVolatility : 0;
@@ -437,6 +474,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
             if (newLtv < info.minLtv) newLtv = info.minLtv;
             if (newLtv > info.baseLtv) newLtv = info.baseLtv;
             info.ltv = newLtv;
+            emit LTVUpdated(token, newLtv);
         }
         s_ltvLastUpdate = block.timestamp;
     }
@@ -485,7 +523,10 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
         bool success = i_ausd.transferFrom(ausdFrom, address(this), amountAUSDToBurn);
         if (!success) revert AurumEngine__TransferFailed();
         i_ausd.burn(amountAUSDToBurn);
-        if (protocolFee > 0) i_ausd.mint(i_treasury, protocolFee);
+        if (protocolFee > 0) {
+            emit TreasuryFeeSent(i_treasury, address(i_ausd), protocolFee);
+            i_ausd.mint(i_treasury, protocolFee);
+        }
     }
 
     /// @dev Internal redeem function used primarily for liquidate (and also user redemptions)
@@ -724,7 +765,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
 
         uint256 currentDebt = _getUserActualDebt(user);
         uint256 closeFactor = _closeFactor(user, collateralToken);
-        uint256 maxDebtToCover = (debtToCover * closeFactor) / PRECISION;
+        uint256 maxDebtToCover = (currentDebt * closeFactor) / PRECISION;
         if (debtToCover > maxDebtToCover) debtToCover = maxDebtToCover;
         if (maxDebtToCover < MIN_DUST_THRESHOLD) debtToCover = currentDebt;
 

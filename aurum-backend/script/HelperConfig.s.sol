@@ -52,7 +52,7 @@ contract HelperConfig is Script {
         // Deploy gold volatility feed, weth volatility feed wrapper, and AUR token
         vm.startBroadcast(sepoliaDeployerAccount);
         MockVolatilityOracle goldVolatilityFeed = new MockVolatilityOracle(INITIAL_GOLD_VOLATILITY);
-        MockVolatilityOracle wethVolatilityFeed = new MockVolatilityOracle(INITIAL_ETH_VOLATILITY);
+        MockVolatilityOracle ethVolatilityFeed = new MockVolatilityOracle(INITIAL_ETH_VOLATILITY);
         AurumGold aurumGold = new AurumGold();
         vm.stopBroadcast();
 
@@ -71,7 +71,7 @@ contract HelperConfig is Script {
         collaterals[1] = CollateralConfig({                               // WETH collateral config
             token: 0xdd13E55209Fd76AfE204dBda4007C227904f0a81,            // Sepolia WETH address
             priceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325306,        // Chainlink ETH/USD price feed
-            volatilityFeed: address(wethVolatilityFeed),                  // ETH-USD 24hr Realized Volatility
+            volatilityFeed: address(ethVolatilityFeed),                  // ETH-USD 24hr Realized Volatility
             baselineVolatility: 0.60e18,
             baseLtv: 65, 
             minLtv: 40,
