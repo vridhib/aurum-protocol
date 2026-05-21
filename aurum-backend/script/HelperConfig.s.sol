@@ -5,7 +5,6 @@ import {Script} from "forge-std/Script.sol";
 import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
 import {MockVolatilityOracle} from "../src/oracles/MockVolatilityOracle.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
-import {ChainlinkVolatilityOracle} from "../src/oracles/ChainlinkVolatilityOracle.sol";
 import {AurumGold} from "../src/AurumGold.sol";
 
 
@@ -49,7 +48,7 @@ contract HelperConfig is Script {
     function getSepoliaEthConfig() public returns (NetworkConfig memory) {
         address sepoliaDeployerAccount = vm.envAddress("SEPOLIA_DEPLOYER_ACCOUNT");
 
-        // Deploy gold volatility feed, weth volatility feed wrapper, and AUR token
+        // Deploy mock gold volatility feed, mock weth volatility feed, and AUR token
         vm.startBroadcast(sepoliaDeployerAccount);
         MockVolatilityOracle goldVolatilityFeed = new MockVolatilityOracle(INITIAL_GOLD_VOLATILITY);
         MockVolatilityOracle ethVolatilityFeed = new MockVolatilityOracle(INITIAL_ETH_VOLATILITY);
