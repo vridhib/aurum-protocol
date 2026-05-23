@@ -9,7 +9,14 @@ import { ApolloProvider } from "@apollo/client/react";
 import client from "@/lib/apollo-client";
 import { NavBar } from "@/components/NavBar";
 import { TransactionProvider } from "@/context/TransactionProvider";
+import { Playfair_Display } from 'next/font/google'
 
+
+const playfair = Playfair_Display({
+  weight: '700',
+  subsets: ['latin'],
+  variable: '--font-playfair',
+})
 
 const queryClient = new QueryClient();
 
@@ -20,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <RainbowKitProvider theme={darkTheme()}>
           <TransactionProvider>
             <html lang="en">
-              <body className="bg-gray-900 text-white">
+              <body className={`${playfair.variable} bg-gray-900 text-white`}>
                 <ApolloProvider client={client}>
                   <NavBar />
                   <main className="min-h-screen flex flex-col">

@@ -63,6 +63,7 @@ export function formatHealthFactorForDisplay(healthFactorWei: bigint | undefined
     return healthFactorNumber.toFixed(2);
 }
 
+
 // Formats AUSD value (18-decimal bigint) to a fixed-precision string
 export function formatStablecoin(value: bigint, decimals = 4): string {
   const divisor = 10n ** (18n - BigInt(decimals));
@@ -76,6 +77,26 @@ export function formatStablecoin(value: bigint, decimals = 4): string {
   return `${intPart}.${fracPart}`;
 }
 
+
+// Format ether value (1e18) to USD with two decimals
+export function formatUsd(value: bigint, decimals = 2): string {
+  const num = Number(formatEther(value));
+  return `$${num.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+}
+
+
+// Format a number as a percentage string
+export function formatPercent(value: number, decimals = 1): string {
+  return `${(value * 100).toFixed(decimals)}%`;
+}
+
+
+// Format ether value (1e18) to a percentage string
+export function formatEtherAsPercent(value: bigint): string {
+  return `${Number(formatEther(value)) * 100}%`;
+}
+
+
 // Gets the health color class according to the health factor range
 export function getHealthColor(healthWei: bigint | undefined): string {
     // If undefined, return gray
@@ -87,6 +108,7 @@ export function getHealthColor(healthWei: bigint | undefined): string {
     if (health >= 1.0) return "text-yellow-400";
     return "text-red-400";
 }
+
 
 // Shortens the address 
 export function shortenAddress(address: string) {
