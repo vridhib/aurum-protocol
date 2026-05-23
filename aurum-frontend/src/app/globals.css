@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #fff1d1; /* less saturated version: #fff8e7*/
   --foreground: #171717;
 }
 
@@ -19,8 +19,69 @@
   }
 }
 
+h1, h2, h3 {
+  font-family: var(--font-playfair), Inter;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter, Helvetica, sans-serif;
+}
+
+
+@utility gold-card {
+  @apply bg-[#F2E0C8] border border-yellow-800/20 rounded-xl shadow-sm hover:shadow-md transition;
+}
+
+@layer components {
+  /* Gold Hero Styling */
+  .gold-hero {
+    @apply relative bg-gradient-to-b from-yellow-600/20 via-yellow-800/10 to-transparent rounded-2xl p-8 md:p-12 mb-8 border border-yellow-700/30 overflow-hidden;
+  }
+  .gold-hero-title {
+    @apply text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-700 to-amber-800 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(234,179,8,0.3)];
+  }
+  .gold-hero-btn {
+    @apply mt-8 inline-flex items-center gap-2 px-6 py-3 bg-yellow-800/20 border border-yellow-600/40 text-yellow-800 rounded-full hover:bg-yellow-600/30 hover:border-yellow-500 transition shadow-lg shadow-yellow-900/10;
+  }
+
+  /* Section Header Styling */
+  .section-heading {
+    @apply text-3xl font-bold text-yellow-600 drop-shadow-[0_0_6px_rgba(234,179,8,0.4)];
+  }
+
+  /* Border Styling */
+  .gold-border {
+    @apply border-t border-yellow-800/20 pt-6; 
+  }
+
+  /* Table Styling */
+  .table-wrapper {
+    @apply overflow-x-auto rounded-xl border border-yellow-800/20 bg-[#F2E0C8];
+  }
+  .gold-table {
+    @apply w-full text-left;
+  }
+  .gold-table thead {
+    @apply bg-[#EAD5B8] text-yellow-900 font-bold;
+  }
+  .gold-table tbody {
+    @apply divide-y divide-yellow-800/10;
+  }
+  .gold-table td {
+    @apply p-4;
+  }
+  .gold-table th {
+    @apply p-4 font-bold;
+  }
+  .gold-table tbody tr {
+    @apply hover:bg-[#EAD5B8]/50 transition;
+  }
+  .gold-table tbody td {
+    @apply text-gray-800;
+  }
+  .gold-table .row-header {
+    @apply p-4 text-gray-900 font-medium;
+  }
 }
