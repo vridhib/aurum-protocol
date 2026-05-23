@@ -2,13 +2,13 @@
  * Stat card section to assemble a stats grid.
  * @param title Stat title.
  * @param value Stat value correlating to `title`. 
- * @returns Stat card UI component displaying a single statistic (shown as a title and value).
+ * @returns Stat card UI component displaying a single statistic (shown as block with a title and value).
  */
 export function StatCard({ title, value }: { title: string; value: string }) {
   return (
-    <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm">
-      <h3 className="text-gray-400 font-medium">{title}</h3>
-      <p className="text-2xl font-mono text-white mt-2">{value}</p>
+    <div className="gold-card p-4 text-center hover:border-yellow-600/50;">
+      <p className="text-yellow-900 text-xs uppercase tracking-wider font-semibold">{title}</p>
+      <p className="text-2xl font-bold text-yellow-800 mt-1">{value}</p>
     </div>
   );
 }
