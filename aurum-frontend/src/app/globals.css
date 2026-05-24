@@ -35,17 +35,6 @@ body {
 }
 
 @layer components {
-  /* Gold Hero Styling */
-  .gold-hero {
-    @apply relative bg-gradient-to-b from-yellow-600/20 via-yellow-800/10 to-transparent rounded-2xl p-8 md:p-12 mb-8 border border-yellow-700/30 overflow-hidden;
-  }
-  .gold-hero-title {
-    @apply text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-700 to-amber-800 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(234,179,8,0.3)];
-  }
-  .gold-hero-btn {
-    @apply mt-8 inline-flex items-center gap-2 px-6 py-3 bg-yellow-800/20 border border-yellow-600/40 text-yellow-800 rounded-full hover:bg-yellow-600/30 hover:border-yellow-500 transition shadow-lg shadow-yellow-900/10;
-  }
-
   /* Section Header Styling */
   .section-heading {
     @apply text-3xl font-bold text-yellow-600 drop-shadow-[0_0_6px_rgba(234,179,8,0.4)];
@@ -54,6 +43,20 @@ body {
   /* Border Styling */
   .gold-border {
     @apply border-t border-yellow-800/20 pt-6; 
+  }
+
+  /* Action Card/Form Styling */
+  .form-card {
+    @apply bg-[#c99c5e] border border-yellow-800/20 rounded-xl shadow-sm p-6 space-y-4;
+  }
+  .form-heading {
+    @apply text-xl font-bold text-[#3e2c1b];
+  }
+  .form-input {
+    @apply w-full p-3 bg-white border border-yellow-800/20 rounded-lg text-gray-900 focus:ring-2 focus:ring-[#ffd633] outline-none transition;
+  }
+  .btn-primary {
+    @apply w-full bg-[#f5e6d3] hover:bg-yellow-100 text-[#3e2c1b] font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   /* Table Styling */
