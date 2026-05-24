@@ -8,8 +8,10 @@ import { RedeemCard } from "./RedeemCard";
 import { DepositCard } from "./DepositCard";
 import { BurnCard } from "./BurnCard";
 import { Header } from "./Header";
-import { StatsGrid } from "./StatsGrid";
 import { CollateralSelector } from "./CollateralSelector";
+import { formatEther } from "viem";
+import { formatHealthFactorForDisplay, formatStablecoin } from "@/utils/helperFunctions";
+import { StatCard } from "../StatCard";
 
 
 /**
@@ -37,6 +39,9 @@ export default function Dashboard() {
 
 
   // Render UI 
+  // Only show loading skeleton when data is never loaded
+  const showLoading = isUserDataLoading && !isRefetching;
+
   // Determine whether to display dashboard components
   if (!isConnected) {
     return (
@@ -48,17 +53,24 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-12">
-      {/* Header*/}
+      {/* Header */}
       <Header onRefresh={refetchUserData} />
 
-      {/* Stats Grid */}
-      <StatsGrid
-        collateral={totalCollateralValueInUsd ?? 0n}
-        minted={totalDebt ?? 0n}
-        healthFactor={healthFactor ?? 0n}
-        isLoading={isUserDataLoading}
-        isRefetching={isRefetching}
-      />
+      {/* Stats Overview */}
+      <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          title="Deposited Collateral Value"
+          value={showLoading ? "Loading..." : `$${formatEther(totalCollateralValueInUsd || 0n)}`}
+        />
+        <StatCard
+          title="AUSD Minted"
+          value={showLoading ? "Loading..." : `${formatStablecoin(totalDebt || 0n)} AUSD`}
+        />
+        <StatCard
+          title="Health Factor"
+          value={showLoading ? "Loading..." : formatHealthFactorForDisplay(healthFactor)}
+        />
+      </div>
 
       <div className="space-y-6">
         {/* Collateral Selector Buttons */}
