@@ -132,20 +132,20 @@ export function DepositCard({ selectedToken }: DepositCardProps) {
     const showInsufficientBalance = isDepositAmountValid && doesDepositExceedBalance;
 
     return (
-        <form onSubmit={handleDeposit} className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-sm space-y-4">
-            <h3 className="text-xl font-bold text-white">Deposit {selectedToken.symbol}</h3>
+        <form onSubmit={handleDeposit} className="form-card">
+            <h4 className="form-heading">Deposit {selectedToken.symbol}</h4>
             <input
                 type="number"
                 placeholder="0.00"
                 step="0.01"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
-                className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
+                className="form-input"
             />
             <button
                 type="submit"
                 disabled={isDisabled}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary"
             >
                 {isPending ? "Processing..." : "Deposit"}
             </button>

@@ -47,7 +47,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-8">
+    <div className="max-w-7xl mx-auto p-6 space-y-12">
       {/* Header*/}
       <Header onRefresh={refetchUserData} />
 
@@ -60,19 +60,21 @@ export default function Dashboard() {
         isRefetching={isRefetching}
       />
 
-      {/* Collateral Selector */}
-      <CollateralSelector
-        tokens={collateralTokens}
-        selectedIndex={selectedTokenIndex}
-        onChange={setSelectedTokenIndex}
-      />
+      <div className="space-y-6">
+        {/* Collateral Selector Buttons */}
+        <CollateralSelector
+          tokens={collateralTokens}
+          selectedIndex={selectedTokenIndex}
+          onChange={setSelectedTokenIndex}
+        />
 
-      {/* Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <DepositCard selectedToken={selectedToken} />
-        <RedeemCard selectedToken={selectedToken} />
-        <MintCard />
-        <BurnCard />
+        {/* Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <DepositCard selectedToken={selectedToken} />
+          <RedeemCard selectedToken={selectedToken} />
+          <MintCard />
+          <BurnCard />
+        </div>
       </div>
     </div>
   );
