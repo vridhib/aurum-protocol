@@ -2,11 +2,11 @@
 import { AURUM_ENGINE_ADDRESS, AUR_GOLD_ADDRESS, AURUM_AUSD_ADDRESS } from "@/config/constants";
 import { useProtocolData } from "@/hooks/useProtocolData";
 import { formatEtherAsPercent, formatPercent, formatStablecoin, formatUsd } from "@/utils/helperFunctions";
-import { Coins, Gauge, ShieldAlert, Landmark, PiggyBank, Zap, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Coins, Gauge, ShieldAlert, Landmark, PiggyBank, Zap } from "lucide-react";
 import { StatCard } from "../StatCard";
 import { FeatureCard } from "./FeatureCard";
 import { LinkCard } from "./LinkCard";
+import { GoldHero } from "../GoldHero";
 
 /*
  * About page component for the Aurum Protocol frontend.
@@ -16,49 +16,18 @@ import { LinkCard } from "./LinkCard";
  * features and design choices, with the relevant links showcased at the bottom.
  */
 export default function AboutPage() {
-  const router = useRouter();
   const { collaterals, totalCollateralValueInUsd, totalDebt, utilization, treasuryBalance } = useProtocolData();
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-12">
+    <div className="max-w-7xl mx-auto p-6 space-y-20">
       {/* Gold Hero Banner */}
-      <div className="gold-hero">
-        <div className="absolute inset-0 bg-[url('/gold-bars.jpg')] bg-cover bg-center opacity-15" />
-        <div className="relative z-10 text-center">
-          <h1 className="gold-hero-title">Aurum Protocol</h1>
-          <p className="mt-6 text-gray-800 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
-            A decentralized stablecoin backed by AUR (tokenized gold) and ETH:
-            designed for capital efficiency, transparency, and resilience.
-
-          </p>
-          <button onClick={() => router.push("/")} className="gold-hero-btn">
-            <ArrowRight className="w-4 h-4" />
-            Back to App
-          </button>
-        </div>
-      </div>
-      <div>
-        <p className="text-xs text-gray-500">
-          Photo by {" "}
-          <a
-            href="https://unsplash.com/@scottsdalemint?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"
-            className="underline hover:text-yellow-700"
-          >
-            Scottsdale Mint
-          </a>{" "}
-          on{" "}
-          <a
-            href="https://unsplash.com/photos/a-pile-of-gold-bars-sitting-on-top-of-a-table--6BtUqTvWiE?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"
-            className="underline hover:text-yellow-700"
-          >
-            Unsplash
-          </a>
-        </p>
-      </div>
-
+      <GoldHero
+        title="Aurum Protocol"
+        subtitle="A decentralized stablecoin backed by AUR (tokenized gold) and ETH: designed for capital efficiency, transparency, and resilience."
+      />
 
       {/* Stats Bar */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 -mt-8">
         <StatCard title="Total Collateral" value={formatUsd(totalCollateralValueInUsd || 0n)} />
         <StatCard title="Total Debt" value={formatStablecoin(totalDebt || 0n)} />
         <StatCard title="Utilization" value={formatPercent(utilization || 0)} />
@@ -264,10 +233,7 @@ export default function AboutPage() {
       {/* Disclaimer */}
       <section className="gold-border">
         <p className="text-gray-500 text-sm leading-relaxed">
-          <strong>Disclaimer:</strong> This protocol is unaudited and deployed on the Sepolia testnet
-          for demonstration purposes. It is not intended for production use with real funds. All
-          risk parameters are configurable and should be carefully evaluated before any mainnet
-          deployment.
+          <strong>Disclaimer:</strong> This protocol is unaudited and deployed on the Sepolia testnet for demonstration purposes. It is not intended for production use with real funds. All risk parameters are configurable and should be carefully evaluated before any mainnet deployment.
         </p>
       </section>
     </div>
