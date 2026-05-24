@@ -1,7 +1,6 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { NavLink } from "./NavLink";
 
 
 /**
@@ -15,9 +14,8 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
  * @returns The navigation bar.
  */
 export function NavBar() {
-  const pathname = usePathname();
   return (
-    <nav className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-md sticky top-0 z-10">
+    <nav className="border-b border-yellow-600 bg-[#eccd7d] backdrop-blur-md sticky top-0 z-10">
       <div className="max-w-7x-1 max-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
@@ -25,37 +23,11 @@ export function NavBar() {
             <span className="text-xl font-bold tracking-tighter text-white">AURUM</span>
           </div>
           <div className="flex gap-4">
-            <Link
-              href="/"
-              className={`text-sm transition ${pathname === "/" ? "text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/monitor"
-              className={`text-sm transition ${pathname === "/monitor" ? "text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              Monitor
-            </Link>
-            <Link
-              href="/faucet"
-              className={`text-sm transition ${pathname === "/faucet" ? "text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              Claim One-Time AUR
-            </Link>
-            <Link
-              href="/savings"
-              className={`text-sm transition ${pathname === "/savings" ? "text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              Savings
-            </Link>
-            <Link
-              href="/about"
-              className={`text-sm transition ${pathname === "/about" ? "text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              About
-            </Link>
-
+            <NavLink href="/">Dashboard</NavLink>
+            <NavLink href="/monitor">Monitor</NavLink>
+            <NavLink href="/faucet">Claim One-Time AUR</NavLink>
+            <NavLink href="/savings">Savings</NavLink>
+            <NavLink href="/about">About</NavLink>
           </div>
         </div>
         <ConnectButton />
