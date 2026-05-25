@@ -1,25 +1,105 @@
 type User @entity(immutable: false) {
-  id: ID!                   # user address
-  collateral: BigInt!       # total AUR deposited (wei)
-  debt: BigInt!             # total AUSD minted (wei)
-  lastUpdated: BigInt!      # block timestamp
+  id: ID!                           # user address
+  lastUpdated: BigInt!              # block timestamp
+  lastIndex: BigInt!                # for interest accrual
+
+  # Per-collateral data via dervied fields
+  collaterals: [UserCollateral!] @derivedFrom(field: "user")
+  debtAllocations: [UserDebtAllocation!] @derivedFrom(field: "user")
   liquidationEvents: [Liquidation!] @derivedFrom(field: "user")
+  forceCloses: [ForceClose!] @derivedFrom(field: "user")
+}
+
+type UserCollateral @entity(immutable: false) {
+  id: ID!                          # user token
+  user: User!
+  token: Bytes!                    # collateral token address
+  amount: BigInt!                  # raw wei amount
+}
+
+type UserDebtAllocation @entity(immutable: false) {
+  id: ID!                          # user token
+  user: User!
+  token: Bytes!                    # collateral token address
+  normalizedDebt: BigInt!          # normalized debt
 }
 
 type Protocol @entity(immutable: false) {
-  id: ID!                  
-  totalCollateral: BigInt!
+  id: ID!                          # "1"
+  totalAurCollateral: BigInt!
+  totalWethCollateral: BigInt!
+  totalNormalizedDebt: BigInt!
   totalDebt: BigInt!
+  cumulativeIndex: BigInt!
+  utilization: BigInt!  
   totalUsers: Int!
+  lastUpdated: BigInt!   
 }
 
 type Liquidation @entity(immutable: true) {
-  id: ID!                   # transaction hash + log index
+  id: ID!                   
   user: User!
   liquidator: Bytes!
-  debtCovered: BigInt!
-  collateralSeized: BigInt!
-  fee: BigInt!
+  debtToCover: BigInt!
+  collateralToken: Bytes!
+  totalCollateralToRedeem: BigInt!
+  protocolShare: BigInt!
   block: BigInt!
+  timestamp: BigInt!
+}
+
+type ForceClose @entity(immutable: true) {
+  id: ID!
+  user: User!
+  debtAbsorbed: BigInt!
+  collateralValueSeized: BigInt!
+  block: BigInt!
+  timestamp: BigInt!
+}
+
+type CumulativeIndexUpdate @entity(immutable: true) {
+  id: ID!
+  newIndex: BigInt!
+  utilization: BigInt!
+  timestamp: BigInt!
+}
+
+type LTVUpdate @entity(immutable: true) {
+  id: ID!
+  token: Bytes!
+  newLtv: BigInt!
+  timestamp: BigInt!
+}
+
+type CollateralInfoUpdate @entity(immutable: true) {
+  id: ID!
+  token: Bytes!
+  volatilityFeed: Bytes
+  newLtv: BigInt
+  newDebtCeiling: BigInt
+  isActive: Boolean!
+  timestamp: BigInt!
+}
+
+type TreasuryFee @entity(immutable: true) {
+  id: ID!
+  treasury: Bytes!
+  token: Bytes!
+  tokenAmount: BigInt!
+  timestamp: BigInt!
+}
+
+type DebtCeilingHitUpdate @entity(immutable: true) {
+  id: ID!
+  token: Bytes!
+  totalNormalizedDebt: BigInt!
+  allocatedDebt: BigInt!
+  timestamp: BigInt!
+}
+
+type CollateralSeizedUpdate @entity(immutable: true) {
+  id: ID!
+  token: Bytes!
+  amount: BigInt!
   timestamp: BigInt!
 }

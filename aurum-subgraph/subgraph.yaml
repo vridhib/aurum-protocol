@@ -8,29 +8,56 @@ dataSources:
     name: AurumEngine
     network: sepolia
     source:
-      address: "0x471C1D6f2c8D9883D051F296429bCadB4eB4DC11"
+      address: "0xf3526e0a9e149b418da4a2bb31ded7ca4760cb83"
       abi: AurumEngine
-      startBlock: 10570112
+      startBlock: 10892821
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - User
+        - UserCollateral
+        - UserDebtAllocation
         - Protocol
         - Liquidation
+        - ForceClose
+        - CumulativeIndexUpdate
+        - LTVUpdate
+        - CollateralInfoUpdate
+        - TreasuryFee
+        - DebtCeilingHitUpdate
+        - CollateralSeizedUpdate
       abis:
         - name: AurumEngine
           file: ./abis/AurumEngine.json
       eventHandlers:
-        - event: CollateralDeposited(indexed address,indexed uint256)
+        - event: CollateralDeposited(indexed address,indexed address,indexed uint256)
           handler: handleCollateralDeposited
-        - event: CollateralRedeemed(indexed address,indexed address,uint256)
+        - event: CollateralRedeemed(indexed address,indexed address,indexed address,uint256)
           handler: handleCollateralRedeemed
         - event: MintAUSD(indexed address,uint256)          
           handler: handleMintAUSD
         - event: BurnAUSD(indexed address,uint256)          
           handler: handleBurnAUSD
-        - event: Liquidated(indexed address,indexed address,uint256,uint256,uint256)
+        - event: Liquidated(indexed address,indexed address,uint256,indexed address,uint256,uint256)
           handler: handleLiquidated
+        - event: ForceClosed(indexed address,uint256,uint256)
+          handler: handleForceClosed
+        - event: DebtAllocated(address,address,uint256)
+          handler: handleDebtAllocated
+        - event: DebtDeallocated(address,address,uint256)
+          handler: handleDebtDeallocated
+        - event: CumulativeIndexUpdated(uint256,uint256)
+          handler: handleCumulativeIndexUpdated
+        - event: LTVUpdated(address,uint256)
+          handler: handleLtvUpdated
+        - event: CollateralInfoUpdated(address,address,uint256,uint256,bool)
+          handler: handleCollateralInfoUpdated
+        - event: TreasuryFeeSent(address,address,uint256)
+          handler: handleTreasuryFeeSent
+        - event: DebtCeilingHit(indexed address,uint256,uint256)
+          handler: handleDebtCeilingHit
+        - event: CollateralSeized(indexed address,uint256)
+          handler: handleCollateralSeized
       file: ./src/aurum-engine.ts
