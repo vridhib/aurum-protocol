@@ -74,6 +74,7 @@ type LTVUpdate @entity(immutable: true) {
 type CollateralInfoUpdate @entity(immutable: true) {
   id: ID!
   token: Bytes!
+  priceFeed: Bytes!
   volatilityFeed: Bytes
   newLtv: BigInt
   newDebtCeiling: BigInt

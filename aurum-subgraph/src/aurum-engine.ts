@@ -256,6 +256,7 @@ export function handleCollateralInfoUpdated(event: CollateralInfoUpdated): void 
   let update = new CollateralInfoUpdate(event.transaction.hash.toHexString() + "-" + event.logIndex.toString());
   update.token = event.params.token;
   update.volatilityFeed = event.params.volatilityFeed;
+  update.priceFeed = event.params.priceFeed;
   update.newLtv = event.params.newLtv;
   update.newDebtCeiling = event.params.newDebtCeiling;
   update.isActive = event.params.isActive;

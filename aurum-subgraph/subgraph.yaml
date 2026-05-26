@@ -8,9 +8,9 @@ dataSources:
     name: AurumEngine
     network: sepolia
     source:
-      address: "0xf3526e0a9e149b418da4a2bb31ded7ca4760cb83"
+      address: "0xfc243b4040002d4a9fc3ec412af04eaa2f0da525"
       abi: AurumEngine
-      startBlock: 10892821
+      startBlock: 10928150
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -52,7 +52,7 @@ dataSources:
           handler: handleCumulativeIndexUpdated
         - event: LTVUpdated(address,uint256)
           handler: handleLtvUpdated
-        - event: CollateralInfoUpdated(address,address,uint256,uint256,bool)
+        - event: CollateralInfoUpdated(address,address,address,uint256,uint256,bool)
           handler: handleCollateralInfoUpdated
         - event: TreasuryFeeSent(address,address,uint256)
           handler: handleTreasuryFeeSent
