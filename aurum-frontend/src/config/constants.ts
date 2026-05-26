@@ -1,14 +1,14 @@
 import { getAddress } from "viem";
 
 
-export const AURUM_ENGINE_ADDRESS = getAddress("0xF3526E0A9E149B418da4A2Bb31DEd7ca4760Cb83");
-export const AUR_GOLD_ADDRESS = getAddress("0xdA33E052c5719A608734a2063404CBDF97cce794");
+export const AURUM_ENGINE_ADDRESS = getAddress("0xfc243b4040002d4a9fc3ec412af04eaa2f0da525");
+export const AUR_GOLD_ADDRESS = getAddress("0xa07ad08f298c7e8a2b432f7d25b86fe7e101902b");
 export const WETH_ADDRESS = getAddress("0xdd13E55209Fd76AfE204dBda4007C227904f0a81");
-export const AURUM_AUSD_ADDRESS = getAddress("0x32B3A6D9cc3dbe4039e206569DeDcd080974CE67");
-export const AUR_FAUCET_ADDRESS = getAddress("0xBaC86235E6FF65F3e1029B0C2BA5891BC3C9d193");
-export const AURUM_SAVINGS_ADDRESS = getAddress("0xfA42D5583B57424487d6aBa17138e67CF79330f8");
-export const AURUM_INTEREST_RATE_MODEL = getAddress("0x9a690e4694F721dDf69e50f7EB7f6A53b0ae2094");
-export const AURUM_TREASURY_ADDRESS = getAddress("0x970D383029779D7E817D49A0Ba090D6A601C4e9E");
+export const AURUM_AUSD_ADDRESS = getAddress("0xde76cf5c4f6d0b6687f0ebf460cdf9468744c8c7");
+export const AUR_FAUCET_ADDRESS = getAddress("0x3ff3edfc64d8be337c051492824aa8ce823cfad1");
+export const AURUM_SAVINGS_ADDRESS = getAddress("0xafc5ec7e1a35b85f91f540284ddb253832528180");
+export const AURUM_INTEREST_RATE_MODEL = getAddress("0x3d719281d30b4a1e6a7053f62e18477612f730df");
+export const AURUM_TREASURY_ADDRESS = getAddress("0x8d95b5282b7f94ce5d4dc5bdc946d8ef180f4297");
 
 export const COLLATERAL_TOKENS = [
     { address: AUR_GOLD_ADDRESS, symbol: "AUR" },
