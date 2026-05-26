@@ -128,7 +128,7 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     event LTVUpdated(address token, uint256 newLtv);
     /// @notice Emitted when the owner updates a collateral token's configuration.
     event CollateralInfoUpdated(
-        address token, address volatilityFeed, uint256 newLtv, uint256 newDebtCeiling, bool isActive
+        address token, address priceFeed, address volatilityFeed, uint256 newLtv, uint256 newDebtCeiling, bool isActive
     );
     /// @notice Emitted when interest fees are minted to the treasury during a burn or liquidation.
     event TreasuryFeeSent(address treasury, address token, uint256 tokenAmount);
@@ -277,20 +277,22 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
         s_forwarderAddress = forwarderAddress;
     }
 
-    /// @notice Update volatility feed, LTV, debt ceiling, and active status for a collateral token. Pass 0 or address(0) to leave a value unchanged.
+    /// @notice Update price feed, volatility feed, LTV, debt ceiling, and active status for a collateral token. Pass 0 or address(0) to leave a value unchanged.
     function setCollateralInfo(
         address collateralToken,
+        address priceFeed,
         address volatilityFeed,
         uint256 newLtv,
         uint256 newDebtCeiling,
         bool isActive
     ) external onlyOwner {
         CollateralInfo storage info = s_collateralInfo[collateralToken];
+        if (priceFeed != address(0)) info.priceFeed = priceFeed;
         if (volatilityFeed != address(0)) info.volatilityFeed = volatilityFeed;
         if (newLtv != 0) info.ltv = newLtv;
         if (newDebtCeiling != 0) info.debtCeiling = newDebtCeiling;
         info.isActive = isActive;
-        emit CollateralInfoUpdated(collateralToken, volatilityFeed, newLtv, newDebtCeiling, isActive);
+        emit CollateralInfoUpdated(collateralToken, priceFeed, volatilityFeed, newLtv, newDebtCeiling, isActive);
     }
 
     /// @notice Deposit `amountCollateral` of `collateralToken` and mint `amountAUSDToMint` AUSD in one transaction.
@@ -820,10 +822,5 @@ contract AurumEngine is ReentrancyGuard, Ownable, AutomationCompatible, Pausable
     /// @notice Returns the user's debt allocation for the specified `collateralToken`
     function getUserDebtAllocation(address user, address collateralToken) external view returns (uint256) {
         return s_userDebtAllocation[user][collateralToken];
-    }
-
-    /// @notice Returns whether a protocol meets the pause condition (collateralization ratio < 1.10)
-    function canPause() external view returns (bool) {
-        return _canPause();
     }
 }

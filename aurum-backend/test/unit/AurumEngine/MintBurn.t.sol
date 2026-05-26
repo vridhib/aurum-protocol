@@ -119,7 +119,7 @@ contract MintBurnTest is BaseTest {
         // Lower WETH's debt ceiling to a small value
         uint256 loweredDebtCeiling = 1000e18; // 1000 AUSD
         vm.startPrank(aue.owner());
-        aue.setCollateralInfo(weth, address(0), 0, loweredDebtCeiling, true);
+        aue.setCollateralInfo(weth, address(0), address(0), 0, loweredDebtCeiling, true);
         vm.stopPrank();
 
         // Calculate USD values
@@ -157,8 +157,8 @@ contract MintBurnTest is BaseTest {
         // Set both gold and WETH debt ceilings to 0
         uint256 almostZeroCeiling = 1;
         vm.startPrank(aue.owner());
-        aue.setCollateralInfo(aurumGold, address(0), 0, almostZeroCeiling, true);
-        aue.setCollateralInfo(weth, address(0), 0, almostZeroCeiling, true);
+        aue.setCollateralInfo(aurumGold, address(0), address(0), 0, almostZeroCeiling, true);
+        aue.setCollateralInfo(weth, address(0), address(0), 0, almostZeroCeiling, true);
         vm.stopPrank();
 
         // User attempts to mint any amount but reverts
@@ -457,7 +457,7 @@ contract MintBurnTest is BaseTest {
     function testHighUtilizationNoOverflow() public {
         // Set up collateral token with LTV = 100% to allow minteing up to full collateral value
         vm.startPrank(aue.owner());
-        aue.setCollateralInfo(aurumGold, address(0), 100, 0, true);
+        aue.setCollateralInfo(aurumGold, address(0), address(0), 100, 0, true);
         vm.stopPrank();
 
         // Give user some gold and deposit
@@ -575,7 +575,7 @@ contract MintBurnTest is BaseTest {
     function testSetCollateralInfoUpdatesDebtCeiling() public {
         uint256 newDebtCeiling = 100_000_000e18;
         vm.prank(aue.owner());
-        aue.setCollateralInfo(aurumGold, address(0), 0, newDebtCeiling, true);
+        aue.setCollateralInfo(aurumGold, address(0), address(0), 0, newDebtCeiling, true);
         assertEq(aue.getCollateralInfo(aurumGold).debtCeiling, newDebtCeiling);
     }
 }

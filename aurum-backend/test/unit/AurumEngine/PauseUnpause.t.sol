@@ -69,7 +69,6 @@ contract PauseUnpauseTests is BaseTest {
         _makeProtocolUnderCollateralized();
         // Owner pauses
         vm.startPrank(aue.owner());
-        assertEq(aue.canPause(), true);
         aue.pause();
         vm.stopPrank();
         assertTrue(aue.paused());
@@ -114,7 +113,6 @@ contract PauseUnpauseTests is BaseTest {
     function testPauseRevertsWhenConditionNotMet() public {
         _setUpUserAccount(1e18, 0, 425e18); // Healthy account
         vm.startPrank(aue.owner());
-        assertEq(aue.canPause(), false);
         vm.expectRevert(AurumEngine.AurumEngine__PauseConditionNotMet.selector);
         aue.pause();
         vm.stopPrank();
@@ -171,7 +169,7 @@ contract PauseUnpauseTests is BaseTest {
         _makeProtocolUnderCollateralized();
         vm.prank(aue.owner());
         aue.pause();
-        vm.warp(block.timestamp + 1 hours + 1);
+        vm.warp(block.timestamp + 6 hours + 1);
 
         // checkUpkeep should still return true
         (bool neededAfter, ) = aue.checkUpkeep("");

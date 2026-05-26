@@ -21,7 +21,7 @@ contract ChainlinkVolatilityOracleTest is Test {
     }
 
     function testRevertsWhenStale() public {
-        vm.warp(block.timestamp + 3 hours + 1);
+        vm.warp(block.timestamp + 30 days + 1 seconds);
         vm.expectRevert(OracleLib.OracleLib__StalePrice.selector);
         oracle.getAnnualizedVolatility();
     }

@@ -89,7 +89,7 @@ contract DynamicLtvTest is BaseTest {
     function testSetCollateralInfoUpdatesVolatilityFeed() public {
         address newFeed = makeAddr("newVolFeed");
         vm.prank(aue.owner());
-        aue.setCollateralInfo(aurumGold, newFeed, 0, 0, true);
+        aue.setCollateralInfo(aurumGold, address(0), newFeed, 0, 0, true);
         assertEq(aue.getCollateralInfo(aurumGold).volatilityFeed, newFeed);
     }
 
@@ -97,7 +97,7 @@ contract DynamicLtvTest is BaseTest {
     function testSetCollateralInfoUpdatesLTV() public {
         uint256 newLTV = 80;
         vm.prank(aue.owner());
-        aue.setCollateralInfo(aurumGold, address(0), newLTV, 0, true);
+        aue.setCollateralInfo(aurumGold, address(0), address(0), newLTV, 0, true);
         assertEq(aue.getCollateralInfo(aurumGold).ltv, newLTV);
     }
 }

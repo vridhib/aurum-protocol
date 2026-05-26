@@ -64,7 +64,7 @@ contract DepositTests is BaseTest {
     // Test that depositCollateral() using inactive token reverts
     function testDepositInactiveTokenReverts() public {
         vm.prank(aue.owner());
-        aue.setCollateralInfo(weth, address(0), 0, 0, false);
+        aue.setCollateralInfo(weth, address(0), address(0), 0, 0, false);
 
         vm.startPrank(user);
         ERC20Mock(weth).approve(address(aue), amountCollateral);

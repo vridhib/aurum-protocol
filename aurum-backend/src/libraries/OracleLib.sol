@@ -13,7 +13,9 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
 library OracleLib {
     error OracleLib__StalePrice();
 
-    uint256 private constant TIMEOUT = 3 hours; // 1 hour heartbeat + 2 hour safety margin
+    // Previously TIMEOUT = 3 hours ( 1 hour heartbeat + 2 hour safety margin)
+    // Updated to 30 days due to outdated data on testnets
+    uint256 private constant TIMEOUT = 30 days;
 
     /**
      * @notice Fetches the latest round data and reverts if the price is stale or invalid.
@@ -25,23 +27,19 @@ library OracleLib {
      * @return answeredInRound The round ID in which the answer was computed.
      */
     function staleCheckLatestRoundData(AggregatorV3Interface priceFeed)
-        public
+        internal
         view
         returns (uint80, int256, uint256, uint256, uint80)
     {
         (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) =
             priceFeed.latestRoundData();
 
+        if (answer <= 0) revert OracleLib__StalePrice();
         if (updatedAt == 0 || answeredInRound < roundId) revert OracleLib__StalePrice();
 
         uint256 secondsSince = block.timestamp - updatedAt;
         if (secondsSince > TIMEOUT) revert OracleLib__StalePrice();
 
         return (roundId, answer, startedAt, updatedAt, answeredInRound);
-    }
-
-    /// @notice Returns the staleness threshold used by the library.
-    function getTimeout(AggregatorV3Interface /* chainlinkFeed */) public pure returns (uint256) {
-        return TIMEOUT;
     }
 }

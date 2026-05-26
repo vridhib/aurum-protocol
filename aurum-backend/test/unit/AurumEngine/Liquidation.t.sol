@@ -474,7 +474,7 @@ contract LiquidationTests is BaseTest {
         MockV3Aggregator(ethUsdPriceFeed).updateAnswer(1000e8);
 
         vm.prank(aue.owner());
-        aue.setCollateralInfo(weth, address(0), 0, 0, false);
+        aue.setCollateralInfo(weth, address(0), address(0), 0, 0, false);
 
         vm.prank(liquidator);
         vm.expectRevert(abi.encodeWithSelector(AurumEngine.AurumEngine__TokenNotAllowed.selector, weth));
