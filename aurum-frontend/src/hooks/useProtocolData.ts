@@ -70,6 +70,7 @@ export function useProtocolData(): {
   totalDebt: bigint | undefined;
   utilization: number | undefined;
   treasuryBalance: bigint | undefined;
+  cumulativeIndex: bigint | undefined;
 } {
   // Fetch CollateralInfo for each known token
   const { data: collateralInfos, isLoading: isCollateralInfosLoading, refetch: refetchCollateralInfos } = useReadContracts({
@@ -158,13 +159,24 @@ export function useProtocolData(): {
     refetch: () => void
   };
 
+  const { data: cumulativeIndex, isLoading: isCumulativeIndexLoading, refetch: refetchCumulativeIndex } = useReadContract({
+    address: AURUM_ENGINE_ADDRESS,
+    abi: aurumEngineJson.abi,
+    functionName: "s_cumulativeIndex",
+  }) as {
+    data: bigint | undefined
+    isLoading: boolean
+    refetch: () => void
+  };
+
   // Combined loading state
   const isLoading =
     isCollateralInfosLoading ||
     isPricePerAurLoading ||
     isPricePerWethLoading ||
     isGlobalMetricsLoading ||
-    isTreasuryBalanceLoading;
+    isTreasuryBalanceLoading ||
+    isCumulativeIndexLoading;
 
   // Combined refetch
   const refetch = useCallback(() => {
@@ -173,7 +185,8 @@ export function useProtocolData(): {
     refetchPricePerWeth();
     refetchGlobalMetrics();
     refetchTreasuryBalance();
-  }, [refetchCollateralInfos, refetchPricePerAur, refetchPricePerWeth, refetchGlobalMetrics, refetchTreasuryBalance]);
+    refetchCumulativeIndex();
+  }, [refetchCollateralInfos, refetchPricePerAur, refetchPricePerWeth, refetchGlobalMetrics, refetchTreasuryBalance, refetchCumulativeIndex]);
 
   // Return everything, including loading flag and possibly undefined data
   return {
@@ -185,6 +198,7 @@ export function useProtocolData(): {
     totalCollateralValueInUsd,
     totalDebt,
     utilization,
-    treasuryBalance
+    treasuryBalance,
+    cumulativeIndex
   }
 }

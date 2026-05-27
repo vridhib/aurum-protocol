@@ -6,9 +6,11 @@
  */
 export function StatCard({ title, value }: { title: string; value: string }) {
   return (
-    <div className="gold-card p-4 text-center hover:border-yellow-600/50;">
+    <div className="gold-card p-4 text-center  hover:border-yellow-600/50 flex flex-col h-full">
       <p className="text-yellow-900 text-xs uppercase tracking-wider font-semibold">{title}</p>
-      <p className="text-2xl font-bold text-yellow-800 mt-1">{value}</p>
+      <div className="flex-1 flex items-center justify-center mt-1">
+        <p className="text-2xl font-bold text-yellow-800">{value}</p>
+      </div>
     </div>
   );
 }

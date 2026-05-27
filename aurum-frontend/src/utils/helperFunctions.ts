@@ -104,9 +104,9 @@ export function getHealthColor(healthWei: bigint | undefined): string {
     // Otherwise return green, yellow, and red based on health factor range
     // Convert to number (wei -> decimal)
     const health = Number(formatEther(healthWei));
-    if (health >= 1.5) return "text-green-400";
-    if (health >= 1.0) return "text-yellow-400";
-    return "text-red-400";
+    if (health >= 1.5) return "text-green-600";
+    if (health >= 1.0) return "text-yellow-600";
+    return "text-red-600";
 }
 
 
