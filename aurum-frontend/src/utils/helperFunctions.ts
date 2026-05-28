@@ -60,7 +60,8 @@ export function formatHealthFactorForDisplay(healthFactorWei: bigint | undefined
     if (healthFactorWei === MAX_UINT256) return "∞";
     // Otherwise return formatted number health string
     const healthFactorNumber = Number(formatEther(healthFactorWei));
-    return healthFactorNumber.toFixed(2);
+    const decimals = healthFactorNumber < 1.5 ? 4 : 2;
+    return healthFactorNumber.toFixed(decimals);
 }
 
 

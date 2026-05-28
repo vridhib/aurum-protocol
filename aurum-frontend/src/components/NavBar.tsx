@@ -24,6 +24,7 @@ export function NavBar() {
           </div>
           <div className="flex gap-4">
             <NavLink href="/">Dashboard</NavLink>
+            <NavLink href="/liquidation">Liquidation</NavLink>
             <NavLink href="/monitor">Monitor</NavLink>
             <NavLink href="/faucet">Claim One-Time AUR</NavLink>
             <NavLink href="/savings">Savings</NavLink>
