@@ -61,3 +61,29 @@ dataSources:
         - event: CollateralSeized(indexed address,uint256)
           handler: handleCollateralSeized
       file: ./src/aurum-engine.ts
+  - kind: ethereum
+    name: AurumGold
+    network: sepolia
+    source:
+      address: "0xa07ad08f298c7e8a2b432f7d25b86fe7e101902b"
+      abi: AurumGold
+      startBlock: 10928150
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - GoldDeposited
+        - GoldWithdrawn
+        - GoldLoss
+      abis:
+        - name: AurumGold
+          file: ./abis/AurumGold.json
+      eventHandlers:
+        - event: GoldDeposited(indexed address,uint256,uint256)
+          handler: handleGoldDeposited
+        - event: GoldWithdrawn(indexed address,uint256,uint256)
+          handler: handleGoldWithdrawn
+        - event: GoldLoss(indexed address,uint256)         
+          handler: handleGoldLoss
+      file: ./src/aurum-gold.ts
