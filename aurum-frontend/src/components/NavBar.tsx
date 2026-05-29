@@ -4,11 +4,12 @@ import { NavLink } from "./NavLink";
 
 
 /**
- * Navigation bar for the Aurum Protocol frontend.
+ * Navigation bar for the Aurum frontend.
  *
- * Renders the logo, navigation links (dashboard, monitor, faucet, savings, 
- * and about), and the wallet connection button (via RainbowKit). The active
- * link is highlighted based on the current route.
+ * Renders the logo, navigation links (main dashboard, liquidation dashboard, 
+ * protocol monitor, gold ledger, one-time claim faucet, savings, and about), 
+ * and the wallet connection button (via RainbowKit). The active link is 
+ * highlighted based on the current route.
  *
  * @component
  * @returns The navigation bar.
@@ -26,6 +27,7 @@ export function NavBar() {
             <NavLink href="/">Dashboard</NavLink>
             <NavLink href="/liquidation">Liquidation</NavLink>
             <NavLink href="/monitor">Monitor</NavLink>
+            <NavLink href="/gold-ledger">Gold Ledger</NavLink>
             <NavLink href="/faucet">Claim One-Time AUR</NavLink>
             <NavLink href="/savings">Savings</NavLink>
             <NavLink href="/about">About</NavLink>

@@ -86,6 +86,11 @@ export function formatUsd(value: bigint, decimals = 2): string {
 }
 
 
+// Formats a wei‑scaled bigint as a human‑readable number with commas.
+export function formatWeiAmount(amount: bigint): string {
+  return Number(formatEther(amount)).toLocaleString();
+}
+
 // Format a number as a percentage string
 export function formatPercent(value: number, decimals = 1): string {
   return `${(value * 100).toFixed(decimals)}%`;
