@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isAddress, parseEther, type Abi } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import aurumAUSDJson from "@/abis/AurumUSD.json";
@@ -12,23 +12,33 @@ import { useApproveAndExecute } from "@/hooks/useApproveAndExecute";
 import { formatHealthFactorForDisplay, formatStablecoin, formatUsd, getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
 import { CollateralSelector } from "../dashboard/CollateralSelector";
 import { Zap } from "lucide-react";
+import { useUserPositions } from "@/hooks/useUserPositions";
+import { UserPositionRow } from "../monitor/UserPositionRow";
 
 
 /**
  * Liquidation dashboard for Aurum's frontend.
  * 
- * Reads the user's AUSD balance and allowance, validates the input
- * against the wallet balance, and executes the approve + liquidate 
- * flow through AurumEngine. The engine automatically caps the 
- * debtToCover amount at the user's maxDebtToCover debt (calculated 
- * from the user's dynamic close factor), so trying to cover more 
- * than the maxDebtToCover does not cause an error because it 
- * simply sets the debtToCover to maxDebtToCover.
+ * Displays a table of liquidatable users and a manual form with a
+ * profit card. 
  * 
- * If the target address is eligible for liquidation, a profit card
- * with the 5% payout (in collateral) is shown, displaying the 
- * collateral amount and its USD value. A message will be shown if 
- * the target user does not have the selected collateral type.
+ * The table shows every liquidatable user with a 'Liquidate' button in an
+ * 'Action' column. Clicking on the 'Liquidate' button auto-fills the form 
+ * by setting that target user to 'targetToLiquidate'. The liquidator/keeper 
+ * can then fill out the amount of debt that they will repay.
+ * 
+ * The component reads the user's AUSD balance and allowance, validates the 
+ * input against the wallet balance, and executes the approve + liquidate 
+ * flow through AurumEngine. The engine automatically caps the debtToCover 
+ * amount at the user's maxDebtToCover debt (calculated from the user's 
+ * dynamic close factor), so trying to cover more than the maxDebtToCover 
+ * does not cause an error because it simply sets the debtToCover to 
+ * maxDebtToCover.
+ * 
+ * If the target address is eligible for liquidation, a profit card with the 
+ * 5% payout (in collateral) is shown, displaying the collateral amount and 
+ * its USD value. A message will be shown if the target user does not have 
+ * the selected collateral type.
  *
  * Error messages are shown one at a time in priority order:
  * 1. Invalid Ethereum address
@@ -40,12 +50,15 @@ import { Zap } from "lucide-react";
  * banner is updated via TransactionContext.
  * 
  * @component
- * @returns The rendered UI form to liquidate users with a HF < 1.00.   
+ * @returns The rendered UI with a table of liquidatable users and form to 
+ *          liquidate users with a HF < 1.00.   
  */
 export default function LiquidationDashboard() {
   const { address: liquidatorAddress } = useAccount();
   const { refetch: refetchLiquidatorData } = useUserData();
   const { setPendingAction } = useTransactionContext();
+  const { positions: underwaterPositions, loading, error } = useUserPositions(PRECISION);
+  const formRef = useRef<HTMLDivElement>(null);
 
 
   // Local state
@@ -124,7 +137,7 @@ export default function LiquidationDashboard() {
     catch { return 0n; }
   }, [debtToCoverAmount]);
 
-  const { data: profitData, isLoading: isProfitDataLoading } = useReadContract({
+  const { data: profitData } = useReadContract({
     address: AURUM_ENGINE_ADDRESS,
     abi: aurumEngineJson.abi,
     functionName: "getLiquidationProfit",
@@ -199,6 +212,12 @@ export default function LiquidationDashboard() {
     startLiquidate(parseEther(debtToCoverAmount));
   };
 
+  // Select target handler
+  const handleSelectTarget = (address: string) => {
+    setTargetToLiquidate(address);
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+
 
   // Error message display 
   const isTargetEligible = targetHealthFactor && targetHealthFactor < PRECISION;
@@ -236,7 +255,47 @@ export default function LiquidationDashboard() {
         <hr className="gold-border"></hr>
       </div>
 
-      <div className="mt-8">
+      {/* Underwater Positions Table */}
+      {loading && <p>Loading underwater positions...</p>}
+      {error && <p className="text-red-600">Error: {error.message}</p>}
+      {!loading && !error && (
+        <div className="table-wrapper">
+          <table className="gold-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Total Collateral Value (USD)</th>
+                <th>Total Debt</th>
+                <th>Health Factor</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {underwaterPositions.map(p => (
+                <UserPositionRow
+                  key={p.id}
+                  position={p}
+                  action={
+                    <button 
+                      onClick={() => handleSelectTarget(p.id)} 
+                      className="text-sm text-yellow-700 hover:underline whitespace-nowrap"
+                    >
+                      Liquidate
+                    </button>
+                  }
+                />
+              ))}
+              {underwaterPositions.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="text-center text-gray-500">No liquidatable positions.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div ref={formRef} className="mt-8">
         {/* Collateral Selector */}
         <CollateralSelector
           tokens={collateralTokens}
