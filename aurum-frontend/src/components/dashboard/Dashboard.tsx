@@ -9,8 +9,7 @@ import { DepositCard } from "./DepositCard";
 import { BurnCard } from "./BurnCard";
 import { Header } from "./Header";
 import { CollateralSelector } from "../ui/CollateralSelector";
-import { formatEther } from "viem";
-import { formatHealthFactorForDisplay, formatStablecoin } from "@/utils/helperFunctions";
+import { formatHealthFactorForDisplay, formatStablecoin, formatUsd } from "@/utils/helperFunctions";
 import { StatCard } from "../ui/StatCard";
 
 
@@ -61,7 +60,7 @@ export default function Dashboard() {
       <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title="Deposited Collateral Value"
-          value={showLoading ? "Loading..." : `$${formatEther(totalCollateralValueInUsd || 0n)}`}
+          value={showLoading ? "Loading..." : `${formatUsd(totalCollateralValueInUsd || 0n)}`}
         />
         <StatCard
           title="AUSD Minted"
