@@ -10,10 +10,10 @@ import { useUserData } from "@/hooks/useUserData";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { useApproveAndExecute } from "@/hooks/useApproveAndExecute";
 import { formatHealthFactorForDisplay, formatStablecoin, formatUsd, getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
-import { CollateralSelector } from "../dashboard/CollateralSelector";
+import { CollateralSelector } from "../ui/CollateralSelector";
 import { Zap } from "lucide-react";
 import { useUserPositions } from "@/hooks/useUserPositions";
-import { UserPositionRow } from "../monitor/UserPositionRow";
+import { UserPositionRow } from "@/components/ui/UserPositionRow";
 
 
 /**

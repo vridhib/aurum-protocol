@@ -5,7 +5,7 @@ import aurumGoldFaucetJson from "@/abis/AurumGoldFaucet.json";
 import { AUR_FAUCET_ADDRESS } from "@/config/constants";
 import { useTransactionContext } from "@/context/useTransactionContext";
 import { useUserData } from "@/hooks/useUserData";
-import { GoldHero } from "../GoldHero";
+import { GoldHero } from "../ui/GoldHero";
 
 
 /**

@@ -4,10 +4,10 @@ import { gql, TypedDocumentNode } from "@apollo/client";
 import { useLazyQuery, useQuery } from "@apollo/client/react";
 import { useReadContract } from "wagmi";
 import { useRef, useState } from "react";
-import { StatCard } from "../StatCard";
+import { StatCard } from "../ui/StatCard";
 import { formatEther } from "viem";
 import { formatPercent, formatStablecoin } from "@/utils/helperFunctions";
-import { TooltipPortal } from "./ToolTipPortal";
+import { TooltipPortal } from "../ui/TooltipPortal";
 
 
 // Define the shape of the data returned by the subgraph

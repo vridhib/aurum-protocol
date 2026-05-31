@@ -9,8 +9,8 @@ import { useTransactionContext } from "@/context/useTransactionContext";
 import { useApproveAndExecute } from "@/hooks/useApproveAndExecute";
 import { useAmountValidation } from "@/hooks/useAmountValidation";
 import { formatStablecoin, getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
-import { StatCard } from "../StatCard";
-import { GoldHero } from "../GoldHero";
+import { StatCard } from "../ui/StatCard";
+import { GoldHero } from "../ui/GoldHero";
 
 
 /**

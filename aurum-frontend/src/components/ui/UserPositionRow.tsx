@@ -1,7 +1,7 @@
 "use client";
 import { UserPosition } from "@/hooks/useUserPositions";
 import { formatHealthFactorForDisplay, formatStablecoin, formatUsd, getHealthColor, shortenAddress } from "@/utils/helperFunctions";
-import { TooltipPortal } from "./ToolTipPortal";
+import { TooltipPortal } from "./TooltipPortal";
 import React, { useState } from "react";
 import { CopyIcon } from "lucide-react";
 

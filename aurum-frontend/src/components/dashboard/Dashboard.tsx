@@ -8,10 +8,10 @@ import { RedeemCard } from "./RedeemCard";
 import { DepositCard } from "./DepositCard";
 import { BurnCard } from "./BurnCard";
 import { Header } from "./Header";
-import { CollateralSelector } from "./CollateralSelector";
+import { CollateralSelector } from "../ui/CollateralSelector";
 import { formatEther } from "viem";
 import { formatHealthFactorForDisplay, formatStablecoin } from "@/utils/helperFunctions";
-import { StatCard } from "../StatCard";
+import { StatCard } from "../ui/StatCard";
 
 
 /**

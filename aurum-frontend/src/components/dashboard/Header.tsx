@@ -1,6 +1,6 @@
 "use client"
 import { useRouter } from "next/navigation";
-import { LoadingSpinner } from "../LoadingSpinner";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { useTransactionContext } from "@/context/useTransactionContext";
 
 /**

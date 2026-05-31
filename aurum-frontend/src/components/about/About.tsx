@@ -3,10 +3,10 @@ import { AURUM_ENGINE_ADDRESS, AUR_GOLD_ADDRESS, AURUM_AUSD_ADDRESS } from "@/co
 import { useProtocolData } from "@/hooks/useProtocolData";
 import { formatEtherAsPercent, formatPercent, formatStablecoin, formatUsd } from "@/utils/helperFunctions";
 import { Coins, Gauge, ShieldAlert, Landmark, PiggyBank, Zap } from "lucide-react";
-import { StatCard } from "../StatCard";
+import { StatCard } from "../ui/StatCard";
 import { FeatureCard } from "./FeatureCard";
 import { LinkCard } from "./LinkCard";
-import { GoldHero } from "../GoldHero";
+import { GoldHero } from "../ui/GoldHero";
 
 
 /**

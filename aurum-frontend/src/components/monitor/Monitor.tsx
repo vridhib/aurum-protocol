@@ -47,7 +47,7 @@ export interface ProtocolMetrics {
  * @returns The monitor page with a tabbed interface for viewing positions, risk parameters,
  *          and index/interest stats.
  */
-export default function MonitorPage() {
+export default function Monitor() {
   // Tabs and protocol data
   const TABS = ["Positions", "Risk Parameters", "Interest & Index"];
   const [activeTab, setActiveTab] = useState(0);

@@ -7,7 +7,7 @@ import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { config } from "../lib/wagmi";
 import { ApolloProvider } from "@apollo/client/react";
 import client from "@/lib/apollo-client";
-import { NavBar } from "@/components/NavBar";
+import { NavBar } from "@/components/navigation/NavBar";
 import { TransactionProvider } from "@/context/TransactionProvider";
 import { Playfair_Display } from 'next/font/google'
 

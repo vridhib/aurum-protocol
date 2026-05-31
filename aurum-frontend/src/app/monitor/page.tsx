@@ -1,2 +1,2 @@
-import MonitorPage from "@/components/monitor/MonitorPage";
-export default MonitorPage;
+import Monitor from "@/components/monitor/Monitor";
+export default Monitor;

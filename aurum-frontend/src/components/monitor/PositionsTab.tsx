@@ -1,9 +1,9 @@
 import { formatPercent, formatStablecoin, formatUsd } from "@/utils/helperFunctions";
-import { StatCard } from "../StatCard";
+import { StatCard } from "../ui/StatCard";
 import { formatEther } from "viem";
-import { ProtocolMetrics } from "./MonitorPage";
+import { ProtocolMetrics } from "./Monitor";
 import { useUserPositions } from "@/hooks/useUserPositions";
-import { UserPositionRow } from "./UserPositionRow";
+import { UserPositionRow } from "@/components/ui/UserPositionRow";
 
 
 /**
