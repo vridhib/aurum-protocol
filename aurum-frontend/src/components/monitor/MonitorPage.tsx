@@ -26,7 +26,7 @@ export interface ProtocolMetrics {
 }
 
 /**
- * Monitor page for the Aurum Protocol frontend.
+ * Monitor page for the Aurum frontend.
  *
  * Fetches and displays aggregated protocol statistics and user positions from the 
  * subgraph (via Apollo Client). It shows three tabs:
@@ -38,9 +38,10 @@ export interface ProtocolMetrics {
  *       color‑coded.
  *    2. Risk Parameters: the current per-collateral risk parameters.
  *    3. Index & Interest: stat cards (cumulative index, utilization, last update, and 
- *       borrow APY), a table showing all the cumulative index updates, and a search 
+ *       borrow APY), a table showing all cumulative index updates, as well as a search 
  *       functionality to query per-user interest accrual (with principal, actual debt, 
- *       and accrued data cards).
+ *       and accrued data cards) and projected interest (with pre-defined and custom 
+ *       intervals).
  * 
  * @component
  * @returns The monitor page with a tabbed interface for viewing positions, risk parameters,

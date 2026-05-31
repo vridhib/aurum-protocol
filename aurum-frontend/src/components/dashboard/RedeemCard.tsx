@@ -17,7 +17,8 @@ interface RedeemCardProps {
 }
 
 /**
- * Self‑contained redemption form for a single collateral token.
+ * Self‑contained redemption form for a single collateral token used in the
+ * Dashboard page.
  *
  * Reads the user's deposited collateral amount of the selected token, 
  * validates the input against their balance, and calculates the projected
@@ -30,7 +31,9 @@ interface RedeemCardProps {
  * 2. Insufficient deposited balance
  * 3. Health factor would drop below 1 after redemption
  *
+ * @component
  * @param selectedToken The collateral token to redeem (address, symbol).
+ * @returns The rendered UI form for redeeming collateral.
  */
 export function RedeemCard({ selectedToken }: RedeemCardProps) {
   const { activeCollateralTokens, collateralAmounts, totalDebt, refetch: refetchUserData } = useUserData();

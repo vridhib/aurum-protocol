@@ -1,5 +1,6 @@
 /**
  * A loading spinner to show the global pending action.
+ * 
  * @component
  * @returns A loading spinner.
  */

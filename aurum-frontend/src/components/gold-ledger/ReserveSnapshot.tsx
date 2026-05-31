@@ -18,8 +18,8 @@ import { useReadContract } from "wagmi";
  * just above the event table.
  * 
  * @component
- * @returns Reserve status UI card with token and ounce amounts as well as a
- *          reserve status balanced indicator.
+ * @returns Reserve status card with token amounts, ounce amounts, and reserve 
+ *          status balanced indicator.
  */
 export function ReserveSnapshot() {
   // Read total supply of AUR tokens

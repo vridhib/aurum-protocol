@@ -1,12 +1,24 @@
-export function CollateralSelector({ 
-  tokens, 
-  selectedIndex, 
-  onChange 
-}: {
+interface CollateralSelectorProps {
   tokens: { address: `0x${string}`; symbol: string; ltv: number }[];
   selectedIndex: number;
   onChange: (index: number) => void;
-}) {
+}
+
+/**
+ * Collateral selector radio buttons for the Aurum frontend.
+ * 
+ * Renders a row of slim, gold-bronze themed buttons (one for each collateral token). 
+ * The active token is highlighted and displays the current LTV. Used in the Dashboard 
+ * and Liquidation pages to let users choose which collateral they are acting on. 
+ * 
+ * @component
+ * @param {CollateralSelectorProps} props 
+ * @param {CollateralSelectorProps['tokens']} props.tokens Available collateral tokens with their LTV.
+ * @param {number} props.selectedIndex Index of the currently selected token.
+ * @param {CollateralSelectorProps['onChange']} onChange Callback when a token is selected.
+ * @returns A flex container with radio-style collateral buttons.
+ */
+export function CollateralSelector({ tokens, selectedIndex, onChange }: CollateralSelectorProps) {
   return (
     <div className="flex gap-4 mb-3">
       {tokens.map((token, index) => (

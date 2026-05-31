@@ -18,7 +18,8 @@ interface DepositCardProps {
 }
 
 /**
- * Self‑contained deposit form for a single collateral token.
+ * Self‑contained deposit form for a single collateral token used in the
+ * Dashboard page.
  *
  * Reads the user's ERC20 balance and allowance for the selected token,
  * validates the input, and executes the approve + deposit flow through
@@ -31,6 +32,7 @@ interface DepositCardProps {
  * 2. Insufficient AUR/WETH balance
  * 
  * @param selectedToken The collateral token to deposit (address, symbol).
+ * @returns The rendered UI form for depositing collateral.
  */
 export function DepositCard({ selectedToken }: DepositCardProps) {
     const { address: userAddress } = useAccount();

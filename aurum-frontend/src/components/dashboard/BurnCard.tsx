@@ -13,7 +13,7 @@ import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
 
 
 /**
- * Self‑contained burn form.
+ * Self‑contained burn form used in the Dashboard page.
  *
  * Reads the user's AUSD balance and allowance, validates the input
  * against the wallet balance, and executes the approve + burn flow
@@ -27,6 +27,9 @@ import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
  *
  * Transaction states are managed internally and the global pending
  * banner is updated via TransactionContext.
+ * 
+ * @component
+ * @returns The rendered UI form for minting AUSD.
  */
 export function BurnCard() {
     const { address: userAddress } = useAccount();

@@ -2,11 +2,18 @@ import { ExternalLink } from "lucide-react";
 
 
 /**
- * Link card section to assemble a link grid.
- * @param title Link title.
- * @param description Link description correlating to `title`. 
- * @param href Actual link that is embedded in the link card. 
- * @returns Link card UI component displaying a single link (shown as a block with an embedded link, title, and description).
+ * Link card used in the About page to assemble a links grid.
+ * 
+ * Renders a light-gold and bronze themed rectangular card for displaying 
+ * a single link with a title, corresponding description, and embedded
+ * link.
+ * 
+ * @component
+ * @param {Object} props 
+ * @param {string} props.title The link title.
+ * @param {string} props.description The link description. 
+ * @param {string} props.href The embedded link. 
+ * @returns A link card.
  */
 export function LinkCard({
   title,

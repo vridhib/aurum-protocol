@@ -5,8 +5,14 @@ import { useTransactionContext } from "@/context/useTransactionContext";
 
 /**
  * Header section for the dashboard of the Aurum Protocol frontend. 
- * @param onRefresh Function that refreshes data.
+ * 
+ * Renders a simple page header using a gold-bronze color scheme, with a title, 
+ * subtitle, loading spinner, refresh button, and navigation button (to the 
+ * 'About' page).
+ * 
  * @component
+ * @param {Object} props 
+ * @param {} props.onRefresh Function that refreshes data.
  * @returns A header section for the main dashboard.
  */
 export function Header({ onRefresh }: { onRefresh: () => void }) {

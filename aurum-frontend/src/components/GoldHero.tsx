@@ -11,6 +11,23 @@ interface GoldHeroProps {
   showBackgroundImage?: boolean;
 }
 
+/**
+ * Gold-themed hero banner used across the Aurum frontend. 
+ * 
+ * Renders a gold gradient block with an optional gold‑bars background image,
+ * a title, a subtitle, and an optional navigation button. Used on pages like
+ * About, Savings, Faucet, and Gold Ledger for consistent branding.
+ * 
+ * @component
+ * @param {Object} props 
+ * @param {string} props.title The page title. 
+ * @param {string} props.subtitle The page subtitle.
+ * @param {string} props.buttonText Button lable (default: "Back to Dashboard").
+ * @param {string} props.buttonHref Button navigation target (default: "/").
+ * @param {boolean} props.showButton Whether to render the button (default: true).
+ * @param {boolean} props.showBackgroundImage Whether to show the gold‑bars background image (default: false).
+ * @returns A full-width hero banner.
+ */
 export function GoldHero({
   title,
   subtitle,

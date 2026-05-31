@@ -18,13 +18,13 @@ import { UserPositionRow } from "./UserPositionRow";
  * hover.
  *
  * All on‑chain metrics are received via the `metrics` prop (built from
- * {@link useProtocolData}). The table reuses the shared {@link useUserPositions} 
+ * `useProtocolData`). The table reuses the shared {@link useUserPositions} 
  * hook and {@link UserPositionRow} component.
  *
  * @component
  * @param {Object} props
  * @param {ProtocolMetrics} props.metrics Live protocol metrics.
- * @returns The Positions tab UI.
+ * @returns The Positions tab for the Monitor page.
  */
 export function PositionsTab({ metrics }: { metrics: ProtocolMetrics }) {
   const { positions, loading, error } = useUserPositions();

@@ -87,7 +87,7 @@ const GET_INDEX_UPDATES: TypedDocumentNode<IndexUpdatesResponse, IndexUpdateVari
  * @param {Object} props
  * @param {bigint} props.cumulativeIndex Current cumulative index (1e18 scaled).
  * @param {number} props.utilization Utilization rate as a decimal (0‑1).
- * @returns The Interest & Index tab UI.
+ * @returns The Interest & Index tab for the Monitor page.
  */
 export function InterestIndexTab({ cumulativeIndex, utilization }: { cumulativeIndex: bigint, utilization: number }) {
   // Query updates

@@ -12,7 +12,7 @@ import { formatEtherAsPercent } from "@/utils/helperFunctions";
  * @component
  * @param {Object} props
  * @param {CollateralData[]} props.collaterals Collateral data from the protocol.
- * @returns The Risk Parameters tab UI.
+ * @returns The Risk Parameters tab for the Monitor page.
  */
 export function RiskParametersTab({ collaterals }: {collaterals: CollateralData[]}) {
   return (

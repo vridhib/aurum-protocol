@@ -8,12 +8,24 @@ import { FeatureCard } from "./FeatureCard";
 import { LinkCard } from "./LinkCard";
 import { GoldHero } from "../GoldHero";
 
-/*
- * About page component for the Aurum Protocol frontend.
+
+/**
+ * About page for the Aurum frontend.
  *
- * Displays the protocol's total collateral value in USD, total debt, utilization, 
- * and treasury balance as well as describes a high level overview of the protocol's
- * features and design choices, with the relevant links showcased at the bottom.
+ * Provides a high-level overview of the protocol's features and design. The page 
+ * displays:
+ *  - Individual stat cards displaying the protocol's total collateral value in USD, 
+ *    total debt, utilization, and treasury balance
+ *  - A feature grid using {@link FeatureCard} components to illustrate a high level
+ *    overview of the protocol's features.
+ *  - A table showing the differences in risk parameters between AUR and WETH.
+ *  - A design philosophy section, briefly listing key design implementations
+ *  - A link grid using {@link LinkCard} components to showcase the relevant links
+ *    (such as the Cyfrin DSC project link, Aurum V1 GitHub link, Etherscan links, and 
+ *    Aurum GitHub repository link).
+ * 
+ * @component
+ * @returns The rendered About page.
  */
 export default function AboutPage() {
   const { collaterals, totalCollateralValueInUsd, totalDebt, utilization, treasuryBalance } = useProtocolData();

@@ -50,8 +50,7 @@ import { UserPositionRow } from "../monitor/UserPositionRow";
  * banner is updated via TransactionContext.
  * 
  * @component
- * @returns The rendered UI with a table of liquidatable users and form to 
- *          liquidate users with a HF < 1.00.   
+ * @returns The rendered Liquidation page with a table and form.   
  */
 export default function LiquidationDashboard() {
   const { address: liquidatorAddress } = useAccount();

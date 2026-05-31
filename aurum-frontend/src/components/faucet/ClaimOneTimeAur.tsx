@@ -9,13 +9,20 @@ import { GoldHero } from "../GoldHero";
 
 
 /**
+ * Claim One-Time AUR page for the Aurum frontend. 
+ * 
  * Self‑contained component for claiming one‑time test AUR from the faucet.
- *
  * Reads the user's claim eligibility and executes a claim transaction. 
  * Manages all pending, success, and error states internally. Updates 
  * the global pending banner via TransactionContext.
  *
- * Once claimed, the button stays disabled permanently.
+ * Renders a card with a single button to claim 10 AUR tokens. If the user has 
+ * not claimed any AUR tokens, the button label will show 'Get Test AUR'; 
+ * otherwise the button will show 'Already Claimed'. Once claimed, the button 
+ * stays permanently disabled.
+ * 
+ * @component
+ * @returns The rendered UI faucet page.
  */
 export default function ClaimOneTimeAur() {
   const { address: userAddress } = useAccount();

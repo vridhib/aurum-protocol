@@ -12,7 +12,7 @@ import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
 
 
 /**
- * Self‑contained mint form.
+ * Self‑contained mint form used in the Dashboard page.
  *
  * Projects the user’s health factor after minting using the engine’s
  * multi‑collateral formula. The mint amount is not token‑specific (minting 
@@ -23,6 +23,9 @@ import { getUserFriendlyErrorMessage } from "@/utils/helperFunctions";
  * 1. Invalid amount (mintAmount <= 0)
  * 2. No collateral deposited (totalCollateralValue == 0)
  * 3. Health factor would drop below 1 after minting
+ * 
+ * @component
+ * @returns The rendered UI form for minting AUSD.
  */
 export function MintCard() {
     const { totalCollateralValueInUsd = 0n, activeCollateralTokens, collateralAmounts, totalDebt, refetch: refetchUserData } = useUserData();

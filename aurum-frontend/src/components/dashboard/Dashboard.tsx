@@ -15,14 +15,15 @@ import { StatCard } from "../StatCard";
 
 
 /**
- * Main dashboard component for the Aurum Protocol frontend.
+ * Dashboard page for the Aurum frontend.
  *
- * Displays the user's collateral value in USD, total debt, health factor, 
- * and provides forms for depositing/redeeming AUR/WETH and minting/burning
- * AUSD stablecoins.
+ * Uses individual {@link StatCard} components to assemble a stats grid to showcase 
+ * the user's collateral value in USD, total debt, health factor. Provides dedicated
+ * forms to deposit {@link DepositCard} and redeem {@link RedeemCard} collateral as 
+ * well as mint {@link MintCard} and burn {@link BurnCard} AUSD stablecoins.
  *
  * @component
- * @returns The rendered dashboard UI.
+ * @returns The rendered Dashboard page.
  */
 export default function Dashboard() {
   // State for Amounts & UI 

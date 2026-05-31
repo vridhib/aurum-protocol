@@ -21,7 +21,7 @@ import { ReserveSnapshot } from "./ReserveSnapshot";
  * All data is fetched from the Aurum subgraph via the {@link useGoldEvents} hook.
  * 
  * @component
- * @returns The rendering Gold Ledger page with a reserve snapshot, search/filter 
+ * @returns The rendered Gold Ledger page with a reserve snapshot, search/filter 
  *          functionality, and event table.
  */
 export default function GoldLedger() {

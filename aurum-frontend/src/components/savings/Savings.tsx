@@ -14,11 +14,15 @@ import { GoldHero } from "../GoldHero";
 
 
 /**
- * Self‑contained savings card.
- *
- * Allows the user to deposit AUSD into the AurumSavings contract to earn
- * yield, and to withdraw shares back to AUSD. Displays the current savings
- * rate (APY), the user’s share balance, and deposited AUSD.
+ * Savings page for the Aurum frontend.
+ * 
+ * Self‑contained savings card that displays the current savings rate (APY), the
+ * user’s share balance, and deposited AUSD using {@link StatCard} components. 
+ * Renders individual forms that allow the user to deposit AUSD into the AurumSavings 
+ * contract to earn yield, and to withdraw shares back to AUSD. 
+ * 
+ * @component
+ * @returns The rendered savings page with current user values and forms.
  */
 export default function Savings() {
   const { address: userAddress } = useAccount();

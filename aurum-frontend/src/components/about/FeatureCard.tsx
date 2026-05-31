@@ -1,9 +1,15 @@
 /**
- * Feature card section to assemble a feature grid.
- * @param icon Feature icon.
- * @param title Feature title.
- * @param description Feature description correlating to `title`. 
- * @returns Feature card UI component displaying a single feature (shown as a block with a title, description, and icon).
+ * Feature card used in the About page to assemble a features grid.
+ * 
+ * Renders a light-gold and bronze themed rectangular card for displaying 
+ * a single feature with a title and corresponding description.
+ * 
+ * @component
+ * @param {Object} props 
+ * @param {Icon} props.icon The feature icon.
+ * @param {string} props.title The feature title.
+ * @param {string} props.description The feature description. 
+ * @returns A feature card.
  */
 export function FeatureCard({
     icon: Icon,
