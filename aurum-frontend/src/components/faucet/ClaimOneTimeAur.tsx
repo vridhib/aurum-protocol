@@ -106,7 +106,7 @@ export default function ClaimOneTimeAur() {
       {/* Gold Hero Banner */}
       <GoldHero
         title="AUR Faucet"
-        subtitle="Claim one-time testnet AUR tokens for the Aurum Protocol"
+        subtitle="Claim one-time testnet AUR tokens to use in Aurum"
       />
 
       {/* Claim Card */}
@@ -114,7 +114,7 @@ export default function ClaimOneTimeAur() {
         <div className="gold-card p-8 text-center space-y-5">
           <h4 className="text-2xl font-bold text-yellow-600">Claim Your AUR</h4>
           <p className="leading-relaxed text-gray-600">
-            AUR is the tokenized gold collateral used in the Aurum Protocol. Each address can claim <strong>10 AUR</strong> once. This faucet is for Sepolia testnet only.
+            AUR is the tokenized gold collateral used in Aurum. Each address can claim <strong>10 AUR</strong> once. This faucet is for the Sepolia testnet only.
           </p>
           <button
             onClick={handleClaim}
