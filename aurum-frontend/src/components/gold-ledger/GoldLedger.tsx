@@ -4,6 +4,7 @@ import { shortenAddress } from "@/utils/helperFunctions";
 import { useState } from "react";
 import { isAddress } from "viem";
 import { ReserveSnapshot } from "./ReserveSnapshot";
+import { GoldHero } from "../ui/GoldHero";
 
 
 /**
@@ -50,11 +51,10 @@ export default function GoldLedger() {
   return (
     <div className="ml-12 mr-12 space-y-6">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-yellow-800 mt-6">AurumGold Ledger</h1>
-        <p className="text-yellow-700/70 text-sm">Immutable on-chain record of all gold deposits, withdrawals, and loss reports</p>
-        <hr className="gold-border"></hr>
-      </div>
+      <GoldHero
+        title="AurumGold Ledger"
+        subtitle="Immutable on-chain record of all gold deposits, withdrawals, and loss reports"
+      />
 
       {/* Reserves */}
       <ReserveSnapshot />

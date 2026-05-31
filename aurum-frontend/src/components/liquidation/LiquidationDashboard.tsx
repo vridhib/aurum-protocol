@@ -14,6 +14,7 @@ import { CollateralSelector } from "../ui/CollateralSelector";
 import { Zap } from "lucide-react";
 import { useUserPositions } from "@/hooks/useUserPositions";
 import { UserPositionRow } from "@/components/ui/UserPositionRow";
+import { PageHeader } from "../ui/PageHeader";
 
 
 /**
@@ -248,11 +249,10 @@ export default function LiquidationDashboard() {
   return (
     <div className="max-w-xl mx-auto w-full space-y-6 overflow-hidden">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-yellow-800 mt-6">Liquidations</h1>
-        <p className="text-yellow-700/70 text-sm">Repay undercollateralized debt and earn a 5% bonus in collateral</p>
-        <hr className="gold-border"></hr>
-      </div>
+      <PageHeader 
+        title="Liquidation Dashboard"
+        subtitle="Repay undercollateralized debt and earn a 5% bonus in collateral"
+      />
 
       {/* Underwater Positions Table */}
       {loading && <p>Loading underwater positions...</p>}

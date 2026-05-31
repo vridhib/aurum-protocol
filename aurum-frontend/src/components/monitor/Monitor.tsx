@@ -5,6 +5,7 @@ import { RiskParametersTab } from "./RiskParametersTab";
 import { PositionsTab } from "./PositionsTab";
 import { InterestIndexTab } from "./InterestIndexTab";
 import { PRECISION } from "@/config/constants";
+import { PageHeader } from "../ui/PageHeader";
 
 
 /**
@@ -77,7 +78,10 @@ export default function Monitor() {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-12">
-      <h1 className="text-3xl font-bold text-yellow-800">Protocol Monitor</h1>
+      <PageHeader 
+        title="Protocol Monitor"
+        subtitle="Live protocol metrics, risk parameters, and user positions"
+      />
       <div className="flex gap-2 border-b border-yellow-800/20">
         {TABS.map((tab, i) => (
           <button

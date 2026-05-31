@@ -22,7 +22,7 @@ export function Header({ onRefresh }: { onRefresh: () => void }) {
   return (
     <div className="flex justify-between items-center border-b border-yellow-800/20 pb-4 mb-16">
       <div>
-        <h1 className="text-3xl font-bold text-yellow-800">Dashboard</h1>
+        <h1 className="text-4xl font-bold text-yellow-800 mb-1">Dashboard</h1>
         <p className="text-yellow-700/70 text-sm">Manage your Aurum positions</p>
       </div>
       <div className="flex items-center gap-3">
