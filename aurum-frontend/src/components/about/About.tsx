@@ -1,5 +1,5 @@
 "use client";
-import { AURUM_ENGINE_ADDRESS, AUR_GOLD_ADDRESS, AURUM_AUSD_ADDRESS } from "@/config/constants";
+import { AURUM_ENGINE_ADDRESS, AUR_GOLD_ADDRESS, AURUM_AUSD_ADDRESS, PRECISION } from "@/config/constants";
 import { useProtocolData } from "@/hooks/useProtocolData";
 import { formatEtherAsPercent, formatPercent, formatStablecoin, formatUsd } from "@/utils/helperFunctions";
 import { Coins, Gauge, ShieldAlert, Landmark, PiggyBank, Zap } from "lucide-react";
@@ -29,12 +29,18 @@ import { GoldHero } from "../ui/GoldHero";
  */
 export default function AboutPage() {
   const { collaterals, totalCollateralValueInUsd, totalDebt, utilization, treasuryBalance } = useProtocolData();
+  // (totalCollateralValue * PRECISION) / totalActualDebt < (PRECISION + TEN_PERCENT); // AurumEngine calculation
+  const PAUSE_THRESHOLD = 10n ** 18n + 10n ** 17n;   // 1.1e18
+  const canPause = totalCollateralValueInUsd && totalDebt 
+    ? ((totalCollateralValueInUsd * PRECISION) / totalDebt) < PAUSE_THRESHOLD
+    : undefined;
+
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-20">
       {/* Gold Hero Banner */}
       <GoldHero
-        title="Aurum Protocol"
+        title="About Aurum"
         subtitle="A decentralized stablecoin backed by AUR (tokenized gold) and ETH: designed for capital efficiency, transparency, and resilience."
       />
 
@@ -44,6 +50,24 @@ export default function AboutPage() {
         <StatCard title="Total Debt" value={formatStablecoin(totalDebt || 0n)} />
         <StatCard title="Utilization" value={formatPercent(utilization || 0)} />
         <StatCard title="Treasury" value={formatStablecoin(treasuryBalance || 0n)} />
+      </section>
+
+      {/* Transparency */}
+      <section className="space-y-4">
+        <h2 className="section-heading">Transparency</h2>
+        <p className="leading-relaxed">
+          The protocol can only be paused by the owner when the global collateralization ratio falls below 110%. Currently:
+        </p>
+        <div className="flex items-center gap-2 mt-2">
+          <span className={`w-3 h-3 rounded-full ${canPause ? "bg-red-500" : "bg-green-500"}`} />
+          <span className="text-sm font-medium">
+            {canPause ? "Pause allowed" : "Pause not allowed"}
+            
+          </span>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Calculated live from on-chain protocol data.
+        </p>
       </section>
 
       {/* Protocol Overview */}
