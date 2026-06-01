@@ -16,7 +16,7 @@ import { NavLink } from "./NavLink";
  */
 export function NavBar() {
   return (
-    <nav className="border-b border-yellow-600 bg-[#eccd7d] backdrop-blur-md sticky top-0 z-10">
+    <nav className="border-b border-yellow-400 bg-[#eccd7d]/50 backdrop-blur-md sticky top-0 z-10">
       <div className="max-w-7x-1 max-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
