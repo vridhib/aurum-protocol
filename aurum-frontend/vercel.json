@@ -1,3 +1,11 @@
 {
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "github": {
+    "silent": true
+  }
 }
