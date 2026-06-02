@@ -16,12 +16,12 @@ import { NavLink } from "./NavLink";
  */
 export function NavBar() {
   return (
-    <nav className="border-b border-yellow-400 bg-[#eccd7d]/50 backdrop-blur-md sticky top-0 z-10">
+    <nav className="border-b border-[#d7b766] bg-[#d7b766]/50 backdrop-blur-md sticky top-0 z-10">
       <div className="max-w-7x-1 max-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-tr from-yellow-500 to-amber-600 rounded-lg"></div>
-            <span className="text-xl font-bold tracking-tighter text-white">AURUM</span>
+            <span className="text-xl font-bold uppercase text-amber-700">Aurum</span>
           </div>
           <div className="flex gap-4">
             <NavLink href="/">Dashboard</NavLink>
